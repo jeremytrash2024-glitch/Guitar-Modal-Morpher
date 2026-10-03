@@ -2,7 +2,7 @@
 
 Aide à la composition pour guitariste et professeur de théorie mise en pratique : une application pour composer et improviser à la guitare et à la basse. Elle part de ce qu'on entend, pas d'une théorie à apprendre par cœur.
 
-**▶ Ouvrir l'application : https://jeremytrash2024-bug.github.io/guitar-modal-morpher/**
+**▶ Ouvrir l'application : https://jeremytrash2024-bug.github.io/guitar-modal-morpher**
 
 Tout tient dans un seul fichier HTML. Rien à installer, pas de compte à créer, aucun serveur derrière. Une fois la page chargée, elle fonctionne sans connexion.
 
