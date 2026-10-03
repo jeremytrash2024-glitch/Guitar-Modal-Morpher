@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guitar Modal Morpher</title>
-<meta name="description" content="Guitar Modal Morpher — manche, modes et grilles d'accords jouées avec basse et batterie, pour composer et improviser à la guitare et à la basse.">
-<meta name="theme-color" content="#000000">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8E%B8%3C/text%3E%3C/svg%3E">
 <style>:root {
 --bg: #000000;
 --panel: #33384a;
@@ -877,7 +874,36 @@ height:56dvh;
 width:auto;
 max-width:100%;
 }
-}</style>
+}
+/* v904 paysage */
+@media (orientation: landscape) and (max-height: 600px) {
+/* Pendant une grille, en paysage : le manche prend tout l'écran, le bandeau de la gamme est collé
+   au-dessus, rien d'autre. Les boutons flottants (Pause, Stop, retour, menu : z-index 950+) restent devant. */
+body.in-app.grid-mode{overflow:hidden;}
+body.in-app.grid-mode #boardScaleNow{position:fixed;top:0;left:0;right:0;height:32px;z-index:900;margin:0;padding:0 150px;border-radius:0;border-width:0 0 1px 0;box-sizing:border-box;line-height:31px;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+body.in-app.grid-mode #boardScroll{position:fixed;top:32px;left:0;right:0;bottom:0;z-index:899;margin:0;padding:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+body.in-app.grid-mode svg#board{height:calc(100dvh - 36px);max-height:calc(100dvh - 36px);width:auto;max-width:100%;min-width:0;}
+}
+/* /v904 */
+#paysageBascule{display:none;}
+/* v905 paysage */
+@media (orientation: landscape) and (max-height: 600px) {
+/* Bouton Gamme / Accords, posé à gauche du bandeau. Vue Accords : les diagrammes de toute la grille
+   remplacent le manche, l'accord en cours reste surligné (grid-current) et la vue le suit. */
+body.in-app.grid-mode #paysageBascule{display:flex;position:fixed;top:0;left:0;height:32px;z-index:901;align-items:center;padding:0 8px;margin:0;border:0;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+#paysageBascule span{padding:3px 11px;font-size:.76rem;font-weight:700;line-height:1.2;color:#f5c518;border:1px solid rgba(245,197,24,.5);}
+#paysageBascule .pb-g{border-radius:999px 0 0 999px;}
+#paysageBascule .pb-a{border-radius:0 999px 999px 0;border-left:0;}
+body:not(.pv-accords) #paysageBascule .pb-g, body.pv-accords #paysageBascule .pb-a{background:#f5c518;color:#111;}
+body.in-app.grid-mode.pv-accords #boardScroll{display:none !important;}
+body.in-app.grid-mode.pv-accords #accChords{display:block !important;}
+body.in-app.grid-mode.pv-accords #chordGrid{position:fixed;top:32px;left:0;right:0;bottom:0;z-index:899;margin:0;padding:8px 10px 72px;background:#000;display:grid !important;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));grid-auto-rows:max-content;gap:8px;align-content:start;overflow-y:auto;overflow-x:hidden;}
+body.in-app.grid-mode.pv-accords #chordGrid > .chord-card{width:auto;}
+/* une rangée de diagrammes tient en entier dans la hauteur de l'écran */
+body.in-app.grid-mode.pv-accords #chordGrid .chord-diagram-wrap svg{max-height:calc(100dvh - 120px);width:auto;max-width:100%;margin:0 auto;display:block;}
+}
+/* /v905 */
+</style>
 </head>
 <body>
 
@@ -1188,7 +1214,7 @@ max-width:100%;
     <header class="app-header">
         <div class="app-titlewrap">
             <h1 class="app-title-compact">GMM</h1>
-            <div id="panneBox" style="display:none;font-size:.6rem;color:#ff9b9b;background:#2a1414;border:1px solid #6b2b2b;border-radius:6px;padding:4px 6px;margin:4px 0;max-width:100%;word-break:break-word;line-height:1.25;" onclick="this.style.display='none'"></div><div id="versionBadge" title="Tape pour vérifier la version / anti-cache" style="font-size:.62rem;color:#4d82e8;font-weight:700;cursor:pointer;user-select:none;line-height:1.1;">v872 · 29/09 22:03</div>
+            <div id="panneBox" style="display:none;font-size:.6rem;color:#ff9b9b;background:#2a1414;border:1px solid #6b2b2b;border-radius:6px;padding:4px 6px;margin:4px 0;max-width:100%;word-break:break-word;line-height:1.25;" onclick="this.style.display='none'"></div><div id="versionBadge" title="Tape pour vérifier la version / anti-cache" style="font-size:.62rem;color:#4d82e8;font-weight:700;cursor:pointer;user-select:none;line-height:1.1;">v905 · 03/10 13:26</div>
         </div>
         <div class="header-actions">
             <button id="backToMagicBtn" class="hidden" title="Revenir à Magic (l'accompagnement continue)">&#10024;</button>
@@ -1230,6 +1256,7 @@ max-width:100%;
          qui se termine juste au-dessus, il se decollait des le premier scroll.
          Ici sa boite couvre toute la page, donc il reste a l'ecran jusqu'en bas. -->
     <div id="boardScaleNow" class="board-scale-now"></div>
+    <button id="paysageBascule" type="button" aria-pressed="false" title="Paysage : voir la gamme ou les accords" aria-label="Gamme ou accords"><span class="pb-g">Gamme</span><span class="pb-a">Accords</span></button>
 
     <!-- === 7c : Contrôles regroupés en accordéons === -->
 
@@ -4005,7 +4032,17 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
         chords:[{name:"D6",beats:8,voicing:"x-x-0-2-0-2",scale:"D:0"},
                 {name:"D7",beats:8,voicing:"x-x-0-2-1-2",scale:"D:4"},
                 {name:"D7#11",beats:8,voicing:"x-x-0-1-1-2",scale:"D:melodicMinor:3"},
-                {name:"Dmaj7#11",beats:8,voicing:"x-x-0-1-2-2",scale:"D:3"}]}
+                {name:"Dmaj7#11",beats:8,voicing:"x-x-0-1-2-2",scale:"D:3"}]},
+      // v897 — Si mixolydien b6 : le Sol tient, l'accord change autour
+      {id:"cin-si-sol-trois-roles", lecons:{melodique:2, immobile:2, "cordes-vides":2, modal:2}, root:"B", scale:"B:melodicMinor:4",
+        name:"Si — le Sol tient trois rôles, puis soupire", tempo:72, groove:"atmos",
+        desc:"Le geste : Si 7 ouvert. La basse Si, case 2 sur la corde de La, et la corde de Si à vide ne bougent jamais. L'auriculaire avance d'une case sur la corde de Mi aiguë : c'est le Sol, la sixte bémol, et l'accord devient Si 7b13. Il reste posé pendant que la main change autour de lui : Mi mineur sur basse de Si, Sol augmenté sur Si, puis de nouveau Si 7b13. Il recule enfin sur le Fa# du Si 7. À écouter : le Sol ne bouge pas, mais son rôle change trois fois. Il est la b13 de Si 7, la tierce mineure de Mi mineur, la fondamentale de Sol augmenté. Puis il tombe sur le Fa#, et tout le mixolydien b6 est dans ce soupir. Pour improviser : Si mixolydien b6 de bout en bout, Si Do# Ré# Mi Fa# Sol La. Vise le Sol sur les accords du milieu, laisse-le tomber sur le Fa# à la fin.",
+        chords:[{name:"B7",beats:8,voicing:"x-2-1-2-0-2",scale:"B:melodicMinor:4"},
+                {name:"B7b13",beats:4,voicing:"x-2-1-2-0-3",scale:"B:melodicMinor:4"},
+                {name:"Em/B",beats:8,voicing:"x-2-2-0-0-3",scale:"B:melodicMinor:4"},
+                {name:"Gaug/B",beats:4,voicing:"x-2-1-0-0-3",scale:"B:melodicMinor:4"},
+                {name:"B7b13",beats:4,voicing:"x-2-1-2-0-3",scale:"B:melodicMinor:4"},
+                {name:"B7",beats:12,voicing:"x-2-1-2-0-2",scale:"B:melodicMinor:4"}]}
     ]},
   { id:"manouche", label:"🎻 Manouche", groove:"pompe",
 grids:[
@@ -4089,16 +4126,16 @@ chords:[{name:"Dadd9",beats:8,voicing:"x-5-4-2-3-0",scale:"D:0"},
 {name:"Asus4",beats:12,feel:"laid",voicing:"x-0-2-2-3-0",scale:"A:4"},
 {name:"Dadd9",beats:12,voicing:"x-5-4-2-3-0",scale:"D:0"}]},   // v872 remix : on s'attarde où le Mi est riche
 {id:"rock-thammarat-soulevement", preset:"ballade", lecons:{cadences:2, couleurs:1}, root:"E", scale:"E:0",
-name:"Le soulèvement — dans la langue de Jack Thammarat", tempo:84, groove:"rock",
-desc:"Le geste : quatre accords de Mi majeur, puis Do et Ré ouverts, et retour au Mi. À écouter : Do et Ré sont empruntés au mineur ; après quatre accords de Sol#, le Sol naturel du Do ouvre le son d'un coup, et le Mi final arrive comme un soulèvement. Pour improviser : Mi ionien jusqu'au La, puis Sol ionien sur le Do et le Ré ; trois notes descendent d'un demi-ton, Sol#, Do# et Ré#.",
+name:"Le soulèvement — dans la langue de Jack Thammarat", tempo:80, groove:"ballad",
+desc:"Le geste : quatre accords de Mi majeur, puis Do et Ré ouverts, et retour au Mi. À écouter : Do et Ré sont empruntés au mineur ; après quatre accords de Sol#, le Sol naturel du Do ouvre le son d'un coup, et le Mi final arrive comme un soulèvement. Pour improviser : Mi ionien jusqu'au La, puis Sol ionien sur le Do et le Ré ; trois notes descendent d'un demi-ton, Sol#, Do# et Ré#. En ballade jusqu'au La, qui raccourcit à six temps ; le rock entre une croche en avance sur le Do, qui ne dure qu'une mesure, le Ré, poussé lui aussi, n'en dure qu'une demie, et le Mi final arrive une croche en retard puis tient trois mesures.",
 chords:[{name:"E",beats:8,voicing:"0-2-2-1-0-0",scale:"E:0"},
 {name:"Aadd9/C#",beats:8,voicing:"x-4-2-2-0-0",scale:"A:3"},
 {name:"B",beats:8,voicing:"x-2-4-4-4-x",scale:"B:4"},
 {name:"C#m7",beats:8,voicing:"x-4-6-4-5-x",scale:"C#:5"},
-{name:"A",beats:8,voicing:"x-0-2-2-2-0",scale:"A:3"},
-{name:"C",beats:8,voicing:"x-3-2-0-1-0",scale:"C:3"},
-{name:"D",beats:8,voicing:"x-x-0-2-3-2",scale:"D:4"},
-{name:"E",beats:8,voicing:"0-2-2-1-0-0",scale:"E:0"}]},
+{name:"A",beats:6,voicing:"x-0-2-2-2-0",scale:"A:3"},
+{name:"C",beats:4,decale:-0.5,groove:"rock",voicing:"x-3-2-0-1-0",scale:"C:3"},
+{name:"D",beats:2,decale:-0.5,groove:"rock",voicing:"x-x-0-2-3-2",scale:"D:4"},
+{name:"E",beats:12,decale:0.5,groove:"rock",voicing:"0-2-2-1-0-0",scale:"E:0"}]},   // v874 remix : la ballade se soulève
 {id:"rock-deux-cordes-vides", preset:"ballade", lecons:{immobile:3, "cordes-vides":3, couleurs:3}, root:"C", scale:"C:0",
 name:"Deux cordes à vide, douze fonctions", tempo:68, groove:"rock",
 desc:"Le geste : les cordes de Si et de Mi aiguës sonnent à vide sous les six accords ; la main gauche ne dépasse jamais la case 4. À écouter : la quarte Si–Mi ne bouge pas mais change de sens ; sur le Fa maj7(#11), le Si devient un #11 qui grince juste ce qu'il faut. Pour improviser : Do ionien, puis Si phrygien sur le dernier accord, où le Fa devient Fa#.",
@@ -4109,16 +4146,16 @@ chords:[{name:"Cmaj7",beats:8,voicing:"x-3-2-0-0-0",scale:"C:0"},
 {name:"Fmaj7(#11)",beats:8,voicing:"1-x-3-2-0-0",scale:"F:3"},
 {name:"Bm11/F#",beats:8,voicing:"2-x-0-2-0-0",scale:"B:2"}]},
 {id:"rock-loureiro-tierce-qui-bouge", lecons:{immobile:2, couleurs:3, dominantes:2}, root:"A", scale:"A:5",
-name:"La tierce qui bouge — dans la langue de Kiko Loureiro", tempo:80, groove:"rock",
-desc:"Le geste : un seul doigt monte d'une case, deux fois : sur la corde de Si, le La mineur devient La majeur ; sur la corde de Sol, le Mi mineur 7 devient Mi 7. À écouter : sur le La, la tierce majeure éclaire mais ne va nulle part ; sur le Mi, le même geste tire, parce que le Sol# veut aller au La. Pour improviser : La éolien, La mixolydien sur le La majeur, Mi phrygien dominant sur le Mi 7, où le Sol devient Sol#.",
-chords:[{name:"Am",beats:8,voicing:"x-0-2-2-1-0",scale:"A:5"},
-{name:"A",beats:8,voicing:"x-0-2-2-2-0",scale:"A:4"},
+name:"La tierce qui bouge — dans la langue de Kiko Loureiro", tempo:80, groove:"ballad",
+desc:"Le geste : un seul doigt monte d'une case, deux fois : sur la corde de Si, le La mineur devient La majeur ; sur la corde de Sol, le Mi mineur 7 devient Mi 7. À écouter : sur le La, la tierce majeure éclaire mais ne va nulle part ; sur le Mi, le même geste tire, parce que le Sol# veut aller au La. En ballade, le La mineur ne dure qu'une mesure et le La majeur s'attarde deux mesures, posé derrière le temps : la lumière reste et ne mène nulle part. Le rock entre sur le Mi mineur 7, et le Mi 7 arrive deux fois une croche en avance : la tierce qui tire n'attend pas. Pour improviser : La éolien, La mixolydien sur le La majeur, Mi phrygien dominant sur le Mi 7, où le Sol devient Sol#.",
+chords:[{name:"Am",beats:4,voicing:"x-0-2-2-1-0",scale:"A:5"},
+{name:"A",beats:8,feel:"laid",voicing:"x-0-2-2-2-0",scale:"A:4"},
 {name:"Dm7",beats:8,voicing:"x-x-0-2-1-1",scale:"D:1"},
-{name:"Em7",beats:8,voicing:"0-2-2-0-3-0",scale:"E:2"},
-{name:"E7",beats:8,voicing:"0-2-2-1-3-0",scale:"E:harmonicMinor:4"},
-{name:"Am7",beats:8,voicing:"x-0-2-0-1-0",scale:"A:5"},
-{name:"Fmaj7",beats:8,voicing:"x-x-3-2-1-0",scale:"F:3"},
-{name:"E7",beats:8,voicing:"0-2-2-1-3-0",scale:"E:harmonicMinor:4"}]},
+{name:"Em7",beats:4,groove:"rock",voicing:"0-2-2-0-3-0",scale:"E:2"},
+{name:"E7",beats:4,decale:-0.5,groove:"rock",voicing:"0-2-2-1-3-0",scale:"E:harmonicMinor:4"},
+{name:"Am7",beats:8,groove:"rock",voicing:"x-0-2-0-1-0",scale:"A:5"},
+{name:"Fmaj7",beats:4,groove:"rock",voicing:"x-x-3-2-1-0",scale:"F:3"},
+{name:"E7",beats:4,decale:-0.5,groove:"rock",voicing:"0-2-2-1-3-0",scale:"E:harmonicMinor:4"}]},   // v876 remix : la tierce qui éclaire traîne, la tierce qui tire devance
 {id:"rock-sixte-fondamentale-autre", preset:"ballade", lecons:{couleurs:3, basses:2}, root:"D", scale:"D:0",
 name:"La sixte est la fondamentale de quelqu'un d'autre", tempo:76, groove:"rock",
 desc:"Le geste : trois paires d'accords aux notes identiques ; seule la basse change : Ré 6 puis Si mineur 7, Sol 6 puis Mi mineur 7, La 6 puis Fa# mineur 7. À écouter : la sixte du premier accord est toujours la fondamentale du second ; c'est pour ça que la sixte semble instable, un autre accord y attend sa place. Pour improviser : Ré ionien du début à la fin, et laisse la basse décider du nom.",
@@ -4129,14 +4166,14 @@ chords:[{name:"D6",beats:8,voicing:"x-x-0-2-0-2",scale:"D:0"},
 {name:"A6",beats:8,voicing:"x-0-2-2-2-2",scale:"A:4"},
 {name:"F#m7",beats:8,voicing:"2-x-2-2-2-0",scale:"F#:2"}]},
 {id:"rock-carlton-ii-v-devie", lecons:{cadences:3, dominantes:2}, root:"D", scale:"D:0",
-name:"Le ii-V qui n'arrive pas — dans la langue de Larry Carlton", tempo:88, groove:"rock",
-desc:"Le geste : Mi mineur 7 et La 7 reviennent deux fois avec le même doigté. La première fois la basse saute d'une quarte vers le Ré maj7 ; la seconde, elle monte d'une case sur la même corde, vers le Sib maj7. À écouter : la même promesse, deux atterrissages ; le Sib maj7 tombe un demi-ton à côté de ce que l'oreille attendait. Pour improviser : Ré ionien, puis Sib lydien sur le dernier accord ; Si, Do# et Fa# deviennent Sib, Do et Fa.",
-chords:[{name:"Em7",beats:8,voicing:"x-7-5-7-5-x",scale:"E:1"},
-{name:"A7",beats:8,voicing:"5-x-5-6-5-x",scale:"A:4"},
+name:"Le ii-V qui n'arrive pas — dans la langue de Larry Carlton", tempo:88, groove:"jazz",
+desc:"Le geste : Mi mineur 7 et La 7 reviennent deux fois avec le même doigté. La première fois la basse saute d'une quarte vers le Ré maj7 ; la seconde, elle monte d'une case sur la même corde, vers le Sib maj7. À écouter : la même promesse, deux atterrissages ; le Sib maj7 tombe un demi-ton à côté de ce que l'oreille attendait. En jazz, Mi mineur 7 et La 7 ne durent qu'une mesure chacun ; le Ré maj7 arrive à l'heure et tient deux mesures, le Sib maj7 arrive une croche en retard, l'oreille hésite, puis il tient trois mesures. Pour improviser : Ré ionien, puis Sib lydien sur le dernier accord ; Si, Do# et Fa# deviennent Sib, Do et Fa.",
+chords:[{name:"Em7",beats:4,voicing:"x-7-5-7-5-x",scale:"E:1"},
+{name:"A7",beats:4,voicing:"5-x-5-6-5-x",scale:"A:4"},
 {name:"Dmaj7",beats:8,voicing:"x-5-7-6-7-x",scale:"D:0"},
-{name:"Em7",beats:8,voicing:"x-7-5-7-5-x",scale:"E:1"},
-{name:"A7",beats:8,voicing:"5-x-5-6-5-x",scale:"A:4"},
-{name:"Bbmaj7",beats:8,voicing:"6-x-7-7-6-x",scale:"A#:3"}]},
+{name:"Em7",beats:4,voicing:"x-7-5-7-5-x",scale:"E:1"},
+{name:"A7",beats:4,voicing:"5-x-5-6-5-x",scale:"A:4"},
+{name:"Bbmaj7",beats:12,decale:0.5,voicing:"6-x-7-7-6-x",scale:"A#:3"}]},   // v875 remix : la promesse pressée, la fausse arrivée hésite
 {id:"rock-deux-re", preset:"ballade", lecons:{immobile:3, voicings:3, basses:2}, root:"D", scale:"D:0",
 name:"Deux Ré qui ne lâchent pas", tempo:76, groove:"rock",
 desc:"Le geste : la corde de Ré à vide et la corde de Si case 3 sonnent le même Ré à l'octave ; tu poses ce doigt au premier accord et tu ne le lèves plus. Seule la basse bouge : Ré, Si, Sol, La, Mi, Ré. À écouter : ce Ré est fondamentale, tierce mineure, quinte, quarte puis septième ; sur le La sus4 il devient la quarte suspendue, le seul endroit où il tire. Pour improviser : Ré ionien du début à la fin.",
@@ -4378,7 +4415,7 @@ chords:[{name:"D#maj7#5",beats:8,sig:4,voicing:"x-x-1-4-3-3",scale:"D#:melodicMi
 {name:"Gaug(9,11)",beats:8,sig:4,voicing:"x-x-7-0-0-8",scale:"B:melodicMinor:6"},
 {name:"Dm7",beats:8,sig:4,voicing:"x-x-0-5-6-5",scale:"B:melodicMinor:6"},
 {name:"B7#9",beats:16,sig:4,voicing:"x-2-1-2-3-x",scale:"B:melodicMinor:6"}]},
-{id:"prog-arrivee-re", lecons:{cadences:2, basses:2}, root:"D", scale:"D:5",
+{id:"prog-arrivee-re", lecons:{cadences:2, basses:2}, root:"D", sig:3.5, scale:"D:5",
 name:"L'arrivée — 4/4, 7/8, puis 4/4 pour de bon", tempo:92, groove:"prog7",
 desc:"Le geste : Ré mineur en 4/4, puis des accords plus colorés en sept croches, et retour en 4/4 pour conclure. À écouter : la mesure perd une croche en même temps que l'harmonie s'ouvre, puis le La 7 altéré ramène tout vers le Ré mineur final ; la pièce commence et finit vraiment. Pour improviser : Ré éolien, Ré dorien sur le passage en sept croches, et la gamme affichée sur les septièmes.",
 chords:[{name:"Dm",beats:8,sig:4,voicing:"x-x-0-2-3-1",scale:"D:5"},
@@ -4402,7 +4439,7 @@ chords:[{name:"Esus4",beats:8,voicing:"0-0-2-2-0-0",scale:"E:japanese:1"},
 {name:"E5",beats:4,voicing:"0-2-2-x-x-x",scale:"E:japanese:1"},
 {name:"A5",beats:4,voicing:"x-0-2-2-x-x",scale:"E:japanese:1"},
 {name:"Esus4",beats:8,voicing:"0-0-2-2-0-0",scale:"E:japanese:1"}]},
-{id:"prog-arrivee-lam", lecons:{cadences:2, harmonique:2}, root:"A", scale:"A:5",
+{id:"prog-arrivee-lam", lecons:{cadences:2, harmonique:2}, root:"A", sig:3.5, scale:"A:5",
 name:"L'arrivée en La mineur — le Sol# ne vient qu'à la fin", tempo:84, groove:"prog7",
 desc:"Le geste : La mineur en 4/4, des accords qui s'ouvrent en sept croches, puis le Mi 7 et le retour au La mineur. À écouter : le Sol# n'arrive qu'à la fin, avec le Mi 7, et c'est lui qui fait arriver la pièce. Pour improviser : La éolien, puis La mineur harmonique sur le Mi 7.",
 chords:[{name:"Am",beats:8,sig:4,voicing:"x-0-2-2-1-0",scale:"A:5"},
@@ -4417,25 +4454,25 @@ chords:[{name:"Am",beats:8,sig:4,voicing:"x-0-2-2-1-0",scale:"A:5"},
 {name:"Am",beats:8,sig:4,voicing:"x-0-2-2-1-0",scale:"A:5"},
 {name:"Dm7",beats:8,sig:4,voicing:"x-x-0-2-1-1",scale:"A:5"},
 {name:"Am",beats:16,sig:4,voicing:"x-0-2-2-1-0",scale:"A:5"}]},
-{id:"prog-devin-mur-mi", lecons:{"cordes-vides":1}, root:"E", scale:"E:5",
-name:"Le mur ouvert en Mi — dans la langue de Devin Townsend", tempo:72, groove:"rock",
-desc:"Le geste : Mi sus4, Do maj7, Sol add9, Ré sus2, La sus2, tous en bas du manche avec des cordes à vide. À écouter : un mur de son qui ne s'arrête pas ; les cordes à vide sonnent d'un accord à l'autre. Pour improviser : Mi éolien du début à la fin, c'est-à-dire les notes de Sol majeur.",
-chords:[{name:"Esus4",beats:8,voicing:"0-0-2-2-0-0",scale:"E:5"},
-{name:"Cmaj7",beats:8,voicing:"x-3-2-0-0-0",scale:"C:3"},
-{name:"Gadd9",beats:8,voicing:"3-x-0-2-0-x",scale:"G:0"},
-{name:"Dsus2",beats:8,voicing:"x-x-0-2-3-0",scale:"D:4"},
-{name:"Asus2",beats:8,voicing:"x-0-2-2-0-0",scale:"A:1"},
-{name:"Esus4",beats:8,voicing:"0-0-2-2-0-0",scale:"E:5"}]},
-{id:"prog-plini-cordes-vides-re", lecons:{"cordes-vides":1}, root:"D", scale:"D:0",
-name:"Cordes à vide en Ré — dans la langue de Plini", tempo:92, groove:"rock",
-desc:"Le geste : Ré sus2, Sol add9, Si mineur 9, La sus2, Ré add9, Mi mineur 9, en bas du manche avec des cordes à vide. À écouter : l'harmonie avance pendant que les cordes à vide restent en place ; on entend le mouvement sans grand changement de main. Pour improviser : Ré ionien du début à la fin.",
-chords:[{name:"Dsus2",beats:8,voicing:"x-x-0-2-3-0",scale:"D:0"},
-{name:"Gadd9",beats:8,voicing:"3-x-0-2-0-x",scale:"G:3"},
-{name:"Bm9",beats:8,voicing:"x-2-0-2-2-2",scale:"B:5"},
-{name:"Asus2",beats:8,voicing:"x-0-2-2-0-0",scale:"A:4"},
-{name:"Dadd9",beats:8,voicing:"x-x-0-2-5-2",scale:"D:0"},
-{name:"Em9",beats:8,voicing:"0-2-0-0-0-2",scale:"E:1"},
-{name:"Dsus2",beats:8,voicing:"x-x-0-2-3-0",scale:"D:0"}]},
+{id:"prog-devin-mur-mi", lecons:{modal:1}, root:"E", scale:"E:5",
+name:"Le mur qui monte en Mi — dans la langue de Devin Townsend", tempo:72, groove:"atmos",
+desc:"Le geste : Mi sus4, Do maj7, Sol add9, Ré sus2, La sus2, tous fermés, sans corde à vide : la main monte par paliers, Do maj7 et Sol add9 entre les cases 3 et 5, Ré sus2 en barré case 5, La sus2 case 7, et le Mi sus4 se joue en forme de La, case 7, juste à côté. À écouter : un mur de son qui monte avec la main, sans résonance qui traîne d'un accord à l'autre. En atmosphérique, la montée se resserre : Mi sus4, Do maj7 et Sol add9 tiennent deux mesures, Ré sus2 et La sus2 une seule ; au retour du Mi sus4, la batterie passe en doom et le mur tient quatre mesures. Pour improviser : Mi éolien du début à la fin, c'est-à-dire les notes de Sol majeur.",
+chords:[{name:"Esus4",beats:8,voicing:"x-7-9-9-10-7",scale:"E:5"},
+{name:"Cmaj7",beats:8,voicing:"x-3-5-4-5-x",scale:"C:3"},
+{name:"Gadd9",beats:8,voicing:"x-x-5-4-3-5",scale:"G:0"},
+{name:"Dsus2",beats:4,voicing:"x-5-7-7-5-x",scale:"D:4"},
+{name:"Asus2",beats:4,voicing:"x-x-7-9-10-7",scale:"A:1"},
+{name:"Esus4",beats:16,groove:"doom",voicing:"x-7-9-9-10-7",scale:"E:5"}]},   // v884 : zéro corde à vide (demande de Jérémy), leçon Modal   // v877 remix : la montée se resserre, le mur s'écroule
+{id:"prog-plini-cordes-vides-re", lecons:{"cordes-vides":1, metrique:2}, root:"D", scale:"D:0", sig:3.5,
+name:"Cordes à vide en Ré — dans la langue de Plini", tempo:92, groove:"prog7",
+desc:"Le geste : Ré sus2, Sol add9, Si mineur 9, La sus2, Ré add9, Mi mineur 9, en bas du manche avec des cordes à vide. À écouter : l'harmonie avance pendant que les cordes à vide restent en place ; on entend le mouvement sans grand changement de main. En sept croches, chaque accord tient deux mesures de 7/8, en arpèges ; le Ré sus2 final se pose sur une seule mesure de 4/4 : la croche retrouvée sert d'atterrissage. Pour improviser : Ré ionien du début à la fin.",
+chords:[{name:"Dsus2",beats:7,voicing:"x-x-0-2-3-0",scale:"D:0"},
+{name:"Gadd9",beats:7,voicing:"3-x-0-2-0-x",scale:"G:3"},
+{name:"Bm9",beats:7,voicing:"x-2-0-2-2-2",scale:"B:5"},
+{name:"Asus2",beats:7,voicing:"x-0-2-2-0-0",scale:"A:4"},
+{name:"Dadd9",beats:7,voicing:"x-x-0-2-5-2",scale:"D:0"},
+{name:"Em9",beats:7,voicing:"0-2-0-0-0-2",scale:"E:1"},
+{name:"Dsus2",beats:4,sig:4,groove:"atmos",voicing:"x-x-0-2-3-0",scale:"D:0"}]},   // v878 remix : 7/8 en arpèges, atterrissage en 4/4
 {id:"prog-la-bemol-9", lecons:{harmonique:3, modal:4, couleurs:3, metrique:2, exotiques:2}, root:"C", sig:4.5, scale:"C:0",
 name:"Le Lab qui change de statut — 9/8", tempo:92, groove:"prog9",
 desc:"Le geste : Do maj7 deux fois avec le même doigté, puis Fa mineur maj7 et Sol 7b9 sans fondamentale, en neuf croches. À écouter : une seule note à suivre, le Lab : absent, puis dans la gamme, puis dans l'accord comme tierce, puis comme b9 de la dominante. Pour improviser : Do ionien, Do majeur harmonique, Fa mineur mélodique, Sol phrygien dominant ; une gamme par accord.",
@@ -4478,24 +4515,24 @@ chords:[{name:"A",beats:8,voicing:"x-0-2-2-2-0",scale:"A:0"},
 {name:"D",beats:8,voicing:"x-x-0-2-3-2",scale:"A:0"},
 {name:"A",beats:8,voicing:"x-0-2-2-2-0",scale:"A:harmonicMajor:0"},
 {name:"Dm",beats:8,voicing:"x-x-0-2-3-1",scale:"A:harmonicMajor:0"}]},
-{id:"prog-brosh-fa-immobile", lecons:{exotiques:2, immobile:2}, root:"E", sig:4, scale:"E:harmonicMinor:4",
-name:"Le Fa qui ne bouge pas — dans la langue de Nili Brosh", tempo:88, groove:"rock",
-desc:"Le geste : un Fa tenu sur la corde de Mi aiguë, case 1, sous les quatre accords : Mi 7b9, Fa, La mineur b6, Ré mineur ; le reste de la main change autour de lui. À écouter : ce Fa change de rôle à chaque accord : b9 du Mi 7, fondamentale du Fa, sixte bémol du La mineur, tierce du Ré mineur. La seconde mineure devient une note pivot. Pour improviser : Mi phrygien dominant sur le Mi 7b9, puis les notes de Do majeur ; une seule note change, le Sol# devient Sol.",
-chords:[{name:"E7b9",beats:8,voicing:"0-2-0-1-0-1",scale:"E:harmonicMinor:4"},
-{name:"F",beats:8,voicing:"x-x-3-2-1-1",scale:"F:3"},
-{name:"Amb6",beats:8,voicing:"x-0-2-2-1-1",scale:"A:5"},
-{name:"Dm",beats:8,voicing:"x-x-0-2-3-1",scale:"D:1"}]},
+{id:"prog-brosh-fa-immobile", lecons:{exotiques:2, immobile:2, metrique:2}, root:"E", sig:4.5, scale:"E:harmonicMinor:4",
+name:"Le Fa qui ne bouge pas — dans la langue de Nili Brosh", tempo:88, groove:"prog9b",
+desc:"Le geste : un Fa tenu sur la corde de Mi aiguë, case 1, sous les quatre accords : Mi 7b9, Fa, La mineur b6, Ré mineur ; le reste de la main change autour de lui. À écouter : ce Fa change de rôle à chaque accord : b9 du Mi 7, fondamentale du Fa, sixte bémol du La mineur, tierce du Ré mineur. La seconde mineure devient une note pivot. En 9/8, comptés 2+2+2+3, chaque accord tient deux mesures ; le Mi 7b9 frappe en galop, puis le Fa tenu reste immobile pendant que la mesure boite. Pour improviser : Mi phrygien dominant sur le Mi 7b9, puis les notes de Do majeur ; une seule note change, le Sol# devient Sol.",
+chords:[{name:"E7b9",beats:9,groove:"gallop",voicing:"0-2-0-1-0-1",scale:"E:harmonicMinor:4"},
+{name:"F",beats:9,voicing:"x-x-3-2-1-1",scale:"F:3"},
+{name:"Amb6",beats:9,voicing:"x-0-2-2-1-1",scale:"A:5"},
+{name:"Dm",beats:9,voicing:"x-x-0-2-3-1",scale:"D:1"}]},   // v879 remix : 9/8 boiteux, galop sur le Mi 7b9
 {id:"prog-brosh-demiton", lecons:{exotiques:3, "cordes-vides":2}, root:"E", sig:4, scale:"E:harmonicMinor:4",
 name:"Tout monte d'une case, sauf la corde de La — dans la langue de Nili Brosh", tempo:84, groove:"cinema",
-desc:"Le geste : Mi, Fa maj7 et La mineur en position ouverte, puis la même main monte d'une case : Fa, Solb maj7, Sib mineur maj7. À écouter : dans Mi phrygien dominant, cinq cordes à vide sonnent juste ; après la montée d'un demi-ton, il n'en reste qu'une, la corde de La, qui passe à la basse sous le Sib mineur maj7. Les autres doivent être frettées case 1. Pour improviser : Mi phrygien dominant, puis Fa phrygien dominant, la même gamme une case plus haut.",
+desc:"Le geste : Mi, Fa maj7 et La mineur en position ouverte, puis la même main monte d'une case : Fa, Solb maj7, Sib mineur maj7. À écouter : dans Mi phrygien dominant, cinq cordes à vide sonnent juste ; après la montée d'un demi-ton, il n'en reste qu'une, la corde de La, qui passe à la basse sous le Sib mineur maj7. Les autres doivent être frettées case 1. En cinéma, les quatre accords ouverts durent une mesure chacun ; la montée d'une case arrive une croche en avance, en rock, et le Fa final tient deux mesures. Pour improviser : Mi phrygien dominant, puis Fa phrygien dominant, la même gamme une case plus haut.",
 chords:[{name:"E",beats:4,voicing:"0-2-2-1-0-0",scale:"E:harmonicMinor:4"},
 {name:"Fmaj7",beats:4,voicing:"x-x-3-2-1-0",scale:"E:harmonicMinor:4"},
 {name:"Am",beats:4,voicing:"x-0-2-2-1-0",scale:"E:harmonicMinor:4"},
 {name:"E",beats:4,voicing:"0-2-2-1-0-0",scale:"E:harmonicMinor:4"},
-{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"F:harmonicMinor:4"},
-{name:"Gbmaj7",beats:4,voicing:"x-x-4-3-2-1",scale:"F:harmonicMinor:4"},
-{name:"Bbm(maj7)",beats:4,voicing:"x-0-3-3-2-1",scale:"F:harmonicMinor:4"},
-{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"F:harmonicMinor:4"}]},
+{name:"F",beats:4,decale:-0.5,groove:"rock",voicing:"1-3-3-2-1-1",scale:"F:harmonicMinor:4"},
+{name:"Gbmaj7",beats:4,groove:"rock",voicing:"x-x-4-3-2-1",scale:"F:harmonicMinor:4"},
+{name:"Bbm(maj7)",beats:4,groove:"rock",voicing:"x-0-3-3-2-1",scale:"F:harmonicMinor:4"},
+{name:"F",beats:8,groove:"rock",voicing:"1-3-3-2-1-1",scale:"F:harmonicMinor:4"}]},   // v885 remix : le Mi ouvert flotte, la montée d'une case entre en rock
 {id:"prog-brosh-sept-huit", lecons:{metrique:2, exotiques:2}, root:"E", sig:3.5, scale:"E:harmonicMinor:4",
 name:"Le changement sur le groupe de trois — dans la langue de Nili Brosh", tempo:104, groove:"prog7",
 desc:"Le geste : un 7/8 compté 2+2+3 ; Mi majeur ouvert sur les deux premiers groupes, et l'accord change sur le groupe de trois : Fa en barré case 1, puis Ré mineur. À écouter : le changement tombe toujours sur le temps long ; à la dernière mesure, le Ré mineur prend les deux premiers groupes et c'est le Mi qui arrive sur le groupe de trois, en avance sur la mesure suivante. Pour improviser : Mi phrygien dominant du début à la fin ; appuie la note de l'accord qui arrive sur le groupe de trois.",
@@ -4547,15 +4584,50 @@ chords:[{name:"Am",beats:4,voicing:"x-0-2-2-1-0",scale:"A:5"},
                 {name:"Em",beats:4,voicing:"0-2-2-0-0-0",scale:"E:1",feel:"laid"},{name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"E:1",feel:"laid"},{name:"Em",beats:4,voicing:"0-2-2-0-0-0",scale:"E:1",feel:"laid"},{name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"E:1",feel:"laid"}]},
       // v840 — Jakub Zytecki : le Mi aigu à vide ne bouge pas ; la corde de Si monte vers
       // lui (seconde majeure, seconde mineure, unisson) pendant que la basse descend.
-      {id:"prog-zytecki-mi-vide", lecons:{frottements:2, "cordes-vides":2}, root:"E", sig:4, scale:"C:3",
-        name:"Le Mi à vide et la note qui respire — dans la langue de Jakub Zytecki", tempo:74, groove:"cinema",
-        desc:"Le geste : Do add9, Si add11, La sus2, Si add11, avec la corde de Mi aiguë à vide sous les quatre accords. La basse descend Do, Si, La pendant que la corde de Si monte : Ré, Ré#, puis Mi, à l'unisson de la corde à vide. À écouter : la seconde Ré-Mi est douce, la seconde Ré#-Mi frotte, et l'unisson scintille comme une douze-cordes. Le frottement n'est pas une fausse note, c'est la couleur. Pour improviser : les notes de Sol majeur, et Mi mineur harmonique sur le Si add11 : le Ré devient Ré#.",
-        chords:[{name:"Cadd9",beats:8,voicing:"x-3-2-0-3-0",scale:"C:3"},
-                {name:"Badd11",beats:8,voicing:"x-2-4-4-4-0",scale:"B:harmonicMinor:4"},
-                {name:"Asus2",beats:8,voicing:"x-0-2-4-5-0",scale:"A:1"},
-                {name:"Badd11",beats:8,voicing:"x-2-4-4-4-0",scale:"B:harmonicMinor:4"}]}
+      {id:"prog-zytecki-mi-vide", lecons:{frottements:2, "cordes-vides":2}, root:"E", sig:3, scale:"C:3",
+        name:"Le Mi à vide et la note qui respire — dans la langue de Jakub Zytecki", tempo:74, groove:"prog6",
+        desc:"Le geste : Do add9, Si add11, La sus2, Si add11, avec la corde de Mi aiguë à vide sous les quatre accords. La basse descend Do, Si, La pendant que la corde de Si monte : Ré, Ré#, puis Mi, à l'unisson de la corde à vide. À écouter : la seconde Ré-Mi est douce, la seconde Ré#-Mi frotte, et l'unisson scintille comme une douze-cordes. Le frottement n'est pas une fausse note, c'est la couleur. En 6/8, arpégé, chaque accord tient deux mesures, sauf le La sus2 : l'unisson avec la corde à vide tient quatre mesures, le temps de l'entendre scintiller. Pour improviser : les notes de Sol majeur, et Mi mineur harmonique sur le Si add11 : le Ré devient Ré#.",
+        chords:[{name:"Cadd9",beats:6,voicing:"x-3-2-0-3-0",scale:"C:3"},
+                {name:"Badd11",beats:6,voicing:"x-2-4-4-4-0",scale:"B:harmonicMinor:4"},
+                {name:"Asus2",beats:12,voicing:"x-0-2-4-5-0",scale:"A:1"},
+                {name:"Badd11",beats:6,voicing:"x-2-4-4-4-0",scale:"B:harmonicMinor:4"}]},
+      {id:"prog-sol-a-vide-la", lecons:{harmonique:2, melodique:2, "cordes-vides":2, metrique:2}, root:"A", sig:3.5, scale:"A:harmonicMajor:0",
+        name:"La — un doigt se lève, la corde de Sol sonne", tempo:96, groove:"prog7",
+        desc:"Le geste : La maj7 sur la corde de La à vide, puis le même accord en levant un seul doigt ; le Sol# disparaît de la corde de Sol, qui sonne à vide : c'est La 7. À écouter : entre La majeur harmonique et La majeur mélodique, une seule note change, Sol# devient Sol, pendant que la basse La et le Fa (b6) du Ré mineur ne bougent pas. En 7/8, le Sol# diminué tire vers La par la sensible ; quand la mesure s'ouvre en 4/4, le Fa augmenté puis le Sol majeur ramènent à La sans sensible, plus lâche. Pour improviser : La majeur harmonique tant que c'est en 7/8, puis La majeur mélodique (mixolydien b6) dès le passage en 4/4.",
+        chords:[{name:"Amaj7",beats:7,voicing:"x-0-2-1-2-0",scale:"A:harmonicMajor:0"},
+                {name:"Dm/A",beats:3.5,voicing:"x-0-0-2-3-1",scale:"A:harmonicMajor:0"},
+                {name:"G#dim7/A",beats:3.5,voicing:"x-0-0-1-3-1",scale:"A:harmonicMajor:0"},
+                {name:"Amaj7",beats:7,voicing:"x-0-2-1-2-0",scale:"A:harmonicMajor:0"},
+                {name:"A7",beats:8,sig:4,groove:"atmos",voicing:"x-0-2-0-2-0",scale:"A:melodicMinor:4"},
+                {name:"Dm/A",beats:4,sig:4,groove:"atmos",voicing:"x-0-0-2-3-1",scale:"A:melodicMinor:4"},
+                {name:"Faug/A",beats:4,sig:4,groove:"atmos",voicing:"x-0-3-2-2-1",scale:"A:melodicMinor:4"},
+                {name:"G/A",beats:4,sig:4,groove:"atmos",voicing:"x-0-5-4-3-3",scale:"A:melodicMinor:4"},
+                {name:"A7",beats:12,sig:4,groove:"atmos",voicing:"x-0-2-0-2-0",scale:"A:melodicMinor:4"}]},
+      {id:"prog-sol-a-vide-mi", lecons:{melodique:2, modal:2, "cordes-vides":2, metrique:2}, root:"E", sig:3.5, scale:"E:melodicMinor:4",
+        name:"Mi — l'index se lève, la tierce passe en mineur", tempo:96, groove:"prog7",
+        desc:"Le geste : Mi 9 sur le Mi grave à vide ; en levant l'index de la corde de Sol, le Sol# devient Sol à vide et l'accord devient Mi mineur 9. Même geste plus loin : Do maj7 #5 devient Do maj7. À écouter : entre Mi majeur mélodique et Mi éolien, une seule note change, Sol# devient Sol ; c'est la tierce, donc l'humeur bascule, pendant que le Do (b6) et le Ré (b7) restent. Dans La mineur add9, le Si à vide frotte un demi-ton sous le Do. Pour improviser : Mi majeur mélodique (mixolydien b6) tant que c'est en 7/8, puis Mi éolien dès le passage en 4/4.",
+        chords:[{name:"E9",beats:7,voicing:"0-2-0-1-0-2",scale:"E:melodicMinor:4"},
+                {name:"Amadd9/E",beats:3.5,voicing:"0-0-2-4-1-0",scale:"E:melodicMinor:4"},
+                {name:"Cmaj7#5/E",beats:3.5,voicing:"0-3-2-1-0-0",scale:"E:melodicMinor:4"},
+                {name:"E9",beats:7,voicing:"0-2-0-1-0-2",scale:"E:melodicMinor:4"},
+                {name:"Em9",beats:8,sig:4,groove:"atmos",voicing:"0-2-0-0-0-2",scale:"E:5"},
+                {name:"Amadd9/E",beats:4,sig:4,groove:"atmos",voicing:"0-0-2-4-1-0",scale:"E:5"},
+                {name:"Cmaj7/E",beats:4,sig:4,groove:"atmos",voicing:"0-3-2-0-0-0",scale:"E:5"},
+                {name:"D6/9/E",beats:4,sig:4,groove:"atmos",voicing:"0-5-4-2-0-0",scale:"E:5"},
+                {name:"Em9",beats:12,sig:4,groove:"atmos",voicing:"0-2-0-0-0-2",scale:"E:5"}]},
+      {id:"prog-si-a-vide-re", lecons:{melodique:2, modal:2, "cordes-vides":2, metrique:2}, root:"D", sig:3.5, scale:"D:melodicMinor:4",
+        name:"Ré — un doigt se lève, la corde de Si sonne", tempo:96, groove:"prog7",
+        desc:"Le geste : Ré sur la corde de Ré à vide ; en levant l'annulaire de la corde de Si, le Si à vide sonne et l'accord devient Ré 6. À écouter : entre Ré majeur mélodique et Ré mixolydien, une seule note change, Sib devient Si. En 7/8, le Sib vit sur la corde de Sol, dans Sol mineur et Sib augmenté, et la corde de Si reste fermée ; en 4/4, le Si à vide ne se tait plus, sous Sol add9 puis sous Do maj7, où le Do frotte un demi-ton au-dessus de lui. Pour improviser : Ré majeur mélodique (mixolydien b6) tant que c'est en 7/8, puis Ré mixolydien dès le passage en 4/4.",
+        chords:[{name:"D",beats:7,voicing:"x-x-0-2-3-2",scale:"D:melodicMinor:4"},
+                {name:"Gm/D",beats:3.5,voicing:"x-x-0-3-3-3",scale:"D:melodicMinor:4"},
+                {name:"Bbaug/D",beats:3.5,voicing:"x-x-0-3-3-2",scale:"D:melodicMinor:4"},
+                {name:"D",beats:7,voicing:"x-x-0-2-3-2",scale:"D:melodicMinor:4"},
+                {name:"D6",beats:8,sig:4,groove:"atmos",voicing:"x-x-0-2-0-2",scale:"D:4"},
+                {name:"Gadd9/D",beats:4,sig:4,groove:"atmos",voicing:"x-x-0-2-0-3",scale:"D:4"},
+                {name:"Cmaj7/D",beats:4,sig:4,groove:"atmos",voicing:"x-x-0-5-0-3",scale:"D:4"},
+                {name:"D6",beats:12,sig:4,groove:"atmos",voicing:"x-x-0-2-0-2",scale:"D:4"}]}
 
-]},
+]},   // v886 remix : 6/8 arpégé, l'unisson tient le double
 { id:"bossa", label:"🌴 Bossa", groove:"bossa",
 grids:[
 {id:"bossa-mib", lecons:{cadences:2, melodique:2}, root:"D#", scale:"D#:0", name:"Bossa en Mib", tempo:132, groove:"bossa",
@@ -4712,7 +4784,19 @@ chords:[{name:"Dm9",beats:8,voicing:"x-5-3-5-5-x",scale:"D:1"},
 {name:"A13",beats:4,voicing:"x-0-2-0-2-2",scale:"A:4"},
 {name:"Gm6",beats:4,voicing:"3-x-2-3-3-x",scale:"G:melodicMinor:0"},
 {name:"Bb13",beats:4,voicing:"6-x-6-7-8-x",scale:"A#:4"},
-{name:"A7b9",beats:4,voicing:"5-x-5-6-5-6",scale:"A:harmonicMinor:4"}]}]},
+{name:"A7b9",beats:4,voicing:"5-x-5-6-5-6",scale:"A:harmonicMinor:4"}]},
+// v897 — mixolydien b6 : le V de La mineur, Fa# puis Fa ; v898 : ii-V-i, deux moitiés de 8 mesures, le Mi plus long ; v899 : doigtés simplifiés (Mi 9(b13), Si m7b5, Mi 7(b9,b13))
+{id:"bossa-v-deux-visages", lecons:{melodique:2, harmonique:2, cadences:2, dominantes:2}, root:"A", scale:"A:melodicMinor:0", name:"Le V à deux visages — Fa# ou Fa", tempo:112, groove:"bossa",
+desc:"Le geste : un ii-V-i de bossa mineure en position ouverte, et une note du haut qui ne bouge pas, case 2 sur la corde de Mi aiguë : le Fa#, sur La mineur 6, Si mineur 7 et Mi 9(b13). Il est la sixte de La, la quinte de Si, la neuvième de Mi. Sur le Mi, l'index couche la case 1 sur les cordes de Sol et de Si, le majeur garde le Fa# et le pouce joue le Mi grave à vide. Au bout de huit mesures, le Fa# recule d'une case : tout passe au Fa, en La mineur b6, Si m7b5 et Mi 7(b9,b13). Le Si m7b5 ne prend que deux doigts, sur les cordes de Sol et de Mi aiguë ; le Mi 7(b9,b13) n'est plus qu'un petit barré case 1 sur les trois cordes aiguës. La grille finit sur le Mi, et à la reprise le Fa remonte en Fa#. À écouter : le même ii-V, deux visages. Avec le Fa#, la cadence est claire, un peu suspendue ; avec le Fa, elle devient sombre et espagnole. Pour improviser : sur le Mi, Mi mixolydien b6 dans la première moitié, ce sont les notes du La mineur mélodique ; Mi phrygien dominant dans la seconde, les notes du La mineur harmonique. Une seule note change : Fa# devient Fa.",
+chords:[{name:"Am6",beats:8,voicing:"x-0-2-2-1-2",scale:"A:melodicMinor:0"},
+{name:"Bm7",beats:4,voicing:"x-2-0-2-0-2",scale:"B:melodicMinor:1"},
+{name:"E9(b13)",beats:12,voicing:"0-x-0-1-1-2",scale:"E:melodicMinor:4"},
+{name:"Am6",beats:8,voicing:"x-0-2-2-1-2",scale:"A:melodicMinor:0"},
+{name:"Amb6",beats:8,voicing:"x-0-2-2-1-1",scale:"A:harmonicMinor:0"},
+{name:"Bm7b5",beats:4,voicing:"x-x-0-2-0-1",scale:"B:harmonicMinor:1"},
+{name:"E7(b9,b13)",beats:8,voicing:"0-x-0-1-1-1",scale:"E:harmonicMinor:4"},
+{name:"Amb6",beats:4,voicing:"x-0-2-2-1-1",scale:"A:harmonicMinor:0"},
+{name:"E7(b9,b13)",beats:8,voicing:"0-x-0-1-1-1",scale:"E:harmonicMinor:4"}]}]},
 { id:"jazz", label:"🎷 Jazz", groove:"jazz",
 grids:[
 {id:"jz-ligne-qui-descend", lecons:{voicings:3, melodique:2}, root:"C", scale:"C:0",
@@ -5034,15 +5118,15 @@ chords:[{name:"Cmaj7",beats:8,voicing:"x-3-2-0-0-0",scale:"C:0"},
 {id:"jz-diminue-quatre-sorties", root:"C", scale:"C:0", lecons:{immobile:4, diminue:3, cadences:3, modal:4},
 name:"Un diminué, quatre sorties",
 tempo:100, groove:"jazz",
-desc:"Le geste : le même Si diminué revient quatre fois et mène chaque fois ailleurs : Do maj7, Mib maj7, Fa# maj7, La maj7. À écouter : chaque note du diminué, Si, Ré, Fa et Lab, peut monter d'un demi-ton vers une tonique ; quatre sorties, à une tierce mineure d'écart. Pour improviser : la gamme diminuée sur le Si diminué, puis l'ionien de chaque arrivée.",
-chords:[{name:"Bdim7",beats:4,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
-{name:"Cmaj7",beats:4,voicing:"x-3-2-0-0-0",scale:"C:0"},
-{name:"Bdim7",beats:4,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
-{name:"Ebmaj7",beats:4,voicing:"x-6-8-7-8-x",scale:"D#:0"},
-{name:"Bdim7",beats:4,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
-{name:"F#maj7",beats:4,voicing:"2-x-3-3-2-x",scale:"F#:0"},
-{name:"Bdim7",beats:4,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
-{name:"Amaj7",beats:4,voicing:"x-0-2-1-2-0",scale:"A:0"}]},
+desc:"Le geste : le même Si diminué revient quatre fois et mène chaque fois ailleurs : Do maj7, Mib maj7, Fa# maj7, La maj7. À écouter : chaque note du diminué, Si, Ré, Fa et Lab, peut monter d'un demi-ton vers une tonique ; quatre sorties, à une tierce mineure d'écart. En jazz, le Si diminué ne dure que deux temps, comme un tremplin, et chaque arrivée tombe une croche en avance, poussée ; la dernière, La maj7, tient trois mesures et demie. Pour improviser : la gamme diminuée sur le Si diminué, puis l'ionien de chaque arrivée.",
+chords:[{name:"Bdim7",beats:2,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
+{name:"Cmaj7",beats:6,decale:-0.5,voicing:"x-3-2-0-0-0",scale:"C:0"},
+{name:"Bdim7",beats:2,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
+{name:"Ebmaj7",beats:6,decale:-0.5,voicing:"x-6-8-7-8-x",scale:"D#:0"},
+{name:"Bdim7",beats:2,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
+{name:"F#maj7",beats:6,decale:-0.5,voicing:"2-x-3-3-2-x",scale:"F#:0"},
+{name:"Bdim7",beats:2,voicing:"x-2-3-1-3-x",scale:"B:symmetric:1"},
+{name:"Amaj7",beats:14,decale:-0.5,voicing:"x-0-2-1-2-0",scale:"A:0"}]},   // v873 remix : tremplin, poussée, atterrissage
 {id:"jz-modulations-tierces-min", root:"C", scale:"C:0", lecons:{cadences:4, modal:4, voicings:3},
 name:"Trois tonalités par tierces mineures — Do, Mib, Fa#",
 tempo:126, groove:"jazz",
@@ -5627,12 +5711,12 @@ chords:[{name:"C",beats:8,voicing:"x-3-2-0-1-0",scale:"C:0"},
                 {name:"Eb7",beats:4,voicing:"x-6-5-6-4-x",scale:"D#:4"},
                 {name:"Dbmaj7#11",beats:8,decale:-0.5,voicing:"x-4-5-5-6-x",scale:"C#:3"}]},
 {id:"fus-howe-vamp-lam", lecons:{immobile:2, modal:1, "cordes-vides":2}, root:"A", scale:"A:1",
-name:"Vamp funk en La — le lit de Greg Howe", tempo:100, groove:"funk",
-desc:"Le geste : La mineur 9 et La mineur 7 sur la corde de La à vide, puis Ré 9, dans la même zone, cases 4 et 5. À écouter : presque pas de changement, tout le travail est pour le soliste ; le Ré 9 apporte le Fa#, la sixte dorienne. Pour improviser : La dorien du début à la fin.",
-chords:[{name:"Am9",beats:8,voicing:"x-0-5-4-5-x",scale:"A:1"},
-{name:"Am7",beats:8,voicing:"x-0-5-5-5-x",scale:"A:1"},
-{name:"Am9",beats:8,voicing:"x-0-5-4-5-x",scale:"A:1"},
-{name:"D9",beats:8,voicing:"x-5-4-5-5-x",scale:"A:1"}]}
+name:"Vamp funk en La — le lit de Greg Howe", tempo:100, groove:"funkJB",
+desc:"Le geste : La mineur 9 et La mineur 7 sur la corde de La à vide, puis Ré 9, dans la même zone, cases 4 et 5. À écouter : presque pas de changement, tout le travail est pour le soliste ; le Ré 9 apporte le Fa#, la sixte dorienne. En funk sur le premier temps, le La mineur 9 tient six temps et le La mineur 7 n'en dure que deux ; le Ré 9 aussi, et il tombe une croche en avance, comme un coup de relance vers le La. Pour improviser : La dorien du début à la fin.",
+chords:[{name:"Am9",beats:6,voicing:"x-0-5-4-5-x",scale:"A:1"},
+{name:"Am7",beats:2,voicing:"x-0-5-5-5-x",scale:"A:1"},
+{name:"Am9",beats:6,voicing:"x-0-5-4-5-x",scale:"A:1"},
+{name:"D9",beats:2,decale:-0.5,voicing:"x-5-4-5-5-x",scale:"A:1"}]}   // v887 remix : funk sur le 1, coups courts
 ,
 {id:"fus-govan-dorien-re", lecons:{modal:2}, root:"D", scale:"D:1", feel:"droit",
         name:"Ré dorien qui respire — le lit de Guthrie Govan",
@@ -5657,12 +5741,12 @@ chords:[{name:"Dm9",beats:8,voicing:"x-5-3-5-5-x",scale:"D:1"},
 {name:"Em7b5",beats:4,voicing:"x-x-2-0-3-0",scale:"E:6"},
 {name:"A7alt",beats:4,voicing:"x-4-3-0-2-1",scale:"A:melodicMinor:6"}]},
 {id:"fus-govan-dominante-tiroirs", lecons:{dominantes:4, melodique:3}, root:"A", scale:"A:4",
-name:"La dominante à tiroirs — dans la langue de Guthrie Govan", tempo:92, groove:"jazz",
-desc:"Le geste : La 7, La 7#11, La 7 altéré : un seul doigt bouge sur la corde de Si, case 5, puis 4, puis 6 ; puis Ré mineur 9. À écouter : trois couleurs sur une même dominante : mixolydien, lydien dominant quand le Ré devient Ré#, puis altéré. Pour improviser : La mixolydien, La lydien dominant, La altéré, puis Ré dorien.",
+name:"La dominante à tiroirs — dans la langue de Guthrie Govan", tempo:92, groove:"funkrock",
+desc:"Le geste : La 7, La 7#11, La 7 altéré : un seul doigt bouge sur la corde de Si, case 5, puis 4, puis 6 ; puis Ré mineur 9. À écouter : trois couleurs sur une même dominante : mixolydien, lydien dominant quand le Ré devient Ré#, puis altéré. En funk-rock, les tiroirs se resserrent : deux mesures sur le La 7, une sur le 7#11, une sur l'altéré ; le Ré mineur 9 arrive une croche en avance, puis se pose derrière le temps pendant quatre mesures. Pour improviser : La mixolydien, La lydien dominant, La altéré, puis Ré dorien.",
 chords:[{name:"A7",beats:8,voicing:"5-x-5-6-5-x",scale:"A:4"},
-{name:"A7#11",beats:8,voicing:"5-x-5-6-4-x",scale:"A:melodicMinor:3"},
-{name:"A7alt",beats:8,voicing:"5-x-5-6-6-x",scale:"A:melodicMinor:6"},
-{name:"Dm9",beats:8,voicing:"x-8-7-5-5-x",scale:"D:1"}]},
+{name:"A7#11",beats:4,voicing:"5-x-5-6-4-x",scale:"A:melodicMinor:3"},
+{name:"A7alt",beats:4,voicing:"5-x-5-6-6-x",scale:"A:melodicMinor:6"},
+{name:"Dm9",beats:16,decale:-0.5,feel:"laid",voicing:"x-8-7-5-5-x",scale:"D:1"}]},   // v881 remix : les tiroirs se resserrent, la résolution traîne
 {id:"fus-gardiner-neosoul-re", lecons:{lydien:2}, root:"D", scale:"D:0",
 name:"Ré néo-soul — dans la langue de Jack Gardiner", tempo:78, groove:"funk",
 desc:"Le geste : sept accords tous diatoniques de Ré majeur, chacun avec une tension ajoutée ; plusieurs gardent des cordes à vide. À écouter : aucun emprunt, aucune surprise harmonique ; la couleur vient des neuvièmes, #11 et treizièmes. Pour improviser : les notes de Ré majeur du début à la fin, avec le mode de chaque degré.",
@@ -5673,16 +5757,16 @@ chords:[{name:"Dmaj9",beats:8,voicing:"x-5-4-6-5-x",scale:"D:0"},
 {name:"Em9",beats:4,voicing:"0-2-0-0-0-2",scale:"E:1"},
 {name:"A13",beats:8,voicing:"x-0-2-0-2-2",scale:"A:4"},
 {name:"Dmaj9",beats:8,voicing:"x-5-4-6-5-x",scale:"D:0"}]},
-{id:"fus-howe-majeur-mineur-mi", lecons:{modal:3, couleurs:2}, root:"E", scale:"E:4",
+{id:"fus-howe-majeur-mineur-mi", lecons:{modal:3, couleurs:2}, root:"E", scale:"E:4", feel:"pousse",
 name:"Le flou majeur/mineur en Mi — dans la langue de Greg Howe", tempo:104, groove:"funk",
-desc:"Le geste : Mi 9 puis Mi mineur 9, La 13 puis La mineur 9 ; un doigt descend d'une case, sur la corde de Ré pour le Mi, sur la corde de Sol pour le La. Sol 13 et Ré 9 ramènent au Mi 9. À écouter : le même accord, une fois majeur, une fois mineur ; la tierce qui bouge fait tout. Pour improviser : Mi mixolydien puis Mi dorien, le Sol# devient Sol ; La mixolydien puis La dorien, le Do# devient Do.",
-chords:[{name:"E9",beats:8,voicing:"x-7-6-7-7-x",scale:"E:4"},
-{name:"Em9",beats:8,voicing:"x-7-5-7-7-x",scale:"E:1"},
-{name:"A13",beats:8,voicing:"x-0-5-6-7-x",scale:"A:4"},
-{name:"Am9",beats:8,voicing:"x-0-5-5-5-7",scale:"A:1"},
-{name:"G13",beats:8,voicing:"3-x-3-4-5-x",scale:"G:4"},
-{name:"D9",beats:8,voicing:"x-5-4-5-5-x",scale:"D:4"},
-{name:"E9",beats:8,voicing:"x-7-6-7-7-x",scale:"E:4"}]},
+desc:"Le geste : Mi 9 puis Mi mineur 9, La 13 puis La mineur 9 ; un doigt descend d'une case, sur la corde de Ré pour le Mi, sur la corde de Sol pour le La. Sol 13 et Ré 9 ramènent au Mi 9. À écouter : le même accord, une fois majeur, une fois mineur ; la tierce qui bouge fait tout. En funk, joué devant le temps, chaque paire tient deux mesures et le mineur arrive une croche en avance, comme si la tierce tombait plus tôt que prévu ; Sol 13 et Ré 9 restent à l'heure, puis le Mi 9 tient deux mesures. Pour improviser : Mi mixolydien puis Mi dorien, le Sol# devient Sol ; La mixolydien puis La dorien, le Do# devient Do.",
+chords:[{name:"E9",beats:4,voicing:"x-7-6-7-7-x",scale:"E:4"},
+{name:"Em9",beats:4,decale:-0.5,voicing:"x-7-5-7-7-x",scale:"E:1"},
+{name:"A13",beats:4,voicing:"x-0-5-6-7-x",scale:"A:4"},
+{name:"Am9",beats:4,decale:-0.5,voicing:"x-0-5-5-5-7",scale:"A:1"},
+{name:"G13",beats:4,voicing:"3-x-3-4-5-x",scale:"G:4"},
+{name:"D9",beats:4,voicing:"x-5-4-5-5-x",scale:"D:4"},
+{name:"E9",beats:8,voicing:"x-7-6-7-7-x",scale:"E:4"}]},   // v882 remix : le mineur tombe en avance, tout devant le temps
 {id:"fus-metheny-lydien-do", lecons:{lydien:3}, root:"C", scale:"C:3",
 name:"Quatre lydiens qui glissent — dans la langue de Pat Metheny", tempo:84, groove:"jazz",
 desc:"Le geste : Do, Mib, Fa et Sol maj7#11, puis La mineur add9, plusieurs formes avec cordes à vide. À écouter : aucune résolution, seulement des glissements de lumière ; chaque maj7#11 porte sa propre #11. Pour improviser : une gamme lydienne par accord, puis La dorien sur le La mineur add9.",
@@ -5745,23 +5829,23 @@ chords:[{name:"Cmaj7",beats:8,voicing:"x-3-5-4-5-x",scale:"C:0"},
       // joue jamais plus de trois notes.
       // ════════════════════════════════════════════════════════════════════
       {id:"fus-stern-sans-tierce-mi", lecons:{dominantes:2, couleurs:3, immobile:2}, root:"E", scale:"E:4",
-        name:"La tierce absente, puis doublée — dans la langue de Mike Stern", tempo:96, groove:"funk",
-        desc:"Le geste : Mi 7sus4 x-7-7-7-5-x puis Mi 7#9 x-7-6-7-8-x ; seules deux cordes bougent, en sens contraire : sur la corde de Ré la quarte descend d'une case vers la tierce, sur la corde de Si le Mi monte de trois cases vers le #9. À écouter : la tierce absente, puis doublée, Sol# et Sol dans le même accord. Pour improviser : Mi mixolydien sur le sus, Mi altéré sur le #9 ; le Sol# existe dans les deux.",
+        name:"La tierce absente, puis doublée — dans la langue de Mike Stern", tempo:96, groove:"funkrock",
+        desc:"Le geste : Mi 7sus4 x-7-7-7-5-x puis Mi 7#9 x-7-6-7-8-x ; seules deux cordes bougent, en sens contraire : sur la corde de Ré la quarte descend d'une case vers la tierce, sur la corde de Si le Mi monte de trois cases vers le #9. À écouter : la tierce absente, puis doublée, Sol# et Sol dans le même accord. En funk-rock, le Mi 7#9 tombe comme un coup de médiator, une croche en avance : la première fois il ne dure que deux temps, la seconde il tient deux mesures et demie pour laisser sonner la tierce doublée. Pour improviser : Mi mixolydien sur le sus, Mi altéré sur le #9 ; le Sol# existe dans les deux.",
         chords:[
-          {name:"E7sus4",beats:8,voicing:"x-7-7-7-5-x",scale:"E:4"},
-          {name:"E7#9",beats:8,voicing:"x-7-6-7-8-x",scale:"E:melodicMinor:6"},
-          {name:"E7sus4",beats:8,voicing:"x-7-7-7-5-x",scale:"E:4"},
-          {name:"E7#9",beats:8,voicing:"x-7-6-7-8-x",scale:"E:melodicMinor:6"}
-        ]},
+          {name:"E7sus4",beats:6,voicing:"x-7-7-7-5-x",scale:"E:4"},
+          {name:"E7#9",beats:2,decale:-0.5,voicing:"x-7-6-7-8-x",scale:"E:melodicMinor:6"},
+          {name:"E7sus4",beats:6,voicing:"x-7-7-7-5-x",scale:"E:4"},
+          {name:"E7#9",beats:10,decale:-0.5,voicing:"x-7-6-7-8-x",scale:"E:melodicMinor:6"}
+        ]},   // v883 remix : le #9 en coup de médiator
       {id:"fus-stern-trois-notes-lam", lecons:{voicings:2, cadences:2, basses:1}, root:"A", scale:"A:1",
         name:"Trois notes suffisent — dans la langue de Mike Stern", tempo:112, groove:"jazz",
-        desc:"Le geste : quatre accords de trois notes, fondamentale, tierce et septième, entre les cases 2 et 5 : La mineur 7, Ré 7, Sol maj7, Do maj7. À écouter : d'un accord au suivant, une note ne bouge pas et les autres descendent d'un ou deux demi-tons ; rien à décorer. Pour improviser : les notes de Sol majeur, sauf sur le Do maj7 où le Fa# devient Fa.",
+        desc:"Le geste : quatre accords de trois notes, fondamentale, tierce et septième, entre les cases 2 et 5 : La mineur 7, Ré 7, Sol maj7, Do maj7. À écouter : d'un accord au suivant, une note ne bouge pas et les autres descendent d'un ou deux demi-tons ; rien à décorer. En jazz, le ii-V se serre dans une seule mesure, deux temps chacun, comme en bebop ; le Sol maj7 tient deux mesures, le Do maj7 une. Pour improviser : les notes de Sol majeur, sauf sur le Do maj7 où le Fa# devient Fa.",
         chords:[
-          {name:"Am7",beats:8,voicing:"5-x-5-5-x-x",scale:"A:1"},
-          {name:"D7",beats:8,voicing:"x-5-4-5-x-x",scale:"D:4"},
+          {name:"Am7",beats:2,voicing:"5-x-5-5-x-x",scale:"A:1"},
+          {name:"D7",beats:2,voicing:"x-5-4-5-x-x",scale:"D:4"},
           {name:"Gmaj7",beats:8,voicing:"3-x-4-4-x-x",scale:"G:0"},
-          {name:"Cmaj7",beats:8,voicing:"x-3-2-4-x-x",scale:"C:0"}
-        ]},
+          {name:"Cmaj7",beats:4,voicing:"x-3-2-4-x-x",scale:"C:0"}
+        ]},   // v888 remix : le ii-V bebop dans une mesure
       // ════════════════════════════════════════════════════════════════════
       // v808 — LE SHELL ET LE SILLET. Suite directe de la v807 : même
       // discipline à trois notes, mais l'une des trois est une corde à vide,
@@ -5835,23 +5919,23 @@ chords:[{name:"Dm9",beats:8,voicing:"x-5-3-5-5-x",scale:"D:1"},
                 {name:"B13",beats:4,voicing:"7-x-7-8-9-x",scale:"B:4"},
                 {name:"B7b13",beats:4,voicing:"7-x-7-8-8-x",scale:"B:harmonicMinor:4"}]},
       // Martin Miller : une triade immobile, la basse seule décide du mode.
-      {id:"fus-miller-triade", lecons:{immobile:2, modal:2, basses:2}, root:"D", scale:"D:0",
+      {id:"fus-miller-triade", lecons:{immobile:2, modal:2, basses:2}, root:"D", scale:"D:0", feel:"soul70",
         name:"Une triade, quatre basses — dans la langue de Martin Miller", tempo:96, groove:"funkrock",
-        desc:"Le geste : la main garde la triade de Ré sur les trois cordes aiguës, index en petite barre case 2, annulaire case 3 sur la corde de Si ; seule la basse change : Sol au pouce, Mi à vide, Do case 3 sur la corde de La, puis Ré à vide. À écouter : les mêmes trois notes, La, Ré et Fa#, prennent une couleur différente sur chaque basse : lydien, dorien, lydien encore, puis la maison. Pour improviser : les notes de Ré majeur ; sur le Ré/Do, Do lydien : le Do# devient Do.",
+        desc:"Le geste : la main garde la triade de Ré sur les trois cordes aiguës, index en petite barre case 2, annulaire case 3 sur la corde de Si ; seule la basse change : Sol au pouce, Mi à vide, Do case 3 sur la corde de La, puis Ré à vide. À écouter : les mêmes trois notes, La, Ré et Fa#, prennent une couleur différente sur chaque basse : lydien, dorien, lydien encore, puis la maison. En funk-rock, la basse joue devant et la main derrière : c'est la basse qui mène. Ré/Sol et Ré tiennent deux mesures, Ré/Mi et Ré/Do une seule. Pour improviser : les notes de Ré majeur ; sur le Ré/Do, Do lydien : le Do# devient Do.",
         chords:[{name:"D/G",beats:8,voicing:"3-x-x-2-3-2",scale:"G:3"},
-                {name:"D/E",beats:8,voicing:"0-x-x-2-3-2",scale:"E:1"},
-                {name:"D/C",beats:8,voicing:"x-3-x-2-3-2",scale:"C:3"},
-                {name:"D",beats:8,voicing:"x-x-0-2-3-2",scale:"D:0"}]},
+                {name:"D/E",beats:4,voicing:"0-x-x-2-3-2",scale:"E:1"},
+                {name:"D/C",beats:4,voicing:"x-3-x-2-3-2",scale:"C:3"},
+                {name:"D",beats:8,voicing:"x-x-0-2-3-2",scale:"D:0"}]},   // v889 remix : la basse devant, la main derrière
       // v843 — Max Ostro : pentatonique et superposition. La boîte de Mi mineur ne bouge
       // pas (même gamme sur les quatre accords : le manche reste identique), et le Ré case 3
       // sur la corde de Si reste au dessus des quatre voicings : b7, 9, 11, puis #9.
-      {id:"fus-ostro-boite", lecons:{pentatoniques:1, immobile:2, couleurs:2}, root:"E", scale:"E:pentatonic:4",
-        name:"Une seule boîte, quatre couleurs — dans la langue de Max Ostro", tempo:96, groove:"funkrock",
-        desc:"Le geste : Mi mineur 7, Do maj9, La 9sus4, Si 7#9 ; la case 3 de la corde de Si reste tenue pendant les quatre accords : c'est le Ré, la note du dessus. À écouter : ce même Ré est septième sur le Mi mineur, neuvième sur le Do, onzième sur le La, puis neuvième augmentée sur le Si, le frottement à la Hendrix. Pour improviser : une seule boîte de Mi mineur pentatonique, Mi, Sol, La, Si, Ré, sans jamais la quitter ; rejoue la même phrase sur chaque accord et écoute l'accord la repeindre.",
+      {id:"fus-ostro-boite", lecons:{pentatoniques:1, immobile:2, couleurs:2}, root:"E", scale:"E:pentatonic:4", feel:"laid",
+        name:"Une seule boîte, quatre couleurs — dans la langue de Max Ostro", tempo:96, groove:"rock",
+        desc:"Le geste : Mi mineur 7, Do maj9, La 9sus4, Si 7#9 ; la case 3 de la corde de Si reste tenue pendant les quatre accords : c'est le Ré, la note du dessus. À écouter : ce même Ré est septième sur le Mi mineur, neuvième sur le Do, onzième sur le La, puis neuvième augmentée sur le Si, le frottement à la Hendrix. En rock, posé derrière le temps, Mi mineur 7 et Do maj9 tiennent deux mesures ; La 9sus4 et Si 7#9 n'ont qu'une mesure chacun, et le Si 7#9 renvoie vite au Mi. Pour improviser : une seule boîte de Mi mineur pentatonique, Mi, Sol, La, Si, Ré, sans jamais la quitter ; rejoue la même phrase sur chaque accord et écoute l'accord la repeindre.",
         chords:[{name:"Em7",beats:8,voicing:"0-2-2-0-3-x",scale:"E:pentatonic:4"},
                 {name:"Cmaj9",beats:8,voicing:"x-3-2-4-3-x",scale:"E:pentatonic:4"},
-                {name:"A9sus4",beats:8,voicing:"5-x-5-4-3-x",scale:"E:pentatonic:4"},
-                {name:"B7#9",beats:8,voicing:"x-2-1-2-3-x",scale:"E:pentatonic:4"}]},
+                {name:"A9sus4",beats:4,voicing:"5-x-5-4-3-x",scale:"E:pentatonic:4"},
+                {name:"B7#9",beats:4,voicing:"x-2-1-2-3-x",scale:"E:pentatonic:4"}]},   // v890 remix : rock derrière le temps, retour qui se resserre
       // v847 — PENTATONIQUES DU MINEUR MÉLODIQUE, autour d'une dominante. Maison : Mi 7
       // (mixolydien, penta Mi Fa# Sol# Si Ré). Détours : Si→La# (lydien dominant), puis
       // Fa#→Sol (altéré) ; au retour Si→Do (mixolydien b6), qui se résout sur La mineur maj7,
@@ -8300,7 +8384,21 @@ const evs=_soloGenerateBar(ch,gr,barBeats,chordIdx,barDansAccord),relBase=barSta
 evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);try{playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel);}catch(err){}const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
 }
 function _soloReset(){_soloLastMidi=72;_soloPhraseSeed=(Math.random()*0xffffffff)>>>0;_soloMotif=null;_soloMotifBar=0;}
+// v893 — renderGridChords découpée en sections nommées. Comportement identique (photographie jsdom des 234 grilles).
 function renderGridChords(gr){
+_rgcSelecteurVamp(gr);
+const _tona=_rgcCartesAccords(gr);
+const progBox=document.getElementById("progressionList");
+progBox.innerHTML="";
+const card=_rgcCarteProgression(gr,_tona);
+_rgcInterrupteurs(gr,card);
+_rgcAvis(gr,card);
+_rgcInstruments(gr,card);
+_rgcPompe(gr,card);
+progBox.appendChild(card);
+}
+// Sélecteur ◁ grille ▷ de la famille (caché s'il n'y a qu'une grille)
+function _rgcSelecteurVamp(gr){
 const lbl=document.getElementById("chordModeLabel");
 if(lbl){ lbl.textContent=""; lbl.style.display="none"; }
 let vampWrap=document.getElementById("vampSwitchWrap");
@@ -8338,6 +8436,9 @@ vampWrap.style.display="flex";
 } else if(vampWrap){
 vampWrap.style.display="none";   // un seul (ou zéro) vamp : pas de sélecteur
 }
+}
+// Cartes d'accords (diagrammes cliquables) ; renvoie la tonalité de la grille
+function _rgcCartesAccords(gr){
 const grid=document.getElementById("chordGrid");
 if(typeof _magicPentaHome==="function") _magicPentaHome(true); // sortir le panneau penta avant de vider
 grid.innerHTML="";
@@ -8375,8 +8476,10 @@ playMidiNotes(midis, chordSoundMode==="block"?"block":"sweep", "guitar");
 });
 grid.appendChild(card);
 });
-const progBox=document.getElementById("progressionList");
-progBox.innerHTML="";
+return _tona;
+}
+// Carte « Progression » : puces, Jouer / Stop, gamme en cours
+function _rgcCarteProgression(gr,_tona){
 const card=document.createElement("div");
 card.className="prog-card";
 const _paquets=[]; gr.chords.forEach((c,i)=>{
@@ -8424,6 +8527,10 @@ now.dataset.rest=restTxt;
 now.textContent=restTxt;
 card.appendChild(now);
 }
+return card;
+}
+// Interrupteurs : couches, solo, 1 mesure, Groupe, Arpège, Feel, Max
+function _rgcInterrupteurs(gr,card){
 const toggles=document.createElement("div");
 toggles.className="grid-toggles";
 const mk=(label,on,setter)=>{
@@ -8441,6 +8548,7 @@ toggles.appendChild(mk("Rythmique",()=>_gridGuitarOn,v=>_gridGuitarOn=v));
 toggles.appendChild(mk("Basse",()=>_gridBassOn,v=>_gridBassOn=v));
 toggles.appendChild(mk("Batterie",()=>_gridDrumsOn,v=>_gridDrumsOn=v));
 toggles.appendChild(mk("Nappe",()=>_gridNappeOn,v=>{ _gridNappeOn=v; _nappeLock=v; }));
+toggles.appendChild(mk("Phrase",()=>_gridPhraseOn,v=>{ _gridPhraseOn=v; if(!v) _phraseCouper(); }));   // v900 — phrase-guide
 toggles.appendChild(mk("Solo",()=>_gridSoloOn,v=>{ _gridSoloOn=v; if(v) _soloReset(); else _soloEffacerTraces(); }));
 (function(){
 const b=document.createElement("button");
@@ -8527,6 +8635,9 @@ if(_isElec){
 toggles.appendChild(mk("Max",()=>_gridDrive,v=>_gridDrive=v));
 }
 card.appendChild(toggles);
+}
+// Avis : étoiles, commentaire, export des notes
+function _rgcAvis(gr,card){
 const avis=document.createElement("div");
 avis.className="grid-toggles";
 const etoiles=document.createElement("div");
@@ -8578,6 +8689,9 @@ try{ if(navigator.clipboard) navigator.clipboard.writeText(zone.value).catch(()=
 });
 avis.appendChild(expBtn);
 card.appendChild(avis);
+}
+// Instruments et niveaux : voix rythmique, clavier, nappe, batterie, basse, drone, métronome
+function _rgcInstruments(gr,card){
 const instRow=document.createElement("div");
 instRow.className="grid-inst-row";
 instRow.style.cssText="display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap;";
@@ -8809,6 +8923,9 @@ instRow.appendChild(sautLigne2);
 instRow.appendChild(articBtn); instRow.appendChild(notesBtn);
 instRow.appendChild(niveauSel); instRow.appendChild(guitSel); instRow.appendChild(drumSel); instRow.appendChild(nappeSel); instRow.appendChild(basseSel); instRow.appendChild(metroBtn);
 card.appendChild(instRow);
+}
+// Styles de pompe manouche (familles en pompe seulement)
+function _rgcPompe(gr,card){
 if(gr.groove==="pompe" || (_currentFamily && _currentFamily.groove==="pompe")){
 const pompeRow=document.createElement("div");
 pompeRow.className="pompe-styles";
@@ -8828,7 +8945,6 @@ pompeRow.appendChild(b);
 card.appendChild(pompeRow);
 card.appendChild(tip);
 }
-progBox.appendChild(card);
 }
 const METRO_SONS=[["off","♩ Off"],["click","♩ Woodblock"],["bell","♩ Cloche"],
 ["beep","♩ Bip"],["snare","♩ Caisse"]];
@@ -10128,6 +10244,7 @@ if(!_gridPlayOn) return;
 document.querySelectorAll(".chord-card.grid-current").forEach(x=>x.classList.remove("grid-current"));
 const cc=_gridCarteDe(chord);
 if(cc) cc.classList.add("grid-current");
+if(typeof _paysageSuivre==="function") _paysageSuivre(cc);   // v905 : la vue Accords suit la lecture
 _gridAudibleIdx=chordIdx % gr.chords.length;   // point de reprise pour la pause
 _allumerPuce(_gridAudibleIdx);
 _fbArp=_fbArpDepuisAccord(chord);
@@ -10195,6 +10312,150 @@ derniere:derniere, prochainePc:_gbProchainePc(gr, chordIdx)});
         } finally { _decaleFin=null; }
     });
 }
+// v900 — PHRASE-GUIDE : une voix douce au-dessus de la grille, qui fait entendre la note qui change.
+// Données : gr.phrase = [[note, temps, durée], ...], temps comptés depuis le début de la grille (accords non décalés).
+// Chaque appel de _scheduleGridChord joue les notes qui commencent dans SA fenêtre nominale : la phrase suit la boucle et la reprise.
+var _gridPhraseOn=true;
+let _phraseMute=null, _phraseVoix=[], _phraseOnde=null;
+const _PHRASE_PC={C:0,"C#":1,D:2,"D#":3,E:4,F:5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11};
+function _phraseMidi(n){ const m=/^([A-G]#?)(-?\d)$/.exec(n); return m ? 12*(+m[2]+1)+_PHRASE_PC[m[1]] : null; }
+function _phraseBus(){
+if(_phraseMute) return _phraseMute;
+const ctx=audioCtx, out=_amBus().master;
+const lvl=ctx.createGain(); lvl.gain.value=0.42; lvl.connect(out);   // v904 : 0.6 → 0.42 (−30 %)
+_amGains.phrase=lvl;   // réglable : mix("phrase", 0.5)
+const d=ctx.createDelay(0.6); d.delayTime.value=0.24;
+const fb=ctx.createGain(); fb.gain.value=0.28;
+const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2500;
+const wet=ctx.createGain(); wet.gain.value=0.22;
+d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(wet); wet.connect(lvl);
+_phraseMute=ctx.createGain(); _phraseMute.gain.value=1;
+_phraseMute.connect(lvl); _phraseMute.connect(d);
+_phraseOnde=ctx.createPeriodicWave(new Float32Array([0,0,0,0,0]), new Float32Array([0,1,0.35,0.12,0.05]));
+return _phraseMute;
+}
+function _phraseNote(midi, t, dur, vel){
+const ctx=audioCtx, bus=_phraseBus(), f=440*Math.pow(2,(midi-69)/12);
+const o=ctx.createOscillator(); o.setPeriodicWave(_phraseOnde); o.frequency.setValueAtTime(f,t);
+const lfo=ctx.createOscillator(); lfo.frequency.value=5.2;
+const vib=ctx.createGain(); vib.gain.setValueAtTime(0,t);
+vib.gain.setValueAtTime(0,t+Math.min(0.25,dur*0.5)); vib.gain.linearRampToValueAtTime(f*0.004,t+Math.min(0.55,dur*0.8));
+lfo.connect(vib); vib.connect(o.frequency);
+const g=ctx.createGain(), rel=Math.min(0.08,dur*0.3);
+g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vel,t+0.035);
+g.gain.setTargetAtTime(vel*0.85,t+0.035,0.3);
+g.gain.setValueAtTime(vel*0.85,t+Math.max(0.04,dur-rel)); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+o.connect(g); g.connect(bus);
+o.start(t); lfo.start(t); o.stop(t+dur+0.02); lfo.stop(t+dur+0.02);
+const v={o:o,lfo:lfo,fin:t+dur}; _phraseVoix.push(v);
+o.onended=()=>{ _phraseVoix=_phraseVoix.filter(x=>x!==v); };
+}
+function _phraseDebutAccord(gr, chordIdx){
+const n=gr.chords.length, k=chordIdx%n; let s=0;
+for(let i=0;i<k;i++){ const c=gr.chords[i]; s+=_chordBeats(c,_chordSig(gr,c)); }
+return s;
+}
+function _phrasePlanifier(gr, chordIdx, startTime, chordBeats, beatSec){
+try{ _phrasePlanifier0(gr, chordIdx, startTime, chordBeats, beatSec); }catch(e){}   // la phrase ne doit jamais casser la grille
+}
+function _phrasePlanifier0(gr, chordIdx, startTime, chordBeats, beatSec){
+const s=_phraseDebutAccord(gr, chordIdx), bus=_phraseBus();
+if(bus.gain.value<0.5){ bus.gain.cancelScheduledValues(audioCtx.currentTime); bus.gain.setValueAtTime(1,audioCtx.currentTime); }
+_phraseDe(gr, Math.floor(chordIdx/Math.max(1,gr.chords.length))).forEach(([m,t,d])=>{
+if(t<s-1e-6 || t>=s+chordBeats-1e-6) return;
+try{ _phraseNote(m, startTime+(t-s)*beatSec, d*beatSec, 0.2); }catch(e){}
+});
+}
+function _phraseCouper(){
+if(!audioCtx) return;
+const t=audioCtx.currentTime;
+if(_phraseMute){ _phraseMute.gain.cancelScheduledValues(t); _phraseMute.gain.setValueAtTime(_phraseMute.gain.value,t); _phraseMute.gain.linearRampToValueAtTime(0.0001,t+0.03); }
+_phraseVoix.forEach(v=>{ try{ v.o.stop(t+0.04); v.lfo.stop(t+0.04); }catch(e){} });
+_phraseVoix=[];
+}
+// v901 — PHRASE CALCULÉE pour toutes les grilles (règle tirée des deux phrases validées, chapitres 1 et 4).
+// Note de chute de chaque accord, dans l'ordre :
+//   1. la note qui change de gamme dans la grille, si l'accord la contient ;
+//   2. sinon, sur l'accord de tonique : la fondamentale (réponse courte, deux notes avant) ;
+//   3. sinon, la note de l'accord qui a glissé depuis l'accord précédent (le plus petit pas ; tierce, puis septième) ;
+//   4. si rien n'a bougé : silence, la phrase respire.
+// Motif : les degrés +5, +4, +3 de la gamme au-dessus de la cible, puis la chute, tenue jusqu'à un quart de temps du suivant.
+// Accord de deux temps ou moins : la chute seule. Le motif entre un temps après l'arrivée AUDIBLE de l'accord (anticipations).
+const _phraseCache=new WeakMap();
+// v902 — quatre variantes, une par tour de grille, qui se répondent : 0 par le haut (la phrase validée), 1 par le bas en syncope,
+// 2 broderie en triolet, 3 à l'octave, entrée plus tardive. Puis le cycle recommence.
+function _phraseDe(gr, v){
+v=((v|0)%4+4)%4;
+if(gr.phrase) return gr.phrase.map(([n,t,d])=>[_phraseMidi(n),t,d]).filter(x=>x[0]!==null);
+if(!_phraseCache.has(gr)) _phraseCache.set(gr,[]);
+const c=_phraseCache.get(gr);
+if(!c[v]){ let r=[]; try{ r=_phraseCalcul(gr, v); }catch(e){ r=[]; } c[v]=r; }
+return c[v];
+}
+function _phraseGammePcs(gr,c){
+const sc=c.scale||gr.scale; if(!sc||!SCALES[sc.family]) return null;
+const md=SCALES[sc.family].modes[sc.idx]; if(!md) return null;
+const r=_PHRASE_PC[sc.root]; if(r===undefined) return null;
+return md.formula.map(x=>(r+x)%12);
+}
+function _phraseCalcul(gr, v){
+v=((v|0)%4+4)%4;
+const cs=gr.chords, n=cs.length; if(!n) return [];
+const tun=[...INSTRUMENTS[appState.instrument].tunings].reverse();
+let s=0;
+const T=cs.map(c=>{ const b=_chordBeats(c,_chordSig(gr,c)), a=s+(+(c.decale||0)); s+=b;
+const pcs=[...new Set(voicingToMidi(_parseVoicing(c.voicing),tun).map(m=>((m%12)+12)%12))];
+const p=kvParseChord(c.name);
+return {c, a, pcs, gam:_phraseGammePcs(gr,c), root:p?p.root:(pcs[0]||0)}; });
+const L=s; T.forEach((x,k)=>{ x.b=(k+1<n)?T[k+1].a:L+T[0].a; });
+const gams=T.map(x=>x.gam).filter(Boolean);
+const change=gams.length ? [...new Set(gams.flat())].filter(p=>!gams.every(g=>g.includes(p))) : [];
+const tonique=(gr.root && _PHRASE_PC[gr.root]!==undefined) ? _PHRASE_PC[gr.root] : T[0].root;
+const role=(x,p)=>{ const i=((p-x.root)%12+12)%12; return [3,4].includes(i)?0:[10,11].includes(i)?1:i===0?4:i===7?3:2; };
+const out=[];
+T.forEach((x,k)=>{
+if(!x.gam) return;
+const prev=T[(k-1+n)%n];
+let cible=null, reponse=false;
+const ch=x.pcs.filter(p=>change.includes(p) && x.gam.includes(p));
+if(ch.length){ ch.sort((p,q)=>(prev.pcs.includes(p)-prev.pcs.includes(q))||(role(x,p)-role(x,q))); cible=ch[0]; }
+else if(x.root===tonique && x.gam.includes(tonique)){ cible=tonique; reponse=true; }
+else {
+const parti=prev.pcs.filter(p=>!x.pcs.includes(p));
+const bouge=x.pcs.filter(p=>!prev.pcs.includes(p) && x.gam.includes(p));
+if(!bouge.length) return;
+const dist=p=>parti.length ? Math.min(...parti.map(q=>{ const d=Math.abs(p-q)%12; return Math.min(d,12-d); })) : 12;
+bouge.sort((p,q)=>(dist(p)-dist(q))||(role(x,p)-role(x,q))); cible=bouge[0];
+}
+const g=[...x.gam].sort((p,q)=>p-q), echelle=[];
+for(let m=48;m<=96;m++) if(g.includes(m%12)) echelle.push(m);
+const deg=(m,k)=>echelle[echelle.indexOf(m)+k];
+const haut=reponse?2:5;
+let m=null;
+for(let c=60;c<76;c++) if(c%12===cible && deg(c,haut)!==undefined && deg(c,haut)<=79) m=c;
+if(m===null) for(let c=60;c<76;c++) if(c%12===cible){ m=c; break; }
+if(m===null) return;
+const len=x.b-x.a;
+if(len<0.75) return;
+if(v===3){ if(m+12<=81) m+=12; else if(m-12>=55) m-=12; }
+if(len<=2){ out.push([m, x.a, Math.max(0.4,len-0.25)]); return; }
+const haut3=v===3 && deg(m,reponse?2:5)!==undefined && deg(m,reponse?2:5)<=81;
+const pas=v===2 ? 1/3 : 0.5, entree=v===1 ? 1.5 : v===3 ? 2 : 1;
+const motif=(v===0||haut3) ? (reponse ? [deg(m,2),deg(m,1)] : [deg(m,5),deg(m,4),deg(m,3)])
+  : v===2 ? [deg(m,1),deg(m,-1)]
+  : (reponse ? [deg(m,-2),deg(m,-1)] : [deg(m,-3),deg(m,-2),deg(m,-1)]);
+if(motif.some(q=>q===undefined||q<57)) motif.splice(0, motif.length, ...(reponse ? [deg(m,2),deg(m,1)] : [deg(m,5),deg(m,4),deg(m,3)]));   // gammes à cinq notes : par le bas descendrait trop
+const d0=x.a+Math.max(0,Math.min(entree,len-motif.length*pas-1));
+motif.forEach((q,i)=>{ if(q!==undefined) out.push([q, d0+i*pas, pas]); });
+const tc=d0+motif.length*pas, fin=Math.min(x.b-0.25, tc+8);
+// sensible tenue longtemps sur l'accord de tonique : elle se résout dans l'accord (Sol# … Si → La, chapitre 1)
+if(!reponse && x.root===tonique && cible===(tonique+11)%12 && fin-tc>4.5 && deg(m,2)!==undefined){
+out.push([m, tc, 3]); out.push([deg(m,2), tc+3.25, 0.7]); out.push([deg(m,1), tc+4, Math.max(0.4, fin-tc-4)]);
+return; }
+out.push([m, tc, Math.max(0.4, fin-tc)]);
+});
+return out.map(([m,t,d])=>[m,+t.toFixed(4),+d.toFixed(4)]);
+}
 function _scheduleGridChord(gr, chordIdx, startTime){
 startTime += _GRID_LEAD;
 const chord=gr.chords[chordIdx % gr.chords.length];
@@ -10203,6 +10464,7 @@ const beatSec=60/(backingBpm*tempoX);
 const sig=_chordSig(gr, chord);          // v582 : l'accord d'abord, la grille ensuite
 const chordBeats=_chordBeats(chord, sig);
 const chordDur=chordBeats*beatSec;
+if(_gridPhraseOn && gr) _phrasePlanifier(gr, chordIdx, startTime, chordBeats, beatSec);   // v900 — phrase-guide
 const voicingMidi=voicingToMidi(_parseVoicing(chord.voicing), [...INSTRUMENTS[appState.instrument].tunings].reverse());
 if(!voicingMidi.length) return chordDur;
 const bassMidi=(gr && gr.fondamentale==="nom")
@@ -10296,6 +10558,7 @@ function _gridScheduler(gr){
 function stopGridPlay(pause){
 _gridReprise = pause ? _gridAudibleIdx : null;
 _gridPlayOn=false;
+_phraseCouper();   // v900
 if(_gridSchedTimer){ clearInterval(_gridSchedTimer); _gridSchedTimer=null; }
 _gridPlayTimers.forEach(t=>clearTimeout(t)); _gridPlayTimers=[];
 document.querySelectorAll(".prog-chip.prog-current").forEach(x=>x.classList.remove("prog-current"));
@@ -12377,6 +12640,35 @@ document.addEventListener("click", e=>{
 const b=e.target && e.target.closest ? e.target.closest("#landBarBtn") : null;
 if(b) document.body.classList.toggle("land-bar");
 });
+// v905 — paysage : bascule Gamme / Accords (bouton dans le bandeau de la gamme)
+let _paysageVue="gamme";
+function _paysageActif(){
+try{ return window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches; }catch(e){ return false; }
+}
+function _paysageAppliquer(){
+const acc=_paysageVue==="accords";
+document.body.classList.toggle("pv-accords",acc);
+const b=document.getElementById("paysageBascule");
+if(b) b.setAttribute("aria-pressed",acc?"true":"false");
+if(acc){
+const a=document.getElementById("accChords"); if(a) a.open=true;
+const cur=document.querySelector("#chordGrid .chord-card.grid-current");
+if(cur) _paysageSuivre(cur);
+}
+}
+function _paysageBasculer(){
+_paysageVue=_paysageVue==="accords"?"gamme":"accords";
+_paysageAppliquer();
+}
+function _paysageSuivre(card){
+if(!card||!document.body.classList.contains("pv-accords")||!_paysageActif()) return;
+try{ card.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}); }catch(e){}
+}
+(function(){
+const b=document.getElementById("paysageBascule");
+if(b) b.addEventListener("click",e=>{ e.stopPropagation(); _paysageBasculer(); });
+_paysageAppliquer();
+})();
 window.addEventListener("resize", _applyLandscapeNeck);
 window.addEventListener("orientationchange", ()=>setTimeout(_applyLandscapeNeck, 250));
 setTimeout(_applyLandscapeNeck, 400);
@@ -13373,7 +13665,35 @@ return seq.join(" · ");
 }
 let _axe="style";
 try{ const a=localStorage.getItem("guitarModalMorpher.axe"); if(a==="lecon"||a==="style") _axe=a; }catch(e){}
+// v894 — TEMPORAIRE : grilles à écouter en tête des Nouveautés (doom et galop par accord : batterie / filtre).
+// Retirer cette liste (la vider) une fois le correctif moteur validé. Les versions affichées restent celles de NOUVEAUTES.
+const A_ECOUTER=["prog-devin-mur-mi","prog-brosh-fa-immobile","prog-brosh-demiton"];
 const NOUVEAUTES=[
+    // v900 — phrase-guide : bouton « Phrase » dans le lecteur (v901 : sur toutes les grilles, phrase calculée)
+    ["fus-melodique-note-qui-monte","phrase v900"],
+    ["prog-marche-harmonique-la","phrase v900"],
+    // v897 — mixolydien b6 (majeur mélodique) : deux grilles pour s'exercer
+    ["bossa-v-deux-visages","v899"],
+    ["cin-si-sol-trois-roles","v897"],
+    ["prog-sol-a-vide-mi","v896"],
+    ["prog-si-a-vide-re","v896"],
+    ["prog-sol-a-vide-la","v895"],
+    ["fus-ostro-boite","remix v890"],
+    ["fus-miller-triade","remix v889"],
+    ["fus-stern-trois-notes-lam","remix v888"],
+    ["fus-howe-vamp-lam","remix v887"],
+    ["prog-zytecki-mi-vide","remix v886"],
+    ["prog-brosh-demiton","remix v885"],
+    ["fus-stern-sans-tierce-mi","remix v883"],
+    ["fus-howe-majeur-mineur-mi","remix v882"],
+    ["fus-govan-dominante-tiroirs","remix v881"],
+    ["prog-brosh-fa-immobile","remix v879"],
+    ["prog-plini-cordes-vides-re","remix v878"],
+    ["prog-devin-mur-mi","remix v877"],
+    ["rock-loureiro-tierce-qui-bouge","remix v876"],
+    ["rock-carlton-ii-v-devie","remix v875"],
+    ["rock-thammarat-soulevement","remix v874"],
+    ["jz-diminue-quatre-sorties","remix v873"],
     ["rock-timmons-mi-pedale","remix v872"],
     ["rock-timmons-lumiere-la","remix v871"],
     ["fus-gardiner-cm-tour","remix v868"],
@@ -13402,7 +13722,8 @@ const NOUVEAUTES=[
 ];
 function _groupeNouveautes(){
 const famDe={}, versions={}, grids=[];
-NOUVEAUTES.forEach(([id,v])=>{
+A_ECOUTER.map(id=>NOUVEAUTES.find(e=>e[0]===id)).filter(Boolean).concat(NOUVEAUTES).forEach(([id,v])=>{
+if(versions[id]) return;   // v891 : une grille ajoutée puis remixée figure deux fois ; la première entrée (la plus récente) gagne
 const f=STYLE_FAMILIES.find(x=>(x.grids||[]).some(g=>g.id===id));
 if(!f) return;
 grids.push(f.grids.find(g=>g.id===id)); famDe[id]=f; versions[id]=v;
