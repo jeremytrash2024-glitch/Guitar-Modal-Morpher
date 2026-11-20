@@ -2277,7 +2277,8 @@ japanese: { name: "Japonaises", modes: [
 { name: "In sen", formula: [0,1,5,7,10], intervals: ["R","b2","4","5","b7"] },
 { name: "Kumoi", formula: [0,2,3,7,9], intervals: ["R","2","b3","5","6"] },
 { name: "Iwato", formula: [0,1,5,6,10], intervals: ["R","b2","4","b5","b7"] },
-{ name: "Yo", formula: [0,2,5,7,9], intervals: ["R","2","4","5","6"] }
+{ name: "Yo", formula: [0,2,5,7,9], intervals: ["R","2","4","5","6"] },
+{ name: "Kumoijoshi", formula: [0,1,5,7,8], intervals: ["R","b2","4","5","b6"] }   // v1316 : l'accord de koto kumoi-jōshi (le « Kumoi » des guitaristes, au-dessus, est une autre gamme)
 ]}
 };
 const HARRIS_GAMMES = {
@@ -4124,6 +4125,7 @@ function _guitEchJouer(id, midi, t, tenueMax, vel, dest, atk){
   if(best===null || Math.abs(best-m)>3) return false;
   const b=st.bufs[best], src=audioCtx.createBufferSource(); src.buffer=b; src.playbackRate.value=Math.pow(2,(midi-best)/12);
   const deb=st.debut[best]||0, dispo=(b.duration-deb)/src.playbackRate.value, rel=0.06, tenue=Math.max(0.04, Math.min(tenueMax, dispo-rel));
+  if(_geste) _gesteAppliquer(src.playbackRate, src.playbackRate.value, t, tenue);   // v1315
   const g=audioCtx.createGain(), lvl=Math.pow(10,GUIT_ECH_DB[id]/20)*(vel||1);
   if(atk>0.02){ g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(lvl,t+Math.min(atk,tenue*0.8)); } else g.gain.setValueAtTime(lvl,t);
   g.gain.setValueAtTime(lvl,t+tenue); g.gain.linearRampToValueAtTime(0.0001,t+tenue+rel);
@@ -4159,6 +4161,7 @@ g.connect(pre); pre.connect(shaper); shaper.connect(post); post.connect(outG);
 outNode=outG;
 }
 src.connect(g); outNode.connect(_pedChaine((elec && !_gridCrunch && !_gridSansEcho)?_slapbackIn():_amBus().guitar, t, vel));   // v910 : le crunch rock sans slapback
+if(_geste) _gesteAppliquer(src.playbackRate, 1, t, playSec);   // v1315
 src.start(t);src.stop(t+playSec+0.05);
 const _cleanup=()=>{ try{g.disconnect();}catch(e){} try{if(outNode!==g) outNode.disconnect();}catch(e){} };
 setTimeout(_cleanup,Math.max(120,(t-audioCtx.currentTime+playSec+0.3)*1000));
@@ -5686,7 +5689,22 @@ chords:[{name:"D",beats:4,basseLigne:[[0,12,2],[2,12,1],[3,11,1]],voicing:"x-5-7
         chords:[{name:"Amaj7",beats:8,voicing:"5-x-6-6-5-x",scale:"A:hungarianMinor:4"},
                 {name:"Bb7/G#",beats:8,voicing:"4-x-3-3-3-x",scale:"A:hungarianMinor:4"},
                 {name:"Fmaj7#5",beats:8,voicing:"1-x-2-2-2-x",scale:"A:hungarianMinor:4"},
-                {name:"E7b5",beats:8,voicing:"x-7-8-7-9-x",scale:"A:hungarianMinor:4"}]}
+                {name:"E7b5",beats:8,voicing:"x-7-8-7-9-x",scale:"A:hungarianMinor:4"}]},
+      // v1316 — Sous le nuage : la sœur posée du « Nuage » (v1315). Mi kumoijoshi, le vrai accord de koto (1 b2 4 5 b6 : Mi Fa La Si Do),
+//         « sur des accords mineurs et des basses tenues, dans un arrangement clairsemé ». Nylon en arpège, basse fretless tenue, Solo clair tiré au demi-ton
+      {id:"rock-friedman-sous-nuage", lecons:{exotiques:3, pentatoniques:2, "cordes-vides":3, immobile:2, basses:2}, root:"E", scale:"E:japanese:5", voix:"nylon", basseSon:"fretlessReel", soloGuitare:"electric",
+        arp:true, arpMotif:[0,2,-1,1,-2,2,-1,1], arpPas:0.5,
+        name:"Sous le nuage — Mi kumoijoshi, Friedman en solo", tempo:66, groove:"atmos",
+        desc:"Le geste : la basse tient le Mi, le Si et le Mi aigus sonnent à vide ; seuls deux doigts glissent sur les cordes de Ré et de Sol (cases 7-9, 10-9, 7-5, 3-2). La basse ne quitte le Mi que deux fois : le Fa, le moment le plus sombre, puis La mineur, avant que le Fa retombe sur le Mi. À écouter : le Do fait entendre le mineur, le Fa frotte contre le Mi. Pour improviser : Mi kumoijoshi partout (Mi, Fa, La, Si, Do). Allume Solo : peu de notes, tirées d'un demi-ton puis relâchées, comme sur un koto, avec un vibrato large.",
+        phrase:[["B3",0,3],["A3",3,1],["E4",4,4],["C4",8,4],["B3",12,2],["A3",14,2],["C4",16,4],["B3",20,2],["A3",22,2],["E4",24,2],["F4",26,1],["E4",27,1],["F4",28,4],["E4",32,2],["C4",34,2],["B3",36,4],["C4",40,2],["B3",42,1],["A3",43,1],["B3",44,8]],
+        chords:[{name:"Esus4",beats:8,nuance:"p",basseLigne:[[0,12,6],[6,19,2]],voicing:"0-x-7-9-0-0",scale:"E:japanese:5",soloEcrit:[[2,"B4",3,"tiré vib"],[5,"A4",1],[6,"E4",2,"vib"]]},
+                {name:"Cmaj7/E",beats:4,nuance:"p",basseLigne:[[0,12,4]],voicing:"0-x-10-9-0-0",scale:"E:japanese:5",soloEcrit:[[0,"C5",3,"tiré½ vib"],[3,"B4",1]]},
+                {name:"Am(add9)/E",beats:8,nuance:"p",basseLigne:[[0,12,6],[6,17,1],[7,19,1]],voicing:"0-x-7-5-0-0",scale:"E:japanese:5",soloEcrit:[[0,"A4",2,"vib"],[2,"C5",1],[3,"B4",1],[4,"E5",3,"tiré vib"],[7,"C5",1]]},
+                {name:"Fmaj7#11/E",beats:4,nuance:"mp",basseLigne:[[0,12,3],[3,13,1]],voicing:"0-x-3-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"F5",2,"tiré½ vib"],[2,"E5",1],[3,"C5",1]]},
+                {name:"Esus4",beats:4,nuance:"mp",basseLigne:[[0,12,2],[2,19,1],[3,12,1]],voicing:"0-0-2-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"B4",2,"lâché½ vib"],[2,"A4",1],[3,"F4",1]]},
+                {name:"Fmaj7#11",beats:8,nuance:"mf",basseLigne:[[0,12,4],[4,19,2],[6,16,2]],voicing:"1-x-3-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"A5",2,"tiré vib"],[2,"F5",1],[3,"E5",1],[4,"C5",3,"tiré½ vib"],[7,"B4",1]]},
+                {name:"Am(add9)",beats:8,nuance:"mp",basseLigne:[[0,12,4],[4,7,2],[6,8,2]],voicing:"x-0-7-5-0-0",scale:"E:japanese:5",soloEcrit:[[0,"C5",1],[1,"B4",1],[2,"A4",2,"vib"],[4,"E4",1],[5,"F4",1,"tiré½"],[6,"E4",2,"lâché½ vib"]]},
+                {name:"Esus4",beats:8,nuance:"pp",basseLigne:[[0,12,8]],voicing:"0-x-7-9-0-0",scale:"E:japanese:5",soloEcrit:[[1,"B4",3,"lâché½ vib"],[4,"A4",1],[5,"E4",3,"vib"]]}]}
     ]},
   { id:"metal", label:"🤘 Metal & Punk", groove:"metal",
 grids:[
@@ -5806,7 +5824,23 @@ chords:[{name:"Bm",beats:12,voicing:"x-2-4-4-3-2",scale:"B:5",basseLigne:[[0,0],
         chords:[{name:"Am6",beats:8,voicing:"5-x-4-5-5-x",scale:"A:hungarianMinor:6"},
                 {name:"Gbmaj7",beats:8,voicing:"2-x-3-3-2-x",scale:"A:hungarianMinor:6"},
                 {name:"Fmaj7",beats:8,voicing:"1-x-2-2-1-x",scale:"A:hungarianMinor:6"},
-                {name:"F#7/E",beats:8,voicing:"x-7-8-6-7-x",scale:"A:hungarianMinor:6"}]}
+                {name:"F#7/E",beats:8,voicing:"x-7-8-6-7-x",scale:"A:hungarianMinor:6"}]},
+      // v1315 — Le nuage ne bouge pas : Mi kumoi (1 2 b3 5 6, la définition des guitaristes), dans l'esprit de Marty Friedman. Solo tiré et vibré, Phrase et basse écrites
+      {id:"metal-friedman-nuage", lecons:{exotiques:3, pentatoniques:3, immobile:3}, root:"E", scale:"E:japanese:2", chug:"monthrash", soloGuitare:"electric",
+        name:"Le nuage ne bouge pas — Mi kumoi, à la Marty Friedman", tempo:96, groove:"atmos",
+        desc:"Le geste : trois doigts ne bougent pas, Fa# case 4 sur la corde de Ré, Si case 4 sur la corde de Sol, Do# case 2 sur la corde de Si : c'est le nuage. Seule la basse change : Mi à vide, Sol case 3 au majeur, Do# case 4 sur la corde de La, puis l'index se couche case 2 pour Si et Fa#. À écouter : rien que les cinq notes du kumoi, Mi, Fa#, Sol, Si, Do# ; quand le Sol passe en basse, il fait un triton avec le Do# du nuage, la couleur sombre de la gamme. Intro claire, riff en galop, mur doom sur le Sol, retour au calme. Pour improviser : Mi kumoi partout. Allume Solo : la guitare tire ses notes à la Friedman, d'un ton ou d'un demi-ton, en relâche d'autres et les fait vibrer large. Phrase et basse écrites.",
+        phrase:[["B4",0,3],["C#5",3,1],["B4",4,2],["G4",6,2],["F#4",8,3],["G4",11,1],["E4",12,4],["B4",16,2],["C#5",18,1],["E5",19,1],["C#5",20,3],["B4",23,1],["G4",24,2],["F#4",26,2],["F#4",28,2],["G4",30,2],["C#5",32,4],["B4",36,2],["G4",38,2],["F#4",40,3],["G4",43,1],["E4",44,8]],
+        chords:[{name:"F#sus4/E",beats:8,nuance:"p",basseLigne:[[0,12,4],[4,19,2],[6,21,1],[7,14,1]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[1,"B4",2,"tiré vib"],[3,"C#5",1],[4,"B4",1,"lâché"],[5,"G4",1],[6,"F#4",2,"vib"]]},
+                {name:"Gmaj7#11",beats:4,nuance:"p",basseLigne:[[0,12,2],[2,18,1],[3,11,1]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G4",1.5,"tiré½"],[1.5,"F#4",0.5],[2,"C#5",2,"vib"]]},
+                {name:"F#sus4/E",beats:4,nuance:"p",basseLigne:[[0,12,2],[2,19,1],[3,14,1]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"E5",2,"tiré vib"],[2,"C#5",1],[3,"B4",1]]},
+                {name:"F#sus4/E",beats:4,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,14,0.5]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"E4",0.25],[0.25,"F#4",0.25],[0.5,"G4",0.25],[0.75,"B4",0.25],[1,"C#5",0.25],[1.25,"E5",0.25],[1.5,"F#5",0.5,"tiré½"],[2,"E5",1],[3,"C#5",1]]},
+                {name:"Gmaj7#11",beats:4,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,11,0.5]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G5",2,"tiré½ vib"],[2,"F#5",0.5],[2.5,"E5",0.5],[3,"C#5",1]]},
+                {name:"F#sus4/E",beats:4,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,9,0.5]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",0.5],[0.5,"C#5",0.5],[1,"E5",0.5],[1.5,"F#5",0.5],[2,"E5",2,"lâché vib"]]},
+                {name:"Bsus2",beats:2,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,0,0.75],[0.75,0,0.75],[1.5,0,0.5]],voicing:"x-2-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"F#5",1,"tiré"],[1,"C#5",1]]},
+                {name:"C#7sus4",beats:2,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,0,0.75],[0.75,0,0.75],[1.5,5,0.5]],voicing:"x-4-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",0.5],[0.5,"C#5",0.5],[1,"G5",1,"tiré½"]]},
+                {name:"Gmaj7#11",beats:8,groove:"doom",son:"crunch",nuance:"ff",basseLigne:[[0,12,4],[4,12,2],[6,18,1],[7,9,1]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G5",3,"vib"],[3,"F#5",0.5],[3.5,"E5",0.5],[4,"C#5",2,"tiré vib"],[6,"B4",1],[7,"G4",1,"tiré½"]]},
+                {name:"F#sus4",beats:4,groove:"gallop",son:"crunch",nuance:"ff",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,13,0.5]],voicing:"2-2-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"F#4",0.25],[0.25,"G4",0.25],[0.5,"B4",0.25],[0.75,"C#5",0.25],[1,"E5",0.25],[1.25,"F#5",0.25],[1.5,"G5",0.25],[1.75,"F#5",0.25],[2,"E5",2,"tiré vib"]]},
+                {name:"F#sus4/E",beats:8,nuance:"pp",basseLigne:[[0,12,4],[4,19,2],[6,14,2]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",4,"lâché vib"],[4,"G4",1],[5,"F#4",1],[6,"E4",2,"vib"]]}]}
 ]},
 { id:"prog", label:"🌀 Progressif", groove:"prog7",
 grids:[
@@ -11088,12 +11122,39 @@ function _soloNoteArrivee(gr,ci){
 // v1224 — L'ÉCHO DU SOLO ÉCRIT : une note marquée « écho » ([temps, "A4", durée, "écho"]) revient trois fois en croche pointée,
 // de plus en plus faible, comme une bande de dub. Les retours sonnent mais ne s'allument pas sur le manche (echo:true).
 const _SOLO_ECHO=[[0.75,0.5],[1.5,0.3],[2.25,0.17]];
+// v1315 — GESTES DU SOLO ÉCRIT (grille Friedman). Le 4e champ d'une note peut dire comment la main la joue :
+// « tiré » : attaquée un ton plus bas, puis tirée jusqu'à la note ; « tiré½ » : un demi-ton plus bas (le pleur de l'enka) ;
+// « lâché » : la corde est déjà tirée d'un ton, on attaque et on relâche jusqu'à la note ; « vib » : vibrato large qui s'installe.
+// Ça ne change que la hauteur pendant que la note sonne (playbackRate) : la note écrite reste la note d'arrivée, partout ailleurs.
+var _geste=null;
+function _gesteDe(mots){
+  const g={}; if(mots.includes("tiré")) g.de=-2; else if(mots.includes("tiré½")) g.de=-1; else if(mots.includes("lâché")){ g.de=2; g.lache=true; } else if(mots.includes("lâché½")){ g.de=1; g.lache=true; }   // v1316 : relâché d'un demi-ton (le Fa qui retombe sur Mi, comme au koto)
+  if(mots.includes("vib")) g.vib=true;
+  return (g.de||g.vib) ? g : null;
+}
+function _gesteAppliquer(pr, base, t, tenue){
+  const G=_geste; if(!G || !pr || !(tenue>0)) return;
+  try{
+    const r=s=>base*Math.pow(2,s/12);
+    let t0=t;
+    pr.cancelScheduledValues(t);
+    if(G.de){
+      const pose=G.lache ? Math.min(0.1, tenue*0.25) : 0.03, mont=Math.min(G.lache ? 0.14 : 0.18, tenue*0.45);
+      pr.setValueAtTime(r(G.de), t); pr.setValueAtTime(r(G.de), t+pose); pr.linearRampToValueAtTime(base, t+pose+mont); t0=t+pose+mont;
+    } else pr.setValueAtTime(base, t);
+    if(G.vib){
+      const deb=t0+0.1, fin=t+tenue, f=5.2, amp=0.5, monte=0.35;   // demi-tons : un vibrato large, qui part de la note et remonte (comme une corde poussée)
+      if(fin-deb>0.2){ pr.setValueAtTime(base, deb); let k=1;
+        for(let x=deb+1/(2*f); x<fin; x+=1/(2*f), k++){ const a=amp*Math.min(1,(x-deb)/monte); pr.linearRampToValueAtTime(k%2 ? r(a) : base, x); } }
+    }
+  }catch(e){}
+}
 function _soloEcritBar(ch,barBeats,barDansAccord,debut){
   const d=(typeof debut==="number")?debut:barDansAccord*barBeats, f=d+barBeats;   // v1039 : mesures inégales (6 temps = 4 + 2) : on prend le vrai début
   const out=[];
   ch.soloEcrit.filter(e=>e[0]>=d-1e-6 && e[0]<f-1e-6).forEach((e,k)=>{ const midi=_soloNoteMidi(e[1]); if(midi===null) return;
-    const vel=0.5+(k===0?0.08:0); out.push({beat:e[0]-d, dur:e[2], vel, midi, anchor:k===0, approach:false});
-    if(e[3]==="écho") _SOLO_ECHO.forEach(([dec,gn])=>out.push({beat:e[0]-d+dec, dur:Math.min(e[2],0.6), vel:vel*gn, midi, anchor:false, approach:false, echo:true})); });
+    const vel=0.5+(k===0?0.08:0), _mots=String(e[3]||"").split(/\s+/), _ge=_gesteDe(_mots); out.push({beat:e[0]-d, dur:e[2], vel, midi, anchor:k===0, approach:false, geste:_ge});
+    if(_mots.includes("écho")) _SOLO_ECHO.forEach(([dec,gn])=>out.push({beat:e[0]-d+dec, dur:Math.min(e[2],0.6), vel:vel*gn, midi, anchor:false, approach:false, echo:true})); });
   return out;
 }
 var _soloLastMidi=72;
@@ -11245,7 +11306,7 @@ else {
   }
 }
 const relBase=barStart-audioCtx.currentTime;
-evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); }catch(err){} finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
+evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); }catch(err){} finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
 }
 function _soloReset(){_soloLastMidi=72;_soloPhraseSeed=(Math.random()*0xffffffff)>>>0;_soloMotif=null;_soloMotifBar=0;}
 // v893 — renderGridChords découpée en sections nommées. Comportement identique (photographie jsdom des 234 grilles).
@@ -19107,6 +19168,8 @@ try{ const a=localStorage.getItem("guitarModalMorpher.axe"); if(a==="lecon"||a==
 // Retirer cette liste (la vider) une fois le correctif moteur validé. Les versions affichées restent celles de NOUVEAUTES.
 const A_ECOUTER=[];   // v949 : vidée à la demande de Jérémy, les Nouveautés repartent de la plus récente
 const NOUVEAUTES=[
+["rock-friedman-sous-nuage","v1316"],   // v1316 — Sous le nuage (Mi kumoijoshi, Friedman en solo) : nylon en arpège, fretless tenue, Solo clair tiré au demi-ton
+["metal-friedman-nuage","v1315"],   // v1315 — Le nuage ne bouge pas (Mi kumoi, à la Marty Friedman) : Solo tiré et vibré, Phrase et basse écrites
 ["fus-carlton-fa-dorien","v1300"],   // v1300 : pont ; v1299 — Le Fa# dorien (Carlton) : rythmique folk égrenée, Solo électrique claire, sax, basse écrite
 ["fus-carlton-dominante-sombre","v1296"],   // v1296 : guitare folk égrenée ; v1295 : ♭9 tardive, basse qui pousse ; v1294 — La dominante sombre (Carlton, Si mineur, ♭9♭13) ; La note qui flotte (v1293) retirée
 ["fus-carlton-seule-dominante","v1292"],   // v1292 — La seule dominante (Carlton, Si mineur) : Solo, Phrase sax et basse écrits ; remplace la v1290 retirée
