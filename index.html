@@ -9917,7 +9917,9 @@ function _shoGamme(chord, gr){
   if(!md || root<0) return null;
   return {fam, pcs:new Set(md.formula.map(x=>(root+x)%12))};
 }
-function _shoJaponais(chord, gr){ const g=_shoGamme(chord, gr); return !!(g && g.fam==="japanese"); }
+function _shoJaponais(chord, gr){
+  const p=chord && chord.pays; if(p && /[\u{1F1E6}-\u{1F1FF}]{2}/u.test(p) && p.indexOf("🇯🇵")<0) return false;   // v1342 : la Mongolie chante le Yo, mais n'est pas le Japon
+  const g=_shoGamme(chord, gr); return !!(g && g.fam==="japanese"); }
 // Le mélange (choix de Jérémy) : le vrai aitake, transposé sur la fondamentale de l'accord, s'il tient dans la gamme ;
 // sinon une grappe dans le même esprit, faite des notes de l'accord et de la gamme, sans demi-ton collé.
 function _shoAitake(chord, voicingMidi, gr){
@@ -11272,6 +11274,123 @@ let _soloNiveauId="moyen"; try{ const v=localStorage.getItem("gmmSoloNiveau"); i
 function _soloTon(){ return (typeof _activeGrid!=="undefined" && _activeGrid && _activeGrid.soloGuitare==="electric") ? "electric" : _gridGuitarTone; }   // v1299 — le Solo peut jouer une autre guitare que la rythmique
 const SOLO_FOLK_DB=3;   // v1298 — mesuré (bande 300-3000 Hz, 9 grilles Fusion) : en guitare folk, le Solo joue le même son que la rythmique et sortait 2 à 3 dB sous le sax, à peine au-dessus de la rythmique
 function _soloGain(){ const e=SOLO_NIVEAUX.find(n=>n[0]===_soloNiveauId); return (e?e[1]:2.8)*(_soloTon()==="acoustic" ? Math.pow(10,SOLO_FOLK_DB/20) : 1)*((typeof _activeGrid!=="undefined" && _activeGrid && typeof _activeGrid.soloDb==="number") ? Math.pow(10,_activeGrid.soloDb/20) : 1); }   // v1333 : une grille peut monter son Solo (soloDb, en dB)
+// ═══ v1343 — 🥁 TAIKO, couche en plus de la batterie (émulé) : ōdaiko (le gros tambour grave) et shime-daiko (le petit, tendu, qui claque) ═══
+// Le grave de l'ōdaiko (vers 60 Hz) ne passe pas sur un haut-parleur de téléphone : le corps de la peau (150-260 Hz) et le coup de baguette, si.
+// D'office sur les grilles japonaises énergiques (tempo ≥ 100 ou groove metal), au choix partout ailleurs.
+const TAIKO_GAIN=1.4;   // mesuré seul sur Le nuage : au niveau de la batterie en plein spectre, ~5 dB sous elle au haut-parleur d'un téléphone (une couche, pas un remplaçant)
+let _gridTaikoOn=false, _taikoLock=null, _taikoBusNode=null, _taikoBruitBuf=null;
+function _taikoAuto(gr){
+  if(!gr || !Array.isArray(gr.chords)) return false;
+  const jap=gr.chords.some(c=>{ try{ return _shoJaponais(c,gr); }catch(e){ return false; } }); if(!jap) return false;
+  const METAL=["gallop","metal","doom","djent16","breakdown","blast","punk"];
+  return (gr.tempo>=100) || METAL.includes(gr.groove) || gr.chords.some(c=>METAL.includes(c.groove));
+}
+function _taikoBus(){
+  if(_taikoBusNode && _taikoBusNode.context===audioCtx) return _taikoBusNode;
+  const g=audioCtx.createGain(); g.gain.value=TAIKO_GAIN; g.connect(_amBus().master); return _taikoBusNode=g;
+}
+function _taikoBruit(){
+  if(_taikoBruitBuf && _taikoBruitBuf.sampleRate===audioCtx.sampleRate) return _taikoBruitBuf;
+  const sr=audioCtx.sampleRate, b=audioCtx.createBuffer(1,Math.floor(sr*0.5),sr), d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; return _taikoBruitBuf=b;
+}
+function _taikoTon(t, f0, f1, glide, dur, amp, out){
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type="sine";
+  o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(f1,t+glide);
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(amp,t+0.004); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t+dur+0.02); o.onended=()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
+}
+function _taikoBruitCoup(t, type, freq, q, dur, amp, out){
+  const n=audioCtx.createBufferSource(); n.buffer=_taikoBruit(); const f=audioCtx.createBiquadFilter(); f.type=type; f.frequency.value=freq; f.Q.value=q;
+  const g=audioCtx.createGain(); g.gain.setValueAtTime(amp,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  n.connect(f); f.connect(g); g.connect(out); n.start(t); n.stop(t+dur+0.02); n.onended=()=>{ try{ n.disconnect(); f.disconnect(); g.disconnect(); }catch(e){} };
+}
+let _taikoSatNode=null;
+function _taikoSat(){   // une légère saturation de la peau : elle donne au grave des harmoniques que le haut-parleur d'un téléphone sait rendre
+  if(_taikoSatNode && _taikoSatNode.context===audioCtx) return _taikoSatNode;
+  const w=audioCtx.createWaveShaper(), n=2048, c=new Float32Array(n); for(let i=0;i<n;i++){ const x=i/(n-1)*2-1; c[i]=Math.tanh(5*x)/Math.tanh(5); }
+  w.curve=c; w.oversample="2x"; const g=audioCtx.createGain(); g.gain.value=0.5; w.connect(g); g.connect(_taikoBus()); return _taikoSatNode=w;
+}
+function _taikoDon(t, vel){   // ōdaiko : « don »
+  const out=_taikoSat(), v=vel*(0.92+Math.random()*0.16);
+  _taikoTon(t, 96, 58, 0.12, 0.8, 0.22*v, out);          // le grave de la peau
+  _taikoTon(t, 168, 142, 0.08, 0.38, 0.28*v, out);      // le corps, ce qu'entend un téléphone
+  _taikoTon(t, 262, 250, 0.05, 0.2, 0.22*v, out);
+  _taikoBruitCoup(t, "lowpass", 650, 0.7, 0.07, 0.55*v, out);   // le souffle de la frappe
+  _taikoBruitCoup(t, "bandpass", 2400, 1.0, 0.022, 1.0*v, _taikoBus()); // la baguette (bachi)
+  _taikoBruitCoup(t, "bandpass", 900, 1.2, 0.07, 1.1*v, _taikoBus());   // la peau qui claque sous la baguette
+}
+function _taikoTen(t, vel){   // shime-daiko : « ten »
+  const out=_taikoBus(), v=vel*(0.9+Math.random()*0.2);
+  _taikoTon(t, 560, 500, 0.02, 0.15, 0.8*v, out);
+  _taikoTon(t, 820, 790, 0.02, 0.07, 0.22*v, out);
+  _taikoBruitCoup(t, "bandpass", 3200, 1.4, 0.035, 1.3*v, out);   // le claquement de la peau très tendue
+}
+function _scheduleTaikoBar(barStart, barBeats, beatSec, derniere){
+  if(!_gridTaikoOn) return;
+  try{
+    const T=b=>barStart+b*beatSec+(Math.random()-0.5)*0.006, bb=barBeats;
+    _taikoDon(T(0), 1.0);
+    if(bb>=4) _taikoDon(T(Math.floor(bb/2)), 0.55);
+    if(bb===3){ _taikoTen(T(1),0.3); if(!derniere) _taikoTen(T(2),0.3); }
+    else for(let b=1;b<bb;b+=2){ if(derniere && b>=bb-1) break; _taikoTen(T(b),0.32); }
+    if(derniere){   // la fin de l'accord : le shime roule en doubles croches, l'ōdaiko relance
+      [0,0.25,0.5,0.75].forEach((d,k)=>_taikoTen(T(bb-1+d), 0.3+0.14*k));
+      _taikoDon(T(bb-0.5), 0.7);
+    }
+  }catch(e){}
+}
+// ═══ v1342 — 🪕 SHAMISEN, voix du Solo (émulé, style classique) ═══
+// Trois cordes en soie, un plectre large (bachi) près d'une peau tendue ; la corde grave frôle le manche (sawari) et grésille.
+// Corde pincée de Karplus-Strong, comme le koto, avec dans la boucle une butée d'un seul côté : le grésillement naît de la butée,
+// fort à l'attaque et qui s'éteint avec la corde. Les gestes du Solo écrit (tiré, lâché, vib) passent par playbackRate.
+const SOLO_VOIX=[["auto","Auto"],["guitare","Guitare"],["shamisen","Shamisen"]];
+let _soloVoixId="auto"; try{ const v=localStorage.getItem("gmmSoloVoix"); if(SOLO_VOIX.some(x=>x[0]===v)) _soloVoixId=v; }catch(e){}
+function _soloShami(ch, gr){
+  if(_soloVoixId==="shamisen") return true; if(_soloVoixId==="guitare") return false;
+  try{ return _shoJaponais(ch, gr); }catch(e){ return false; }   // « Auto » : le shamisen sur les accords en gamme japonaise
+}
+const SHAMI_GAIN=0.4;   // mesuré (Le Japon en cinq gammes, Solo électrique ; L'Asie sans bouger, folk) : −8 dB pour sonner comme la guitare au haut-parleur d'un téléphone
+let _shamiBufs={}, _shamiBus=null;
+function _shamiBuffer(midi){
+  const ctx=audioCtx, k=midi+":"+ctx.sampleRate; if(_shamiBufs[k]) return _shamiBufs[k];
+  const sr=ctx.sampleRate, f=440*Math.pow(2,(midi-69)/12), N=Math.max(2,Math.round(sr/f-0.38)), f0=sr/(N+0.38);
+  const n=Math.floor(2.4*sr), b=ctx.createBuffer(1,n,sr), y=b.getChannelData(0);
+  const T60=2.2-1.0*Math.min(1,Math.max(0,(midi-52)/30)), rho=Math.pow(0.001,1/(f0*T60));
+  const x=new Float32Array(N); let lp=0, mx=0; for(let i=0;i<N;i++){ lp=0.5*lp+0.5*(Math.random()*2-1); x[i]=lp; mx=Math.max(mx,Math.abs(lp)); }
+  for(let i=0;i<N;i++) x[i]/=(mx||1);
+  const p=Math.max(1,Math.round(0.18*N)), e=new Float32Array(N); for(let i=0;i<N;i++) e[i]=x[i]-(i>=p?x[i-p]:0);   // le bachi frappe loin du chevalet
+  const th=0.42, s=0.6;
+  for(let i=0;i<n;i++){
+    const a=i-N>=0?y[i-N]:0, c=i-N-1>=0?y[i-N-1]:0; let v=(i<N?e[i]:0)+rho*(s*a+(1-s)*c);
+    if(v<-th) v=-th+(v+th)*0.12;   // sawari : la corde bute d'un côté, le son s'enrichit d'aigus qui grésillent
+    y[i]=v;
+  }
+  for(let i=0;i<Math.min(n,Math.floor(0.09*sr));i++){ const t=i/sr;   // la peau : un coup sourd sous l'attaque, et le claquement du bachi
+    y[i]+=0.45*Math.sin(2*Math.PI*190*t)*Math.exp(-t/0.022)+0.35*(Math.random()*2-1)*Math.exp(-i/45); }
+  let m=0; for(let i=0;i<n;i++) m=Math.max(m,Math.abs(y[i])); for(let i=0;i<n;i++) y[i]/=(m||1);
+  for(let i=Math.max(0,n-Math.floor(0.2*sr));i<n;i++) y[i]*=(n-i)/(0.2*sr);
+  return _shamiBufs[k]={b, rate:f/f0*Math.pow(2,-0.0148*f/1200)};   // mesuré : la butée du sawari raccourcit la boucle, la corde montait de 2,5 cents (Mi2) à 13 cents (La4)
+}
+function _shamiSortie(){
+  if(_shamiBus && _shamiBus.context===audioCtx) return _shamiBus;
+  const ctx=audioCtx, peau=ctx.createBiquadFilter(), nez=ctx.createBiquadFilter(), air=ctx.createBiquadFilter(), g=ctx.createGain();
+  peau.type="peaking"; peau.frequency.value=320; peau.Q.value=1.1; peau.gain.value=3;    // la caisse tendue de peau
+  nez.type="peaking"; nez.frequency.value=1100; nez.Q.value=1.4; nez.gain.value=4;       // le timbre nasal
+  air.type="highshelf"; air.frequency.value=3000; air.gain.value=2;
+  g.gain.value=SHAMI_GAIN; peau.connect(nez); nez.connect(air); air.connect(g); g.connect(_amBus().master);
+  return _shamiBus=peau;
+}
+function _shamiNote(midi, dur, rel, vel){
+  initAudio(); vel*=(_soloTon()==="acoustic") ? Math.pow(10,-SOLO_FOLK_DB/20) : 1;   // le bonus de la guitare folk ne vaut pas pour le shamisen
+  const {b,rate}=_shamiBuffer(midi), t=audioCtx.currentTime+Math.max(0,rel);
+  const src=audioCtx.createBufferSource(); src.buffer=b; src.playbackRate.setValueAtTime(rate,t);
+  if(_geste) _gesteAppliquer(src.playbackRate, rate, t, dur);
+  const g=audioCtx.createGain(), fin=t+Math.max(0.12,dur)+0.1;
+  g.gain.setValueAtTime(vel,t); g.gain.setValueAtTime(vel,fin-0.1); g.gain.linearRampToValueAtTime(0,fin);   // la main étouffe la corde à la fin de la note
+  src.connect(g); g.connect(_shamiSortie()); src.start(t); src.stop(fin+0.02);
+  src.onended=()=>{ try{ src.disconnect(); g.disconnect(); }catch(e){} };
+}
 function _soloEcritDispo(gr){ return !!(gr && Array.isArray(gr.chords) && gr.chords.some(c=>Array.isArray(c.soloEcrit) && c.soloEcrit.length)); }
 function _soloNoteMidi(n){ const m=/^([A-G][#b]?)(-?\d)$/.exec(String(n)); if(!m) return null; let pc=NOTES.indexOf(m[1]);
   if(pc<0){ const B={Db:1,Eb:3,Gb:6,Ab:8,Bb:10}; pc=B[m[1]]; } return (pc===undefined||pc<0)?null:(+m[2]+1)*12+pc; }
@@ -11473,7 +11592,7 @@ else {
   }
 }
 const relBase=barStart-audioCtx.currentTime;
-evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); }catch(err){} finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
+evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; if(_soloShami(ch,gr)) _shamiNote(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); else playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); }catch(err){} finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
 }
 function _soloReset(){_soloLastMidi=72;_soloPhraseSeed=(Math.random()*0xffffffff)>>>0;_soloMotif=null;_soloMotifBar=0;}
 // v893 — renderGridChords découpée en sections nommées. Comportement identique (photographie jsdom des 234 grilles).
@@ -11970,6 +12089,7 @@ toggles.appendChild(mk("Rythmique",()=>_gridGuitarOn,v=>_gridGuitarOn=v));
 toggles.appendChild(mk("Basse",()=>_gridBassOn,v=>_gridBassOn=v));
 toggles.appendChild(mk("Batterie",()=>_gridDrumsOn,v=>_gridDrumsOn=v));
 toggles.appendChild(mk("Nappe",()=>_gridNappeOn,v=>{ _gridNappeOn=v; _nappeLock=v; }));
+toggles.appendChild(mk("Taiko",()=>_gridTaikoOn,v=>{ _gridTaikoOn=v; _taikoLock=v; }));   // v1343
 toggles.appendChild(mk("Chœur",()=>_gridChoeurOn,v=>{ _gridChoeurOn=v; if(!v) _choeurCouper(); }));   // v988
 toggles.appendChild(mk(()=>_phraseNom(),()=>_gridPhraseOn,v=>{ _gridPhraseOn=v; _phraseAuto=false; if(!v) _phraseCouper(); }));   // v900 — phrase-guide
 (function(){   // v1045 : niveau de la phrase
@@ -11993,6 +12113,14 @@ const paintN=()=>{ n.className="grid-toggle"+(_gridSoloOn?"":" dim"); n.textCont
 paintN(); n.addEventListener("click",()=>{ const i=SOLO_NIVEAUX.findIndex(x=>x[0]===_soloNiveauId); _soloNiveauId=SOLO_NIVEAUX[(i+1)%SOLO_NIVEAUX.length][0];
   try{ localStorage.setItem("gmmSoloNiveau",_soloNiveauId); }catch(e){} if(typeof _gridSyncToggles==="function") _gridSyncToggles(); else paintN(); });
 _gridToggleSync.push({b:n, paint:paintN}); setTimeout(()=>{ if(b.parentNode) b.parentNode.insertBefore(n,b.nextSibling); else toggles.appendChild(n); },0);
+})();
+(function(){   // v1342 : voix du Solo — Auto (shamisen sur les accords japonais), Guitare, Shamisen
+const v=document.createElement("button"); v.type="button";
+const paintV=()=>{ v.className="grid-toggle"+(_gridSoloOn?"":" dim"); v.textContent="Voix solo : "+(SOLO_VOIX.find(x=>x[0]===_soloVoixId)||["","Auto"])[1]; };
+v.title="Auto : le shamisen sur les accords en gamme japonaise, la guitare ailleurs.";
+paintV(); v.addEventListener("click",()=>{ const i=SOLO_VOIX.findIndex(x=>x[0]===_soloVoixId); _soloVoixId=SOLO_VOIX[(i+1)%SOLO_VOIX.length][0];
+  try{ localStorage.setItem("gmmSoloVoix",_soloVoixId); }catch(e){} if(typeof _gridSyncToggles==="function") _gridSyncToggles(); else paintV(); });
+_gridToggleSync.push({b:v, paint:paintV}); setTimeout(()=>{ const nb=[...toggles.children].find(x=>/^Niveau solo/.test(x.textContent)); if(nb) nb.after(v); else toggles.appendChild(v); },0);
 })();
 paint(); b.addEventListener("click",()=>{ _soloMode=_soloMode==="ecrit"?"impro":"ecrit"; _soloReset(); if(typeof _gridSyncToggles==="function") _gridSyncToggles(); else paint(); });
 _gridToggleSync.push({b:b, paint:paint}); toggles.appendChild(b);
@@ -14041,6 +14169,7 @@ const barStart=startTime+plan[bar].start*beatSec, barBeats=plan[bar].beats, barI
 idx.push(barIdx);
 _scheduleSoloBar(barStart, chord, gr, chordIdx, bar, barBeats, beatSec, plan[bar].start);   // v1039 : début de la mesure dans l'accord (mesures inégales)
 if(_gridDrumsOn) _scheduleDrumBar(barStart+_humT(), chord, _gridGrooveName(chord, sig), barIdx, barBeats, beatSec, {toms:gr && gr.toms, finDeGrille:(chordIdx % gr.chords.length)===gr.chords.length-1 && bar===nBars-1});
+if(typeof _scheduleTaikoBar==="function") _scheduleTaikoBar(barStart, barBeats, beatSec, bar===nBars-1);   // v1343 : taiko (grooves décalés aussi)
 if(typeof _scheduleMetroBar==="function"){
 _scheduleMetroBar(barStart, gr, _gridGrooveName(chord, sig), beatSec, chord);
 if(_fillNow(chordIdx) && bar===nBars-1 && typeof playDrum==="function"){
@@ -14516,6 +14645,7 @@ _scheduleSeqBassBar(barStart, chord, beatSec);
 if(_gridDrumsOn){
 _scheduleDrumBar(barStart+_humT(), chord, _gridGrooveName(chord, sig), barIdx, barBeats, beatSec, {toms:gr && gr.toms, finDeGrille:(chordIdx % gr.chords.length)===gr.chords.length-1 && bar===nBars-1});   // l'accord voyage → la basse suit
 }
+if(typeof _scheduleTaikoBar==="function") _scheduleTaikoBar(barStart, barBeats, beatSec, bar===nBars-1);   // v1343 : taiko
 if(typeof _scheduleChoeurBar==="function") _scheduleChoeurBar(barStart, chord, voicingMidi, barBeats, beatSec, gr);   // v988
 if(typeof _scheduleNappeBar==="function"){
 _scheduleNappeBar(barStart, chord, voicingMidi, barBeats, beatSec,
@@ -14630,6 +14760,7 @@ const cs=document.getElementById("chugToneSelect"); if(cs) cs.value=gr.chug;
 }
 const isMetal=["gallop","metal","doom","djent16","breakdown","blast","punk"].includes(grv);
 _gridMetalTight=_grooveSerreLeChug(grv);   // serrage djent : pas tout le metal
+if(_taikoLock===null){ _gridTaikoOn=_taikoAuto(gr); }   // v1343 : d'office sur les grilles japonaises énergiques
 if(_nappeLock===null){
 _gridNappeOn=!!_nappePour(gr,
 (typeof _currentFamily!=="undefined" && _currentFamily) ? _currentFamily.id : null);
@@ -18250,6 +18381,7 @@ function _couchesInit(){
     ["Basse","🎵",()=>_gridBassOn,v=>{ _gridBassOn=v; }],
     ["Batterie","🥁",()=>_gridDrumsOn,v=>{ _gridDrumsOn=v; }],
     ["Nappe","☁️",()=>_gridNappeOn,v=>{ _gridNappeOn=v; _nappeLock=v; }],
+    ["Taiko","🪘",()=>_gridTaikoOn,v=>{ _gridTaikoOn=v; _taikoLock=v; }],   // v1343
     ["Chœur","🎶",()=>_gridChoeurOn,v=>{ _gridChoeurOn=v; if(!v && typeof _choeurCouper==="function") _choeurCouper(); }],   // v1138 : le chœur chante les accords, il reste dans l'accompagnement
 
     ["Solo","🎤",()=>_gridSoloOn,v=>{ _gridSoloOn=v; if(v) _soloReset(); else _soloEffacerTraces(); }],   // v1038
