@@ -1310,6 +1310,11 @@ body:not(.pv-accords) #ltDispo{display:none !important;}   /* en vue Gamme, la p
             <span class="hc-title">Solfège &amp; lecture</span>
             <span class="hc-desc">Apprendre à lire la musique : un parcours de leçons à jouer, des morceaux, et tes grilles du Morpher en partition.</span>
         </button>
+        <button class="home-card" id="homeKoto" type="button" onclick="_kotoOuvrir()">
+            <span class="hc-emoji">🎋</span>
+            <span class="hc-title">Koto</span>
+            <span class="hc-desc">Les 13 cordes du koto en kumoi-jōshi, à pincer et à presser du doigt. Chaque note s'allume sur le manche de guitare.</span>
+        </button>
         <button class="home-card" id="homePaires">
             <span class="hc-emoji">🔺</span>
             <span class="hc-title">Triades &amp; quartes</span>
@@ -4057,6 +4062,7 @@ let _nuanceBand=null, _nuanceDrums=null;
 function _nuanceValeur(chord){ return (chord && NUANCES[chord.nuance]!==undefined) ? NUANCES[chord.nuance] : 1; }
 function _nuancePlanifier(chord, t){
 const v=_nuanceValeur(chord);
+if(!_nuanceBand){ try{ _amBus(); }catch(e){} }   // v1323 : au tout premier accord après l'ouverture de l'app, le bus n'existait pas encore : sa nuance était perdue (jouée à f), puis le son tombait au 2e accord
 [_nuanceBand,_nuanceDrums].forEach(n=>{ if(n){ try{ n.gain.setTargetAtTime(v, Math.max(t, audioCtx.currentTime), 0.12); }catch(e){} } });
 }
 function _nuanceReset(){
@@ -4603,7 +4609,10 @@ drum:{kick:[[0,.55],[1.5,.4],[2,.5],[3.5,.4]],hihat:[[1,.16],[3,.16]]},   // v91
 guitar:{mode:"arp",hits:[[0],[0.5],[1],[1.5],[2],[2.5],[3],[3.5]]}},
 atmos: {label:"Atmosphérique", kit:"jazz",
 drum:{kick:[[0,.55],[2.5,.45]],hihat:[[0,.24],[1,.35],[1.5,.2],[3,.35]]},   // v918 : la ride (« casserole ») retirée, ses temps passent à la charleston
-guitar:{mode:"arp",vel:0.64,hits:[[0],[0.5],[1],[1.5],[2],[2.5],[3],[3.5]]}},   // v1010 : arpège en croches. En noires (4 notes), la corde aiguë d'un voicing de 5-6 cordes n'était jamais jouée
+guitar:{mode:"arp",vel:0.64,hits:[[0],[0.5],[1],[1.5],[2],[2.5],[3],[3.5]]}},
+atmos3: {label:"Atmosphérique 3/4", kit:"jazz", mesure:3,   // v1317 — l'atmosphérique en 3/4 (« Une case plus haut ») : une grosse caisse posée, charleston légère, arpège en six croches
+drum:{kick:[[0,.5]],hihat:[[0,.22],[1,.3],[2,.3],[2.5,.15]]},
+guitar:{mode:"arp",vel:0.64,hits:[[0],[0.5],[1],[1.5],[2],[2.5]]}},   // v1010 : arpège en croches. En noires (4 notes), la corde aiguë d'un voicing de 5-6 cordes n'était jamais jouée
 pompe:      {label:"🎻 Pompe trad", kit:"jazz",
 drum:{kick:[[0,.5],[2,.45]],snare:[[1,.22],[3,.22]],hihat:[[0,.3],[1,.3],[2,.3],[3,.3]]},
 guitar:{mode:"pompe",pompe:{boum:0.70,tchik:0.08,grace:false},hits:[[0,"boum"],[1,"tchik"],[2,"boum"],[3,"tchik"]]}},
@@ -4938,7 +4947,8 @@ chords:[{name:"C6",beats:4,voicing:"x-3-2-2-1-x",scale:"C:0"},
 {name:"Dm7",beats:4,voicing:"x-5-7-5-6-x",scale:"D:1"},
 {name:"G7b9",beats:4,voicing:"3-x-3-1-0-1",scale:"G:harmonicMinor:4"},
 {name:"C6",beats:4,voicing:"x-3-2-2-1-x",scale:"C:0"}]},
-{id:"cin-hirajoshi-mi", root:"E", scale:"E:japanese:0", lecons:{pentatoniques:3, exotiques:3, "cordes-vides":3, modal:3},
+{id:"cin-hirajoshi-mi", phraseAuto:true, phraseSon:"shakuhachi", phrase:[["B4",1.0,3.0],["C5",4.0,1.0],["B4",5.0,1.0],["G4",6.0,1.75],["E5",8.5,3.0],["F#5",11.5,0.5],["G5",12.0,2.5],["F#5",14.5,0.5],["E5",15.0,0.75],["B4",16.0,2.0],["C5",18.0,0.5],["B4",18.5,1.5],["F#4",20.5,1.0],["G4",21.5,2.25],["C5",24.0,2.0],["E5",26.0,2.0],["F#5",28.0,1.0],["G5",29.0,2.75],["B5",32.0,3.0],["G5",35.0,1.0],["F#5",36.0,1.0],["E5",37.0,2.75],["C5",40.0,1.0],["B4",41.0,3.0],["G4",44.5,1.0],["F#4",45.5,0.5],["E4",46.0,1.75]],   // v1332 : Phrase écrite pour le shakuhachi
+        root:"E", scale:"E:japanese:0", lecons:{pentatoniques:3, exotiques:3, "cordes-vides":3, modal:3},
 name:"Hirajoshi en Mi — cinq notes et rien d'autre", tempo:72, groove:"cinema",
 desc:"Le geste : Mi mineur, Do maj7, Do et la quinte à vide, en position ouverte ; la main gauche bouge à peine. À écouter : le hirajoshi n'a que cinq notes, Mi, Fa#, Sol, Si et Do, dont trois cordes à vide ; le Do, à un demi-ton du Si, empêche d'entendre un Mi mineur ordinaire. Pour improviser : ces cinq notes seulement, lentement, sans chercher à résoudre.",
 chords:[{name:"Em",beats:8,voicing:"0-2-2-0-0-0",scale:"E:japanese:0"},
@@ -4966,7 +4976,8 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
       // la note qu'il déplace est exactement la note qui change dans la pentatonique :
       // Si→Do (ionien→mixolydien), La→Sol# (→lydien dominant), Do→Do# (→lydien).
       // Ré à vide et Fa# case 2 sur la corde de Mi aiguë ne bougent jamais.
-      {id:"cin-penta-re-lumieres", lecons:{pentatoniques:2, lydien:2, "cordes-vides":2, modal:1}, root:"D", scale:"D:0",
+      {id:"cin-penta-re-lumieres", phraseAuto:true, phraseSon:"shakuhachi", phrase:[["A4",1.0,2.0],["B4",3.0,1.0],["D5",4.0,2.0],["B4",6.0,1.75],["C5",8.0,3.0],["A4",11.0,1.0],["F#4",12.0,1.0],["A4",13.0,1.0],["C5",14.0,1.75],["C5",16.0,1.0],["G#4",17.0,3.0],["A4",20.0,1.0],["E5",21.0,2.75],["C#5",24.0,3.0],["E5",27.0,1.0],["G#5",28.0,1.5],["F#5",29.5,0.5],["C#5",30.0,1.75]],   // v1332 : Phrase écrite pour le shakuhachi
+        lecons:{pentatoniques:2, lydien:2, "cordes-vides":2, modal:1}, root:"D", scale:"D:0",
         name:"Un doigt, quatre lumières — pentatoniques modales sur Ré à vide", tempo:72, groove:"atmos",
         desc:"Le geste : Ré à vide en bourdon et Fa# case 2 sur la corde de Mi aiguë, qui ne bougent jamais ; entre deux accords, un seul doigt avance ou recule d'une case : Ré 6, Ré 7, Ré 7#11, Ré maj7#11. À écouter : Si devient Do et la couleur s'assombrit, puis La devient Sol# et Do devient Do# : elle s'éclaire deux fois. Pour improviser : active ✦ Penta. Ré, Mi et Fa# restent, et la note que ton doigt vient de bouger dans l'accord est la seule qui change dans la pentatonique : ionien, mixolydien, lydien dominant, puis lydien.",
         chords:[{name:"D6",beats:8,voicing:"x-x-0-2-0-2",scale:"D:0"},
@@ -5120,7 +5131,9 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
   { id:"voyage", label:"🧭 Voyages", groove:"cinema",   // v1071 : les huit voyages quittent le Cinéma (mêmes réglages de son)
     grids:[
       // v1037 — Le tour du monde sans bouger : Mi en pédale case 7 (corde de La), triades simples Ré-Sol-Si, main entre les cases 5 et 8, aucune corde à vide
-      {id:"cin-tour-du-monde-mi", lecons:{exotiques:3, immobile:3, "cordes-vides":2}, fondamentale:"nom", root:"E", scale:"E:major:1", voix:"guitar",
+      {id:"cin-tour-du-monde-mi", soloDb:5, phraseDb:-5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", phrase:[["F#4",0.0,2.0],["A4",2.0,2.5],["B4",4.5,0.5],["C#5",5.0,1.0],["A4",6.0,1.75],["G4",8.0,2.0],["E5",10.0,3.0],["G5",13.0,1.0],["B4",14.0,1.75],["E5",16.0,2.0],["C#5",18.0,1.0],["B4",19.0,1.0],["A4",20.0,3.75],["A4",24.0,2.0],["D5",26.0,1.75],["D5",28.0,1.0],["E5",29.0,1.0],["A4",30.0,1.75],["F5",32.0,1.5],["E5",33.5,2.25],["E5",36.0,3.0],["D5",39.0,0.75],["C5",40.0,2.0],["A4",42.0,1.75],["A4",44.0,1.0],["G#4",45.0,1.0],["F4",46.0,1.0],["E4",47.0,0.75],["C5",48.0,2.0],["C5",50.0,2.0],["G#4",52.0,2.0],["C5",54.0,1.75],["E5",56.0,2.0],["E5",58.0,2.0],["C5",60.0,2.0],["B4",62.0,1.75],["A4",64.0,2.0],["B4",66.0,1.0],["C5",67.0,1.0],["B4",68.0,2.0],["G#4",70.0,1.75],["G5",72.0,2.0],["E5",74.0,2.0],["C5",76.0,3.75],["D#4",80.0,2.0],["F#4",82.0,2.0],["A#4",84.0,1.0],["F#4",85.0,2.75],["G4",88.0,2.0],["A#4",90.0,2.0],["D#5",92.0,2.0],["G4",94.0,1.75],["A#4",96.0,2.0],["D5",98.0,1.75],["A#5",100.0,2.0],["G5",102.0,1.75],["E5",104.0,1.0],["C#5",105.0,1.0],["A#4",106.0,1.75],["C#5",108.0,3.75],["C#5",112.0,2.0],["A#4",114.0,1.75],["F#5",116.0,1.0],["E5",117.0,1.0],["D5",118.0,1.0],["A#4",119.0,0.75],["A4",120.0,1.0],["B4",121.0,1.0],["D5",122.0,2.0],["A4",124.0,2.0],["B4",126.0,1.75],["E4",128.0,2.0],["A4",130.0,2.0],["C#5",132.0,3.75],["E5",136.0,2.0],["C#5",138.0,1.0],["B4",139.0,1.0],["G#4",140.0,2.0],["B4",142.0,1.75]],   // v1332 : Phrase écrite pour le shakuhachi (flute:false = pays sans flûte, la voix Phrase habituelle reprend)
+        lecons:{exotiques:3, immobile:3, "cordes-vides":2}, fondamentale:"nom", root:"E", scale:"E:major:1", voix:"guitar",
         name:"Le tour du monde sans bouger — huit pays, trois accords chacun, sur un Mi", tempo:66, groove:"atmos",
         desc:"Huit pays, trois accords chacun, et la main ne bouge pas : le Mi reste en basse, case 7 sur la corde de La, et tous les doigts restent entre les cases 5 et 8. Au-dessus, des triades toutes simples sur les cordes de Ré, Sol et Si ; aucune corde à vide. Trois accords par pays, le temps que le mode s'installe avant de partir. Irlande : Fa#m, Do#dim, La sur Mi (le Do# et le Sol du dorien). Japon : La sus4, Rém, La sus4 (la gamme In sen n'offre que ces deux accords dans cette position ; le Fa du Rém est la couleur, encadrée par le suspendu). Espagne : Lam, Fa, Ré diminué sur Mi (la descente andalouse qui se pose sur le Mi au b9). Orient : Fam, Do augmenté, Lam (Fa et Sol#, la seconde augmentée). Hongrie, le plus loin : Do, Ré#m, Ré# (la triade saute d'un ton et demi, Do → Ré#, la seconde augmentée du hongrois). Ukraine : Solm, Sol diminué, Do# diminué (le La# et le Do#). Inde : Do#m, Fa#, Ré augmenté (le Sol# et le La# du lydien dominant). Écosse : Ré, La, Do#m (le Ré et le Sol#, le mixolydien des cornemuses), puis retour en Irlande. D'un accord au suivant, un ou deux doigts bougent ; seul le passage Do → Ré#m, en Hongrie, fait glisser la triade d'un bloc. Les escales longues (Irlande, Orient, Hongrie, Écosse) donnent 2 mesures à chaque accord, les autres 1 : la basse avance avec l'harmonie. En paysage, le nom du pays s'affiche à l'arrivée. La basse écrite garde le Mi sur le premier temps (la pédale), puis pose la fondamentale de la triade et finit sur la note qui fait la couleur du pays : elle dit l'accord que la main joue au-dessus. Le Solo écrit joue le thème du pays dès son arrivée, à travers ses trois accords ; l'improvisé démarre sur la note qui vient d'arriver à chaque frontière.",
         chords:[{name:"F#m/E",beats:8,voicing:"x-7-7-6-7-x",scale:"E:major:1",pays:"🇮🇪 Irlande",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"B4",1],[1,"C#5",1.5],[2.5,"E5",0.5],[3,"F#5",2],[6,"E5",0.5],[6.5,"D5",0.5],[7,"C#5",1]]},
@@ -5129,15 +5142,15 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"Asus4/E",beats:4,voicing:"x-7-7-7-5-x",scale:"E:japanese:1",pays:"🇯🇵 Japon",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,22,0.5]],soloEcrit:[[0,"F5",2],[2,"E5",1],[3,"B4",1]]},
                 {name:"Dm/E",beats:4,voicing:"x-7-7-7-6-x",scale:"E:japanese:1",pays:"🇯🇵 Japon",basseLigne:[[0,12,1.5],[1.5,10,0.5],[2,10,1.5],[3.5,13,0.5]],soloEcrit:[[0,"A4",1],[1,"B4",0.5],[1.5,"D5",0.5],[2,"E5",2]]},
                 {name:"Asus4/E",beats:4,voicing:"x-7-7-7-5-x",scale:"E:japanese:1",pays:"🇯🇵 Japon",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,22,0.5]]},
-                {name:"Am/E",beats:4,voicing:"x-7-7-5-5-x",scale:"E:harmonicMinor:4",pays:"🇪🇸 Espagne",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,20,0.5]],soloEcrit:[[0,"G#4",1],[1,"A4",0.5],[1.5,"B4",0.5],[2,"C5",1],[3,"B4",0.5],[3.5,"A4",0.5]]},
-                {name:"F/E",beats:4,voicing:"x-7-7-5-6-x",scale:"E:harmonicMinor:4",pays:"🇪🇸 Espagne",basseLigne:[[0,12,1.5],[1.5,13,0.5],[2,13,1.5],[3.5,20,0.5]],soloEcrit:[[0,"G#4",1],[1,"F4",1],[2,"E4",2]]},
-                {name:"Ddim/E",beats:4,voicing:"x-7-6-7-6-x",scale:"E:harmonicMinor:4",pays:"🇪🇸 Espagne",basseLigne:[[0,12,1.5],[1.5,10,0.5],[2,10,1.5],[3.5,16,0.5]]},
+                {name:"Am/E",beats:4,flute:false,voicing:"x-7-7-5-5-x",scale:"E:harmonicMinor:4",pays:"🇪🇸 Espagne",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,20,0.5]],soloEcrit:[[0,"G#4",1],[1,"A4",0.5],[1.5,"B4",0.5],[2,"C5",1],[3,"B4",0.5],[3.5,"A4",0.5]]},
+                {name:"F/E",beats:4,flute:false,voicing:"x-7-7-5-6-x",scale:"E:harmonicMinor:4",pays:"🇪🇸 Espagne",basseLigne:[[0,12,1.5],[1.5,13,0.5],[2,13,1.5],[3.5,20,0.5]],soloEcrit:[[0,"G#4",1],[1,"F4",1],[2,"E4",2]]},
+                {name:"Ddim/E",beats:4,flute:false,voicing:"x-7-6-7-6-x",scale:"E:harmonicMinor:4",pays:"🇪🇸 Espagne",basseLigne:[[0,12,1.5],[1.5,10,0.5],[2,10,1.5],[3.5,16,0.5]]},
                 {name:"Fm/E",beats:8,voicing:"x-7-6-5-6-x",scale:"E:hungarianMinor:4",pays:"🕌 Orient",basseLigne:[[0,12,1.5],[1.5,13,0.5],[2,13,1.5],[3.5,16,0.5]],soloEcrit:[[0,"E5",1],[1,"F5",1],[2,"G#5",2],[4,"F5",0.5],[4.5,"E5",0.5],[5,"D#5",1.5],[6.5,"E5",1.5]]},
                 {name:"Caug/E",beats:8,voicing:"x-7-6-5-5-x",scale:"E:hungarianMinor:4",pays:"🕌 Orient",basseLigne:[[0,12,1.5],[1.5,20,0.5],[2,20,1.5],[3.5,16,0.5]],soloEcrit:[[0,"C5",1],[1,"B4",1],[2,"G#4",1],[3,"A4",1],[4,"G#4",0.5],[4.5,"F4",0.5],[5,"E4",3]]},
                 {name:"Am/E",beats:8,voicing:"x-7-7-5-5-x",scale:"E:hungarianMinor:4",pays:"🕌 Orient",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,20,0.5]]},
-                {name:"C/E",beats:8,voicing:"x-7-5-5-5-x",scale:"E:hungarianMinor:0",pays:"🇭🇺 Hongrie",basseLigne:[[0,12,1.5],[1.5,20,0.5],[2,20,1.5],[3.5,15,0.5]],soloEcrit:[[0,"B4",1],[1,"A#4",1],[2,"G4",1],[3,"F#4",1],[4,"G4",2],[6,"A#4",2]]},
-                {name:"D#m/E",beats:8,voicing:"x-7-8-8-7-x",scale:"E:hungarianMinor:0",pays:"🇭🇺 Hongrie",basseLigne:[[0,12,1.5],[1.5,11,0.5],[2,11,1.5],[3.5,18,0.5]],soloEcrit:[[0,"B4",1],[1,"C5",1],[2,"D#5",1],[3,"E5",1],[4,"D#5",0.5],[4.5,"C5",0.5],[5,"B4",3]]},
-                {name:"D#/E",beats:8,voicing:"x-7-8-8-8-x",scale:"E:hungarianMinor:0",pays:"🇭🇺 Hongrie",basseLigne:[[0,12,1.5],[1.5,11,0.5],[2,11,1.5],[3.5,15,0.5]]},
+                {name:"C/E",beats:8,flute:false,voicing:"x-7-5-5-5-x",scale:"E:hungarianMinor:0",pays:"🇭🇺 Hongrie",basseLigne:[[0,12,1.5],[1.5,20,0.5],[2,20,1.5],[3.5,15,0.5]],soloEcrit:[[0,"B4",1],[1,"A#4",1],[2,"G4",1],[3,"F#4",1],[4,"G4",2],[6,"A#4",2]]},
+                {name:"D#m/E",beats:8,flute:false,voicing:"x-7-8-8-7-x",scale:"E:hungarianMinor:0",pays:"🇭🇺 Hongrie",basseLigne:[[0,12,1.5],[1.5,11,0.5],[2,11,1.5],[3.5,18,0.5]],soloEcrit:[[0,"B4",1],[1,"C5",1],[2,"D#5",1],[3,"E5",1],[4,"D#5",0.5],[4.5,"C5",0.5],[5,"B4",3]]},
+                {name:"D#/E",beats:8,flute:false,voicing:"x-7-8-8-8-x",scale:"E:hungarianMinor:0",pays:"🇭🇺 Hongrie",basseLigne:[[0,12,1.5],[1.5,11,0.5],[2,11,1.5],[3.5,15,0.5]]},
                 {name:"Gm/E",beats:4,voicing:"x-7-8-7-8-x",scale:"E:harmonicMinor:3",pays:"🇺🇦 Ukraine",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,18,0.5]],soloEcrit:[[0,"D5",1],[1,"C#5",1],[2,"A#4",1],[3,"G4",1]]},
                 {name:"Gdim/E",beats:4,voicing:"x-7-8-6-8-x",scale:"E:harmonicMinor:3",pays:"🇺🇦 Ukraine",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,21,0.5]],soloEcrit:[[0,"A#4",0.5],[0.5,"C#5",0.5],[1,"D5",1],[2,"E5",2]]},
                 {name:"C#dim/E",beats:4,voicing:"x-7-5-6-5-x",scale:"E:harmonicMinor:3",pays:"🇺🇦 Ukraine",basseLigne:[[0,12,1.5],[1.5,21,0.5],[2,21,1.5],[3.5,15,0.5]]},
@@ -5148,7 +5161,9 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"A/E",beats:8,voicing:"x-7-7-6-5-x",scale:"E:major:4",pays:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 Écosse",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,21,0.5]],soloEcrit:[[0,"B4",1],[1,"C#5",1],[2,"D5",1],[3,"F#5",1],[4,"E5",4]]},
                 {name:"C#m/E",beats:8,voicing:"x-7-6-6-5-x",scale:"E:major:4",pays:"🏴󠁧󠁢󠁳󠁣󠁴󠁿 Écosse",basseLigne:[[0,12,1.5],[1.5,21,0.5],[2,21,1.5],[3.5,16,0.5]]}]},
       // v1049 — Deuxième voyage, l'Asie : pédale de La (case 7, corde de Ré), triades Sol-Si-Mi entre les cases 7 et 10
-      {id:"cin-tour-asie-la", lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"A", scale:"A:pentatonic:0", voix:"guitar",
+      {id:"cin-tour-asie-la", soloDb:5.5, phraseDb:-5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", phrase:[["A4",0.0,1.5],["B4",1.5,0.5],["C#5",2.0,3.0],["B4",5.0,1.0],["E4",6.0,1.75],["E4",8.0,2.0],["A4",10.0,2.0],["B4",12.0,2.0],["A4",14.0,1.75],["E5",16.0,3.0],["F#5",19.0,1.0],["E5",20.0,1.0],["B4",21.0,2.75],["D5",24.0,2.0],["B4",26.0,1.75],["F#5",28.0,2.0],["A5",30.0,1.0],["F#5",31.0,0.75],["D5",32.0,1.0],["E5",33.0,1.0],["F#5",34.0,1.75],["D5",36.0,2.0],["G4",38.0,1.75],["A4",40.0,2.0],["C5",42.0,1.75],["D5",44.0,1.0],["F5",45.0,1.0],["D5",46.0,1.75],["C5",48.0,2.0],["A4",50.0,2.0],["B4",52.0,1.0],["A4",53.0,1.0],["E5",54.0,1.75],["C5",56.0,3.0],["E5",59.0,1.0],["F5",60.0,2.0],["C5",62.0,1.75],["A4",64.0,3.0],["B4",67.0,1.0],["E5",68.0,3.75],["G4",72.0,2.0],["A4",74.0,1.0],["G4",75.0,0.75],["D5",76.0,2.0],["G4",78.0,1.75],["D5",80.0,2.0],["C5",82.0,1.75],["D5",84.0,2.0],["F5",86.0,2.0],["E5",88.0,2.0],["F5",90.0,1.75],["C#5",92.0,2.0],["G#4",94.0,2.0],["F5",96.0,2.0],["G#4",98.0,1.75],["E5",100.0,2.0],["C#5",102.0,2.0],["E5",104.0,2.0],["C#5",106.0,1.75],["F5",108.0,2.0],["C#5",110.0,1.75],["D5",112.0,2.0],["B4",114.0,1.75],["E5",116.0,2.0],["C#5",118.0,1.75],["F#4",120.0,2.0],["B4",122.0,2.0],["C#5",124.0,2.0],["D#5",126.0,1.75],["B4",128.0,2.0],["C#5",130.0,2.0],["B4",132.0,2.0],["G#4",134.0,1.75],["E4",136.0,2.0],["G#4",138.0,2.0],["B4",140.0,3.75]],   // v1332 : Phrase écrite pour le shakuhachi
+        lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"A", scale:"A:pentatonic:0", voix:"guitar",
         name:"L'Asie sans bouger — huit pays, trois accords chacun, sur un La", tempo:66, groove:"atmos",
         desc:"Deuxième voyage, l'Asie : huit pays, trois accords chacun, et la main ne bouge pas. Le La reste en basse, case 7 sur la corde de Ré ; au-dessus, une triade sur Sol-Si-Mi, toujours entre les cases 7 et 10. Aucune corde à vide. Chine (penta majeure) : La, Mi sus4, Si sus4 — le Mi sus4 se joue en barré case 7, x-7-9-9-10-7 (le doigté de Jérémy) : le La passe alors sur la corde de Si. Mongolie (gamme Yo) : La sus4, Si sus4, Sim. Chine du Sud (Man gong) : Sol sus4, Fa, Rém. Japon (Hirajoshi) : Lam, Fa, Mi sus4 — Fa → Mi, la chute du koto. Bali (le pelog, approché ici par le phrygien) : Do, Sol sus4, Fa. Inde (raga Bhairav) : Rém, Do#, La — Sib et Sol# autour du La. Inde du Sud (raga Charukesi) : La augmenté, Sol, Mim — le Fa (sixte mineure) dans un majeur. Himalaya (raga Kalyan, lydien) : Si, Sol#m, Mi — le Ré# lumineux. Puis retour en Chine. La basse écrite pose le La (la pédale) sur le premier temps, puis la fondamentale de la triade et la note qui fait la couleur du pays. Le Solo écrit joue un thème par pays dès l'arrivée ; en paysage, le pays s'affiche à son arrivée.",
         chords:[{name:"A/A",beats:8,voicing:"x-x-7-9-10-9",scale:"A:pentatonic:0",pays:"🇨🇳 Chine",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,19,0.5]],soloEcrit:[[0,"E5",1],[1,"F#5",1],[2,"A5",2],[4,"F#5",1],[5,"E5",1],[6,"C#5",2]]},
@@ -5201,15 +5216,17 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"F/D",beats:8,voicing:"x-5-7-5-6-x",scale:"D:major:2",pays:"🇪🇸 Andalousie",basseLigne:[[0,0,1.5],[1.5,3,0.5],[2,3,1.5],[3.5,7,0.5]],soloEcrit:[[0,"A4",2],[2,"A#4",1],[3,"C5",1],[4,"A#4",2],[6,"A4",2]]},
                 {name:"D#/D",beats:8,voicing:"x-5-8-8-8-x",scale:"D:major:2",pays:"🇪🇸 Andalousie",basseLigne:[[0,0,1.5],[1.5,1,0.5],[2,1,1.5],[3.5,8,0.5]],soloEcrit:[[0,"G4",1],[1,"A4",1],[2,"A#4",1],[3,"A4",1],[4,"D#5",1],[5,"D5",3]]}]},
       // v1053/v1054 — Quatrième voyage, les Amériques et l'Afrique : pédale de Sol (case 5, corde de Ré), triades Sol-Si-Mi entre les cases 5 et 8
-      {id:"cin-tour-ameriques-afrique-sol", lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"G", scale:"G:blues:0", voix:"guitar",
+      {id:"cin-tour-ameriques-afrique-sol", soloDb:5.5, phraseDb:-5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", phrase:[["B4",0.0,2.0],["G4",2.0,2.0],["E4",4.0,2.0],["B4",6.0,1.75],["E5",8.0,2.0],["D5",10.0,2.0],["E5",12.0,1.0],["G5",13.0,1.0],["E5",14.0,1.0],["D5",15.0,0.75],["B4",16.0,2.0],["A4",18.0,1.0],["G4",19.0,1.0],["D5",20.0,2.0],["B4",22.0,1.75],["G4",24.0,2.0],["D5",26.0,2.0],["G4",28.0,2.0],["F#4",30.0,1.75],["D5",32.0,2.0],["A4",34.0,2.0],["E5",36.0,2.0],["D5",38.0,1.75],["D5",40.0,2.0],["A4",42.0,2.0],["E5",44.0,2.0],["C5",46.0,1.75],["E5",48.0,2.0],["A4",50.0,2.0],["C#5",52.0,2.0],["A4",54.0,1.75],["A4",56.0,2.0],["G4",58.0,2.0],["C#5",60.0,2.0],["F5",62.0,1.75],["F4",64.0,2.0],["A4",66.0,2.0],["B4",68.0,2.0],["F5",70.0,1.75],["D5",72.0,2.0],["F5",74.0,2.0],["G5",76.0,1.0],["F5",77.0,1.0],["D5",78.0,1.75],["C5",80.0,2.0],["F5",82.0,2.0],["A4",84.0,2.0],["C5",86.0,1.75],["G4",88.0,2.0],["D5",90.0,2.0],["C5",92.0,2.0],["D5",94.0,1.75],["A#4",96.0,2.0],["D5",98.0,1.75],["C5",100.0,2.0],["F5",102.0,1.75],["F5",104.0,1.0],["D5",105.0,1.0],["C5",106.0,1.75],["D5",108.0,2.0],["F5",110.0,2.0],["A#4",112.0,2.0],["G4",114.0,1.75],["A#4",116.0,2.0],["F5",118.0,4.0],["A#4",122.0,1.75],["F5",124.0,4.0],["A#4",128.0,2.0],["C5",130.0,1.75],["A4",132.0,2.0],["F4",134.0,1.75],["D5",136.0,2.0],["E5",138.0,1.75],["A4",140.0,2.0],["D5",142.0,1.75],["A#4",144.0,2.0],["G4",146.0,1.75],["D5",148.0,2.0],["D#5",150.0,1.75],["D5",152.0,2.0],["A#4",154.0,1.75]],   // v1332 : Phrase écrite pour le shakuhachi (flute:false = pays sans flûte, la voix Phrase habituelle reprend)
+        lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"G", scale:"G:blues:0", voix:"guitar",
         name:"Les Amériques et l'Afrique sans bouger — huit pays, trois accords chacun, sur un Sol", tempo:66, groove:"atmos",
         desc:"Quatrième voyage, les Amériques et l'Afrique : huit pays, trois accords chacun, et la main ne bouge pas. Le Sol reste en basse, case 5 sur la corde de Ré ; au-dessus, une triade sur Sol-Si-Mi, toujours entre les cases 5 et 8. Aucune corde à vide. Le voyage part des pays majeurs, passe par le Mali, sans tierce, qui sert de pont, puis traverse les pays mineurs : à chaque frontière, une ou deux notes changent, et la bascule du Si au Sib n'arrive qu'une fois, au milieu, comme un changement de lumière. Appalaches (penta majeure) : Sol, La sus4, Sol. Afrique du Sud (majeur, le township) : Sim, Ré, Lam. Brésil (lydien dominant, le baião) : La, La augmenté, Si diminué — le Do# puis le Fa. Mali (penta suspendue, le blues du désert) : Rém, Fa, Sol sus4. Andes (penta mineure) : Sib, Fa sus4, Sol sus4. Delta du Mississippi (blues) : Solm, Sol diminué, Sibm — le Réb, la note bleue. Cuba (dorien) : Fa, Lam, Rém. Éthiopie (tezeta, approchée par l'Hirajoshi) : Solm, Mib, Solm — et un seul doigt, le Sib qui remonte au Si, ramène la lumière des Appalaches. La basse écrite pose le Sol sur le premier temps, puis la fondamentale de la triade et la note qui fait la couleur du pays. Le Solo écrit joue un thème par pays dès l'arrivée ; en paysage, le pays s'affiche à son arrivée.",
-        chords:[{name:"G",beats:8,voicing:"x-x-5-7-8-7",scale:"G:pentatonic:0",pays:"🪕 Appalaches",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,19,0.5]],soloEcrit:[[0,"D5",0.5],[0.5,"E5",0.5],[1,"G5",1],[2,"E5",1],[3,"D5",1],[4,"B4",1],[5,"A4",1],[6,"G4",2]]},
-                {name:"Asus4/G",beats:8,voicing:"x-x-5-7-5-5",scale:"G:pentatonic:0",pays:"🪕 Appalaches",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"A4",0.5],[0.5,"B4",0.5],[1,"D5",1],[2,"G4",2]]},
-                {name:"G",beats:8,voicing:"x-x-5-7-8-7",scale:"G:pentatonic:0",pays:"🪕 Appalaches",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,19,0.5]]},
-                {name:"Bm/G",beats:8,voicing:"x-x-5-7-7-7",scale:"G:major:0",pays:"🇿🇦 Afrique du Sud",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,23,0.5]],soloEcrit:[[0,"B4",1],[1,"D5",1],[2,"G5",2],[4,"E5",1],[5,"D5",1],[6,"B4",2]]},
-                {name:"D/G",beats:8,voicing:"x-x-5-7-7-5",scale:"G:major:0",pays:"🇿🇦 Afrique du Sud",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,23,0.5]],soloEcrit:[[0,"A4",1],[1,"C5",1],[2,"E5",2],[4,"D5",1],[5,"C5",1],[6,"A4",2]]},
-                {name:"Am/G",beats:8,voicing:"x-x-5-5-5-5",scale:"G:major:0",pays:"🇿🇦 Afrique du Sud",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"F#4",1],[1,"A4",1],[2,"D5",2],[4,"B4",2],[6,"G4",2]]},
+        chords:[{name:"G",beats:8,flute:false,voicing:"x-x-5-7-8-7",scale:"G:pentatonic:0",pays:"🪕 Appalaches",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,19,0.5]],soloEcrit:[[0,"D5",0.5],[0.5,"E5",0.5],[1,"G5",1],[2,"E5",1],[3,"D5",1],[4,"B4",1],[5,"A4",1],[6,"G4",2]]},
+                {name:"Asus4/G",beats:8,flute:false,voicing:"x-x-5-7-5-5",scale:"G:pentatonic:0",pays:"🪕 Appalaches",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"A4",0.5],[0.5,"B4",0.5],[1,"D5",1],[2,"G4",2]]},
+                {name:"G",beats:8,flute:false,voicing:"x-x-5-7-8-7",scale:"G:pentatonic:0",pays:"🪕 Appalaches",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,19,0.5]]},
+                {name:"Bm/G",beats:8,flute:false,voicing:"x-x-5-7-7-7",scale:"G:major:0",pays:"🇿🇦 Afrique du Sud",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,23,0.5]],soloEcrit:[[0,"B4",1],[1,"D5",1],[2,"G5",2],[4,"E5",1],[5,"D5",1],[6,"B4",2]]},
+                {name:"D/G",beats:8,flute:false,voicing:"x-x-5-7-7-5",scale:"G:major:0",pays:"🇿🇦 Afrique du Sud",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,23,0.5]],soloEcrit:[[0,"A4",1],[1,"C5",1],[2,"E5",2],[4,"D5",1],[5,"C5",1],[6,"A4",2]]},
+                {name:"Am/G",beats:8,flute:false,voicing:"x-x-5-5-5-5",scale:"G:major:0",pays:"🇿🇦 Afrique du Sud",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"F#4",1],[1,"A4",1],[2,"D5",2],[4,"B4",2],[6,"G4",2]]},
                 {name:"A/G",beats:8,voicing:"x-x-5-6-5-5",scale:"G:melodicMinor:3",pays:"🇧🇷 Brésil",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,18,0.5]],soloEcrit:[[0,"G4",0.5],[0.5,"A4",0.5],[1,"B4",1],[2,"C#5",1],[3,"D5",1],[4,"E5",1],[5,"F5",1],[6,"E5",2]]},
                 {name:"Aaug/G",beats:8,voicing:"x-x-5-6-6-5",scale:"G:melodicMinor:3",pays:"🇧🇷 Brésil",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,22,0.5]],soloEcrit:[[0,"C#5",1],[1,"D5",1],[2,"B4",2],[4,"A4",1],[5,"B4",1],[6,"C#5",2]]},
                 {name:"Bdim/G",beats:8,voicing:"x-x-5-7-6-7",scale:"G:melodicMinor:3",pays:"🇧🇷 Brésil",basseLigne:[[0,12,1.5],[1.5,16,0.5],[2,16,1.5],[3.5,22,0.5]],soloEcrit:[[0,"D5",1],[1,"F5",1],[2,"E5",1],[3,"C#5",1],[4,"D5",4]]},
@@ -5219,17 +5236,19 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"A#/G",beats:4,voicing:"x-x-5-7-6-6",scale:"G:pentatonic:4",pays:"🇵🇪 Andes",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,22,0.5]],soloEcrit:[[0,"D5",1],[1,"F5",0.5],[1.5,"D5",0.5],[2,"C5",1],[3,"A#4",1]]},
                 {name:"Fsus4/G",beats:4,voicing:"x-x-5-5-6-6",scale:"G:pentatonic:4",pays:"🇵🇪 Andes",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,17,0.5]],soloEcrit:[[0,"G4",2],[2,"A#4",1],[3,"C5",1]]},
                 {name:"Gsus4",beats:4,voicing:"x-x-5-7-8-8",scale:"G:pentatonic:4",pays:"🇵🇪 Andes",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,19,0.5]],soloEcrit:[[0,"D5",1],[1,"C5",0.5],[1.5,"A#4",0.5],[2,"G4",2]]},
-                {name:"Gm",beats:8,voicing:"x-x-5-7-8-6",scale:"G:blues:0",pays:"🇺🇸 Delta du Mississippi",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"G4",1],[1,"A#4",1],[2,"C5",1],[3,"C#5",1],[4,"D5",2],[6,"C5",1],[7,"A#4",1]]},
-                {name:"Gdim",beats:8,voicing:"x-x-5-6-8-6",scale:"G:blues:0",pays:"🇺🇸 Delta du Mississippi",basseLigne:[[0,12,1.5],[1.5,18,0.5],[2,18,1.5],[3.5,15,0.5]],soloEcrit:[[0,"G4",3],[3,"F4",1],[4,"G4",1],[5,"A#4",1],[6,"D5",2]]},
-                {name:"A#m/G",beats:8,voicing:"x-x-5-6-6-6",scale:"G:blues:0",pays:"🇺🇸 Delta du Mississippi",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,18,0.5]],soloEcrit:[[0,"C#5",1],[1,"C5",1],[2,"A#4",1],[3,"G4",1],[4,"G4",4]]},
-                {name:"F/G",beats:4,voicing:"x-x-5-5-6-5",scale:"G:major:1",pays:"🇨🇺 Cuba",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,17,0.5]],soloEcrit:[[0,"D5",0.5],[0.5,"F5",0.5],[1,"E5",1],[2,"D5",0.5],[2.5,"A#4",0.5],[3,"C5",1]]},
-                {name:"Am/G",beats:4,voicing:"x-x-5-5-5-5",scale:"G:major:1",pays:"🇨🇺 Cuba",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"A4",1],[1,"A#4",0.5],[1.5,"C5",0.5],[2,"D5",2]]},
-                {name:"Dm/G",beats:4,voicing:"x-x-5-7-6-5",scale:"G:major:1",pays:"🇨🇺 Cuba",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,22,0.5]],soloEcrit:[[0,"E5",1],[1,"D5",1],[2,"G4",2]]},
+                {name:"Gm",beats:8,flute:false,voicing:"x-x-5-7-8-6",scale:"G:blues:0",pays:"🇺🇸 Delta du Mississippi",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"G4",1],[1,"A#4",1],[2,"C5",1],[3,"C#5",1],[4,"D5",2],[6,"C5",1],[7,"A#4",1]]},
+                {name:"Gdim",beats:8,flute:false,voicing:"x-x-5-6-8-6",scale:"G:blues:0",pays:"🇺🇸 Delta du Mississippi",basseLigne:[[0,12,1.5],[1.5,18,0.5],[2,18,1.5],[3.5,15,0.5]],soloEcrit:[[0,"G4",3],[3,"F4",1],[4,"G4",1],[5,"A#4",1],[6,"D5",2]]},
+                {name:"A#m/G",beats:8,flute:false,voicing:"x-x-5-6-6-6",scale:"G:blues:0",pays:"🇺🇸 Delta du Mississippi",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,18,0.5]],soloEcrit:[[0,"C#5",1],[1,"C5",1],[2,"A#4",1],[3,"G4",1],[4,"G4",4]]},
+                {name:"F/G",beats:4,flute:false,voicing:"x-x-5-5-6-5",scale:"G:major:1",pays:"🇨🇺 Cuba",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,17,0.5]],soloEcrit:[[0,"D5",0.5],[0.5,"F5",0.5],[1,"E5",1],[2,"D5",0.5],[2.5,"A#4",0.5],[3,"C5",1]]},
+                {name:"Am/G",beats:4,flute:false,voicing:"x-x-5-5-5-5",scale:"G:major:1",pays:"🇨🇺 Cuba",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"A4",1],[1,"A#4",0.5],[1.5,"C5",0.5],[2,"D5",2]]},
+                {name:"Dm/G",beats:4,flute:false,voicing:"x-x-5-7-6-5",scale:"G:major:1",pays:"🇨🇺 Cuba",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,22,0.5]],soloEcrit:[[0,"E5",1],[1,"D5",1],[2,"G4",2]]},
                 {name:"Gm",beats:4,voicing:"x-x-5-7-8-6",scale:"G:japanese:0",pays:"🇪🇹 Éthiopie",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"D5",1],[1,"D#5",1],[2,"D5",1],[3,"A#4",1]]},
                 {name:"D#/G",beats:4,voicing:"x-x-5-8-8-6",scale:"G:japanese:0",pays:"🇪🇹 Éthiopie",basseLigne:[[0,12,1.5],[1.5,20,0.5],[2,20,1.5],[3.5,15,0.5]],soloEcrit:[[0,"A4",2],[2,"G4",2]]},
                 {name:"Gm",beats:4,voicing:"x-x-5-7-8-6",scale:"G:japanese:0",pays:"🇪🇹 Éthiopie",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"A#4",1],[1,"A4",1],[2,"G4",2]]}]},
       // v1055 — Une journée en ragas : pédale de Do (case 3, corde de La), triades Ré-Sol-Si entre les cases 3 et 6, basse façon tanpura (Sa-Pa)
-      {id:"cin-journee-ragas-do", lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"C", scale:"C:hungarianMinor:4", voix:"guitar",
+      {id:"cin-journee-ragas-do", soloDb:5.5, phraseDb:-5.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", phrase:[["G4",0.0,2.0],["E4",2.0,2.0],["G4",4.0,2.0],["C5",6.0,1.75],["E5",8.0,2.0],["F5",10.0,2.0],["C#5",12.0,2.0],["G#4",14.0,1.75],["E5",16.0,2.0],["G#4",18.0,2.0],["E5",20.0,3.75],["C5",24.0,2.0],["E5",26.0,1.75],["G4",28.0,2.0],["E4",30.0,1.75],["B4",32.0,1.0],["C5",33.0,1.0],["E5",34.0,1.75],["C5",36.0,2.0],["D5",38.0,2.0],["C5",40.0,2.0],["A#4",42.0,1.75],["G4",44.0,2.0],["A#4",46.0,2.0],["D5",48.0,2.0],["A#4",50.0,1.75],["F4",52.0,2.0],["D5",54.0,2.0],["F5",56.0,2.0],["D5",58.0,1.75],["D#5",60.0,2.0],["A#4",62.0,1.75],["G4",64.0,2.0],["A#4",66.0,1.75],["D5",68.0,2.0],["A#4",70.0,1.75],["G4",72.0,2.0],["C5",74.0,2.0],["D5",76.0,2.0],["E5",78.0,1.75],["D5",80.0,2.0],["B4",82.0,2.0],["F#4",84.0,2.0],["B4",86.0,1.75],["B4",88.0,2.0],["G4",90.0,2.0],["E5",92.0,2.0],["G5",94.0,1.75],["C5",96.0,2.0],["A#4",98.0,1.75],["D5",100.0,2.0],["E5",102.0,1.75],["D5",104.0,2.0],["A#4",106.0,1.75],["G#4",108.0,2.0],["A#4",110.0,2.0],["C5",112.0,2.0],["D#5",114.0,1.75],["F5",116.0,2.0],["C5",118.0,2.0],["C5",120.0,2.0],["G#4",122.0,1.75],["D#5",124.0,2.0],["F5",126.0,2.0],["D#5",128.0,2.0],["G#4",130.0,1.75],["F5",132.0,2.0],["C#5",134.0,1.75],["D#5",136.0,2.0],["C#5",138.0,1.75],["A#4",140.0,2.0],["G4",142.0,1.75]],   // v1332 : Phrase écrite pour le shakuhachi
+        lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"C", scale:"C:hungarianMinor:4", voix:"guitar",
         name:"Une journée en ragas — de l'aube à la nuit, sur un Do", tempo:60, groove:"atmos",
         desc:"Une journée en ragas : en Inde, chaque raga a son heure. On voyage dans le temps, de l'aube à la fin de la nuit, et la main ne bouge pas : le Do reste en basse, case 3 sur la corde de La, et la triade au-dessus reste entre les cases 3 et 6 sur Ré-Sol-Si. Aucune corde à vide. La basse joue comme un tanpura, le bourdon indien : Sa (Do) sur le premier temps, Pa (Sol) juste après — Ma (Fa) dans Malkauns, qui n'a pas de Pa —, puis la note de l'accord. Aube, Bhairav : Do, Réb, Mi — le Réb et le Lab autour du Do, l'heure grave. Matin, Bilawal : Mim, Sol, Do — le majeur tout simple. Midi, Sarang : Do sus4, Sol sus4, Sib — sans tierce, la lumière écrasante. Après-midi, Kafi : Mib, Dom, Solm — le dorien. Crépuscule, Yaman : Sol, Sim, Mim — le Fa# du lydien. Soir, Khamaj : Do, Mi diminué, Sib — le Sib qui adoucit. Nuit, Malkauns : Sib sus4, Fam, Lab — cinq notes, ni Ré ni Sol. Fin de nuit, Bhairavi : Réb, Lab sus4, Dom — et un seul doigt (Mib → Mi) fait se lever l'aube de Bhairav. Le Solo écrit joue un thème par raga ; en paysage, l'heure s'affiche à son arrivée.",
         chords:[{name:"C",beats:8,voicing:"x-3-5-5-5-x",scale:"C:hungarianMinor:4",pays:"🌅 Aube · Bhairav",basseLigne:[[0,12,1.5],[1.5,7,0.5],[2,16,1.5],[3.5,19,0.5]],soloEcrit:[[0,"C5",2],[2,"C#5",1],[3,"C5",1],[4,"E5",2],[6,"F5",1],[7,"E5",1]]},
@@ -5257,26 +5276,29 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"G#sus4/C",beats:4,voicing:"x-3-6-6-4-x",scale:"C:major:2",pays:"🌌 Fin de nuit · Bhairavi",basseLigne:[[0,12,1.5],[1.5,7,0.5],[2,20,1.5],[3.5,13,0.5]],soloEcrit:[[0,"G4",2],[2,"G#4",1],[3,"A#4",1]]},
                 {name:"Cm",beats:4,voicing:"x-3-5-5-4-x",scale:"C:major:2",pays:"🌌 Fin de nuit · Bhairavi",basseLigne:[[0,12,1.5],[1.5,7,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"C#5",1],[1,"D#5",1],[2,"C5",2]]}]},
       // v1056 — Le Japon en cinq gammes : pédale de Fa# (case 4, corde de Ré), Sol-Si-Mi entre les cases 2 et 5
-      {id:"cin-japon-cinq-gammes", lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"F#", scale:"F#:japanese:4", voix:"guitar",
+      // v1324 : resserrée (15 accords de 2 mesures, 2 min → 10 accords de durées inégales, 50 s), son de « Sous le nuage » (nylon en arpège, fretless,
+      //         Solo clair) et gestes du koto au Solo : à chaque gamme, il tire la note qui la colore. Phrase et basse écrites. Main toujours immobile.
+      {id:"cin-japon-cinq-gammes", soloDb:1.5, phraseDb:-2.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", lecons:{exotiques:3, immobile:3, voicings:1}, fondamentale:"nom", root:"F#", scale:"F#:japanese:4", voix:"nylon", basseSon:"fretlessReel", soloGuitare:"electric",
+        arp:true, arpMotif:[0,2,-1,1,-2,2,-1,1], arpPas:0.5,
         name:"Le Japon en cinq gammes — de la gamme claire au temple, sur un Fa#", tempo:56, groove:"atmos",
-        desc:"Le Japon en cinq gammes : un seul pays, cinq gammes pentatoniques cousines, et la main ne bouge pas. Le Fa# reste en basse, case 4 sur la corde de Ré ; au-dessus, Sol-Si-Mi entre les cases 2 et 5. Aucune corde à vide. On part de la gamme claire et on descend vers les gammes du temple. Yo, la gamme claire des chants populaires : Fa# sus4, Si, Sol#m — sans demi-ton. Kumoi, le nuage : Fa#m, Ré# diminué, Fa#m — la tierce mineure arrive. Hirajoshi, la gamme du koto : Ré, Fa#m, Ré — le Ré, sixte mineure, juste au-dessus du Do#. In sen, le temple : Fa# sus4, Mim, Fa# sus4 — le Sol, un demi-ton au-dessus de la basse. Iwato, la porte de pierre : Do, Mim, Do — le Do, une quinte diminuée sur la basse : la plus sombre. Puis la gamme claire revient. Une gamme pentatonique ne donne que deux accords dans une position : l'accord du milieu est la couleur, ceux qui l'entourent sont le silence autour d'elle. Chaque accord dure deux mesures : le Japon prend son temps. La basse pose le Fa# sur le premier temps, puis la fondamentale de l'accord et la note qui fait la couleur de la gamme. Le Solo écrit joue un thème par gamme ; en paysage, la gamme s'affiche à son arrivée.",
-        chords:[{name:"F#sus4",beats:8,voicing:"x-x-4-4-2-2",scale:"F#:japanese:4",pays:"🌸 Yo · la gamme claire",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,19,0.5]],soloEcrit:[[0,"C#5",2],[2,"D#5",1],[3,"F#5",1],[4,"D#5",2],[6,"C#5",2]]},
-                {name:"B/F#",beats:8,voicing:"x-x-4-4-4-2",scale:"F#:japanese:4",pays:"🌸 Yo · la gamme claire",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,21,0.5]],soloEcrit:[[0,"B4",2],[2,"C#5",1],[3,"B4",1],[4,"G#4",2],[6,"F#4",2]]},
-                {name:"G#m/F#",beats:8,voicing:"x-x-4-4-4-4",scale:"F#:japanese:4",pays:"🌸 Yo · la gamme claire",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"G#4",1],[1,"B4",1],[2,"C#5",2],[4,"F#4",4]]},
-                {name:"F#m",beats:8,voicing:"x-x-4-2-2-2",scale:"F#:japanese:2",pays:"☁️ Kumoi · le nuage",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"A4",2],[2,"G#4",1],[3,"F#4",1],[4,"G#4",2],[6,"A4",2]]},
-                {name:"D#dim/F#",beats:8,voicing:"x-x-4-2-4-2",scale:"F#:japanese:2",pays:"☁️ Kumoi · le nuage",basseLigne:[[0,12,1.5],[1.5,21,0.5],[2,21,1.5],[3.5,15,0.5]],soloEcrit:[[0,"C#5",3],[3,"D#5",1],[4,"C#5",2],[6,"A4",2]]},
-                {name:"F#m",beats:8,voicing:"x-x-4-2-2-2",scale:"F#:japanese:2",pays:"☁️ Kumoi · le nuage",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"G#4",2],[2,"A4",1],[3,"G#4",1],[4,"F#4",4]]},
-                {name:"D/F#",beats:8,voicing:"x-x-4-2-3-2",scale:"F#:japanese:0",pays:"🏯 Hirajoshi · le koto",basseLigne:[[0,12,1.5],[1.5,20,0.5],[2,20,1.5],[3.5,15,0.5]],soloEcrit:[[0,"C#5",2],[2,"D5",2],[4,"C#5",1],[5,"A4",1],[6,"G#4",2]]},
-                {name:"F#m",beats:8,voicing:"x-x-4-2-2-2",scale:"F#:japanese:0",pays:"🏯 Hirajoshi · le koto",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"F#4",3],[3,"G#4",1],[4,"A4",2],[6,"C#5",2]]},
-                {name:"D/F#",beats:8,voicing:"x-x-4-2-3-2",scale:"F#:japanese:0",pays:"🏯 Hirajoshi · le koto",basseLigne:[[0,12,1.5],[1.5,20,0.5],[2,20,1.5],[3.5,15,0.5]],soloEcrit:[[0,"D5",3],[3,"C#5",1],[4,"G#4",4]]},
-                {name:"F#sus4",beats:8,voicing:"x-x-4-4-2-2",scale:"F#:japanese:1",pays:"🌫️ In sen · le temple",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,19,0.5]],soloEcrit:[[0,"F#5",2],[2,"G5",1],[3,"F#5",1],[4,"C#5",2],[6,"B4",2]]},
-                {name:"Em/F#",beats:8,voicing:"x-x-4-4-5-3",scale:"F#:japanese:1",pays:"🌫️ In sen · le temple",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,13,0.5]],soloEcrit:[[0,"C#5",1],[1,"E5",1],[2,"F#5",2],[4,"E5",2],[6,"C#5",2]]},
-                {name:"F#sus4",beats:8,voicing:"x-x-4-4-2-2",scale:"F#:japanese:1",pays:"🌫️ In sen · le temple",basseLigne:[[0,12,1.5],[1.5,17,0.5],[2,17,1.5],[3.5,19,0.5]],soloEcrit:[[0,"B4",1],[1,"G4",1],[2,"F#4",2],[4,"G4",1],[5,"F#4",3]]},
-                {name:"C/F#",beats:8,voicing:"x-x-4-5-5-3",scale:"F#:japanese:3",pays:"🗻 Iwato · la porte de pierre",basseLigne:[[0,12,1.5],[1.5,18,0.5],[2,18,1.5],[3.5,13,0.5]],soloEcrit:[[0,"G4",2],[2,"F#4",2],[4,"B4",2],[6,"C5",2]]},
-                {name:"Em/F#",beats:8,voicing:"x-x-4-4-5-3",scale:"F#:japanese:3",pays:"🗻 Iwato · la porte de pierre",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,13,0.5]],soloEcrit:[[0,"E5",3],[3,"C5",1],[4,"B4",2],[6,"G4",2]]},
-                {name:"C/F#",beats:8,voicing:"x-x-4-5-5-3",scale:"F#:japanese:3",pays:"🗻 Iwato · la porte de pierre",basseLigne:[[0,12,1.5],[1.5,18,0.5],[2,18,1.5],[3.5,13,0.5]],soloEcrit:[[0,"F#4",2],[2,"G4",1],[3,"B4",1],[4,"F#4",4]]}]},
+        desc:"Cinq gammes du Japon sur un Fa#, et la main ne bouge pas : Fa# case 4 sur la corde de Ré, Sol-Si-Mi entre les cases 2 et 5, aucune corde à vide. Yo, la gamme claire (Fa# sus4, Sol#m) → Kumoi, la tierce mineure arrive (Fa#m, Ré# dim) → Hirajoshi, le Ré juste au-dessus du Do# (Ré) → In sen, le Sol juste au-dessus de la basse (Fa# sus4, Mim) → Iwato, le Do, la plus sombre (Do, Mim) → la gamme claire revient. Allume Solo : à chaque gamme, il tire la note qui la colore, comme une corde de koto pressée.",
+        phrase:[["C#5",0,2],["D#5",2,1],["F#5",3,2.5],["D#5",6,1.5],["C#5",7.5,0.5],["B4",8,1.5],["A4",10,2.5],["C#5",13,1],["D#5",14,1.5],["C#5",16,1.5],["D5",18,2.5],["C#5",21,1],["A4",22,1.5],["G4",24,1.5],["F#4",26,1],["B4",27,1],["C#5",28,1.5],["C5",30,2.5],["B4",33,1],["G4",34,1.5],["F#4",36,1.5],["G#4",38,1],["B4",39,1],["C#5",40,2],["F#4",42,3.5]],
+        chords:[   // v1331 : plus de nuances (Jérémy : écarts de volume trop audibles)
+                {name:"F#sus4",beats:6,voicing:"x-x-4-4-2-2",scale:"F#:japanese:4",pays:"🌸 Yo · la gamme claire",basseLigne:[[0,0,4],[4,7,1],[5,5,1]],soloEcrit:[[0,"C#5",2,"tiré vib"],[2,"D#5",1],[3,"F#5",1],[4,"D#5",2,"vib"]]},
+                {name:"G#m/F#",beats:4,voicing:"x-x-4-4-4-4",scale:"F#:japanese:4",pays:"🌸 Yo · la gamme claire",basseLigne:[[0,0,2],[2,2,1],[3,3,1]],soloEcrit:[[0,"B4",1],[1,"C#5",1],[2,"G#4",2,"vib"]]},
+                {name:"F#m",beats:6,voicing:"x-x-4-2-2-2",scale:"F#:japanese:2",pays:"☁️ Kumoi · le nuage",basseLigne:[[0,0,4],[4,3,1],[5,7,1]],soloEcrit:[[0,"A4",2,"tiré½ vib"],[2,"G#4",1],[3,"F#4",1],[4,"C#5",2,"vib"]]},
+                {name:"D#dim/F#",beats:2,voicing:"x-x-4-2-4-2",scale:"F#:japanese:2",pays:"☁️ Kumoi · le nuage",basseLigne:[[0,0,1],[1,9,1]],soloEcrit:[[0,"D#5",2,"tiré vib"]]},
+                {name:"D/F#",beats:6,voicing:"x-x-4-2-3-2",scale:"F#:japanese:0",pays:"🏯 Hirajoshi · le koto",basseLigne:[[0,0,4],[4,8,1],[5,7,1]],soloEcrit:[[0,"D5",3,"tiré½ vib"],[3,"C#5",1],[4,"A4",1],[5,"G#4",1,"lâché½"]]},
+                {name:"F#sus4",beats:2,voicing:"x-x-4-4-2-2",scale:"F#:japanese:1",pays:"🌫️ In sen · le temple",basseLigne:[[0,0,1],[1,1,1]],soloEcrit:[[0,"F#5",1],[1,"G5",1,"tiré½"]]},
+                {name:"Em/F#",beats:4,voicing:"x-x-4-4-5-3",scale:"F#:japanese:1",pays:"🌫️ In sen · le temple",basseLigne:[[0,0,2],[2,10,1],[3,5,1]],soloEcrit:[[0,"F#5",2,"lâché½ vib"],[2,"E5",1],[3,"C#5",1]]},
+                {name:"C/F#",beats:6,voicing:"x-x-4-5-5-3",scale:"F#:japanese:3",pays:"🗻 Iwato · la porte de pierre",basseLigne:[[0,0,4],[4,6,1],[5,10,1]],soloEcrit:[[0,"C5",3,"tiré½ vib"],[3,"B4",1],[4,"G4",1,"tiré½"],[5,"F#4",1]]},
+                {name:"Em/F#",beats:2,voicing:"x-x-4-4-5-3",scale:"F#:japanese:3",pays:"🗻 Iwato · la porte de pierre",basseLigne:[[0,0,1],[1,1,1]],soloEcrit:[[0,"E5",2,"vib"]]},
+                {name:"F#sus4",beats:8,voicing:"x-x-4-4-2-2",scale:"F#:japanese:4",pays:"🌸 Yo · la gamme claire revient",basseLigne:[[0,0,8]],soloEcrit:[[1,"C#5",3,"tiré vib"],[4,"B4",1],[5,"F#4",3,"vib"]]}]},
       // v1058/v1059 — Le rondo dorien (lydien au sommet en v1059) : pédale de Si (case 2, corde de La), Ré-Sol-Si entre les cases 1 et 4 ; refrain dorien entre chaque pays
-      {id:"cin-rondo-dorien-si", lecons:{modal:3, immobile:3, voicings:1}, fondamentale:"nom", root:"B", scale:"B:major:1", voix:"guitar",
+      {id:"cin-rondo-dorien-si", soloDb:5.5, phraseDb:-5.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", phrase:[["D5",0.0,1.0],["C#5",1.0,1.0],["D5",2.0,1.75],["A4",4.0,2.0],["C#5",6.0,1.75],["G#4",8.0,2.0],["E5",10.0,1.75],["C#5",12.0,2.0],["B4",14.0,2.0],["C#5",16.0,1.0],["B4",17.0,1.0],["F#4",18.0,1.75],["F#5",20.0,4.0],["F#4",24.0,2.0],["D5",26.0,1.75],["C#5",28.0,2.0],["B4",30.0,2.0],["F#4",32.0,3.75],["D5",36.0,1.0],["C#5",37.0,1.0],["D5",38.0,1.75],["A4",40.0,2.0],["C#5",42.0,1.75],["G#4",44.0,2.0],["E5",46.0,1.75],["G#4",48.0,2.0],["F4",50.0,2.0],["C#5",52.0,2.0],["F4",54.0,1.75],["A4",56.0,2.0],["F4",58.0,2.0],["D5",60.0,2.0],["A4",62.0,1.75],["B4",64.0,2.0],["D5",66.0,2.0],["F4",68.0,2.0],["G#4",70.0,1.75],["D5",72.0,1.0],["C#5",73.0,1.0],["D5",74.0,1.75],["A4",76.0,2.0],["C#5",78.0,1.75],["G#4",80.0,2.0],["E5",82.0,1.75],["C#5",84.0,2.0],["A#4",86.0,2.0],["C#5",88.0,2.0],["G#4",90.0,1.75],["A#4",92.0,2.0],["C#5",94.0,2.0],["E5",96.0,2.0],["F#5",98.0,1.75],["F#5",100.0,2.0],["D5",102.0,2.0],["A#4",104.0,3.75],["D5",108.0,1.0],["C#5",109.0,1.0],["D5",110.0,1.75],["A4",112.0,2.0],["C#5",114.0,1.75],["G#4",116.0,2.0],["E5",118.0,1.75],["G#4",120.0,2.0],["E5",122.0,2.0],["C5",124.0,2.0],["E4",126.0,1.75],["E5",128.0,2.0],["C5",130.0,2.0],["E5",132.0,3.75],["A4",136.0,4.0],["D5",140.0,3.75],["D5",144.0,1.0],["C#5",145.0,1.0],["D5",146.0,1.75],["A4",148.0,2.0],["C#5",150.0,1.75],["G#4",152.0,2.0],["E5",154.0,1.75],["G#4",156.0,2.0],["C#5",158.0,2.0],["D#5",160.0,2.0],["F5",162.0,1.75],["F5",164.0,3.0],["D#5",167.0,1.0],["C#5",168.0,2.0],["A#4",170.0,1.75],["F#4",172.0,2.0],["B4",174.0,2.0],["D#5",176.0,3.75]],   // v1332 : Phrase écrite pour le shakuhachi (flute:false = pays sans flûte, la voix Phrase habituelle reprend)
+        lecons:{modal:3, immobile:3, voicings:1}, fondamentale:"nom", root:"B", scale:"B:major:1", voix:"guitar",
         name:"Le rondo dorien — le dorien revient entre chaque pays, sur un Si", tempo:66, groove:"atmos",
         desc:"Le rondo dorien : le dorien revient comme un refrain entre chaque pays, et la main ne bouge pas. Le Si reste en basse, case 2 sur la corde de La ; au-dessus, Ré-Sol-Si entre les cases 1 et 4. Aucune corde à vide. Refrain, Si dorien : Sim, La, Do#m — il se termine toujours sur le Sol#, la sixte majeure, la note qui fait le dorien. Japon, Kumoi (le dorien sans sa quarte ni sa septième) : Fa# sus4, Sim, Fa# sus4. Roumanie, la doïna (dorien avec quarte augmentée) : Do#, Rém, Si diminué — le Mi# (joué Fa). Jazz, le mineur mélodique (dorien avec septième majeure) : La# diminué, Fa#, Fa# augmenté — le La#. Byzance (dorien avec seconde mineure) : Mi augmenté, Lam, Ré — le Do bécarre. Chaque pays est un dorien à une note près, et le refrain revient après chacun : l'oreille entend ce que la note change, puis rentre à la maison. Au sommet, après le dernier refrain, le lydien : trois notes s'éclairent d'un coup (Ré#, Mi#, La#). Un seul doigt suffit pour y entrer — le Do#m du refrain devient Do# majeur, le Mi monte à Mi# — : Do#, La#m, Si. Puis un seul doigt éteint la lumière : Si majeur redevient Sim, le refrain recommence. La basse pose le Si sur le premier temps, puis la fondamentale de l'accord et la note de couleur. Le Solo écrit joue le même thème à chaque refrain et un thème par pays ; en paysage, la section s'affiche à son arrivée.",
         chords:[{name:"Bm",beats:4,voicing:"x-2-4-4-3-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"F#4",1],[1,"A4",1],[2,"B4",2]]},
@@ -5294,9 +5316,9 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"Bm",beats:4,voicing:"x-2-4-4-3-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"F#4",1],[1,"A4",1],[2,"B4",2]]},
                 {name:"A/B",beats:4,voicing:"x-2-2-2-2-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,14,0.5]],soloEcrit:[[0,"C#5",1],[1,"D5",1],[2,"E5",2]]},
                 {name:"C#m/B",beats:4,voicing:"x-2-2-1-2-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"F#5",1],[1,"E5",1],[2,"G#5",2]]},
-                {name:"A#dim/B",beats:8,voicing:"x-2-2-3-2-x",scale:"B:melodicMinor:0",pays:"🎷 Jazz · mineur mélodique",basseLigne:[[0,12,1.5],[1.5,23,0.5],[2,23,1.5],[3.5,17,0.5]],soloEcrit:[[0,"F#5",1],[1,"E5",1],[2,"D5",1],[3,"C#5",1],[4,"A#4",2],[6,"B4",2]]},
-                {name:"F#/B",beats:8,voicing:"x-2-4-3-2-x",scale:"B:melodicMinor:0",pays:"🎷 Jazz · mineur mélodique",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,23,0.5]],soloEcrit:[[0,"C#5",1],[1,"D5",1],[2,"E5",1],[3,"F#5",1],[4,"G#5",2],[6,"A#5",2]]},
-                {name:"F#aug/B",beats:8,voicing:"x-2-4-3-3-x",scale:"B:melodicMinor:0",pays:"🎷 Jazz · mineur mélodique",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,15,0.5]],soloEcrit:[[0,"B5",2],[2,"A#5",1],[3,"F#5",1],[4,"D5",4]]},
+                {name:"A#dim/B",beats:8,flute:false,voicing:"x-2-2-3-2-x",scale:"B:melodicMinor:0",pays:"🎷 Jazz · mineur mélodique",basseLigne:[[0,12,1.5],[1.5,23,0.5],[2,23,1.5],[3.5,17,0.5]],soloEcrit:[[0,"F#5",1],[1,"E5",1],[2,"D5",1],[3,"C#5",1],[4,"A#4",2],[6,"B4",2]]},
+                {name:"F#/B",beats:8,flute:false,voicing:"x-2-4-3-2-x",scale:"B:melodicMinor:0",pays:"🎷 Jazz · mineur mélodique",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,23,0.5]],soloEcrit:[[0,"C#5",1],[1,"D5",1],[2,"E5",1],[3,"F#5",1],[4,"G#5",2],[6,"A#5",2]]},
+                {name:"F#aug/B",beats:8,flute:false,voicing:"x-2-4-3-3-x",scale:"B:melodicMinor:0",pays:"🎷 Jazz · mineur mélodique",basseLigne:[[0,12,1.5],[1.5,19,0.5],[2,19,1.5],[3.5,15,0.5]],soloEcrit:[[0,"B5",2],[2,"A#5",1],[3,"F#5",1],[4,"D5",4]]},
                 {name:"Bm",beats:4,voicing:"x-2-4-4-3-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,15,0.5],[2,15,1.5],[3.5,19,0.5]],soloEcrit:[[0,"F#4",1],[1,"A4",1],[2,"B4",2]]},
                 {name:"A/B",beats:4,voicing:"x-2-2-2-2-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,22,0.5],[2,22,1.5],[3.5,14,0.5]],soloEcrit:[[0,"C#5",1],[1,"D5",1],[2,"E5",2]]},
                 {name:"C#m/B",beats:4,voicing:"x-2-2-1-2-x",scale:"B:major:1",pays:"🔁 Refrain · Si dorien",basseLigne:[[0,12,1.5],[1.5,14,0.5],[2,14,1.5],[3.5,21,0.5]],soloEcrit:[[0,"F#5",1],[1,"E5",1],[2,"G#5",2]]},
@@ -5372,7 +5394,9 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"F#m/E",beats:3,sig:3,groove:"sevillanas",voicing:"0-x-7-6-7-x",scale:"E:major:0",pays:"✨ Séville · les sevillanas, le sommet",basseLigne:[[0,14,1],[1,17,1],[2,19,1]],soloEcrit:[[0,"A4",1],[1,"C#5",1],[2,"F#4",1]]},
                 {name:"C#m/E",beats:3,sig:3,groove:"sevillanas",voicing:"0-x-6-6-5-x",scale:"E:major:0",pays:"✨ Séville · les sevillanas, le sommet",basseLigne:[[0,21,1],[1,16,1],[2,19,1]],soloEcrit:[[0,"G#4",1],[1,"B4",1],[2,"C#5",1]]}]},
       // v1076 — La Route de la soie : La à vide en bourdon, triades Ré-Sol-Si cases 3 à 6 ; rondo, la caravane entre chaque ville ; la basse marche.
-      {id:"voy-route-soie-la", lecons:{exotiques:3, immobile:3, modal:3}, fondamentale:"nom", root:"A", scale:"A:major:5", voix:"guitar", sig:4,
+      {id:"voy-route-soie-la", soloDb:5.5, phraseDb:-5.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", phrase:[["E5",0.0,2.0],["G5",2.0,1.0],["E5",3.0,1.0],["D5",4.0,2.0],["G4",6.0,1.75],["E5",8.0,2.0],["B4",10.0,1.75],["G4",12.0,2.0],["G5",14.0,1.75],["D#5",16.0,2.0],["F#5",18.0,1.75],["G5",20.0,2.0],["G4",22.0,1.75],["E5",24.0,2.0],["G5",26.0,1.0],["E5",27.0,1.0],["D5",28.0,2.0],["G4",30.0,1.75],["E5",32.0,2.0],["B4",34.0,1.75],["E5",36.0,1.5],["G5",37.5,1.5],["F5",39.0,1.5],["E5",40.5,1.25],["D5",42.0,3.0],["C5",45.0,1.5],["A#4",46.5,1.25],["D5",48.0,1.5],["F5",49.5,1.5],["D5",51.0,2.75],["E5",54.0,2.0],["G5",56.0,1.0],["E5",57.0,1.0],["D5",58.0,2.0],["G4",60.0,1.75],["E5",62.0,2.0],["B4",64.0,1.75],["E5",66.0,1.5],["B4",67.5,1.5],["D5",69.0,1.5],["B4",70.5,1.25],["C5",72.0,1.5],["F5",73.5,1.5],["E5",75.0,2.75],["E5",78.0,1.5],["G#4",79.5,1.5],["C5",81.0,2.75],["E5",84.0,2.0],["G5",86.0,1.0],["E5",87.0,1.0],["D5",88.0,2.0],["G4",90.0,1.75],["E5",92.0,2.0],["B4",94.0,1.75],["E5",96.0,2.0],["G5",98.0,1.0],["E5",99.0,1.5],["A#4",100.5,1.5],["C#5",102.0,2.75],["G5",105.0,2.0],["F5",107.0,1.0],["E5",108.0,1.5],["G4",109.5,1.5],["E5",111.0,2.75],["D5",114.0,2.0],["F5",116.0,2.0],["E5",118.0,2.0],["A#4",120.0,2.75],["E5",123.0,2.0],["G5",125.0,1.0],["E5",126.0,1.0],["D5",127.0,2.0],["G4",129.0,1.75],["E5",131.0,2.0],["B4",133.0,1.75],["E5",135.0,2.0],["F#5",137.0,1.0],["B4",138.0,2.75],["B4",141.0,2.0],["E5",143.0,1.0],["G#5",144.0,2.75],["E5",147.0,2.0],["G#4",149.0,1.0],["C#5",150.0,2.75]],   // v1332 : Phrase écrite pour le shakuhachi (flute:false = pays sans flûte, la voix Phrase habituelle reprend)
+        lecons:{exotiques:3, immobile:3, modal:3}, fondamentale:"nom", root:"A", scale:"A:major:5", voix:"guitar", sig:4,
         name:"La Route de la soie — la caravane entre chaque ville, sur un La", tempo:66, groove:"caravane",
         desc:"La Route de la soie, en rondo, de Xi'an à Venise : la caravane revient comme une maison entre chaque ville. Le La à vide sonne en bourdon du début à la fin, c'est la seule corde à vide ; la main est libre entre les cases 3 et 6 et pose une triade sur Ré-Sol-Si, un doigt par case ; le Mi grave et la Mi aiguë sont étouffés. Le mécanisme : à la caravane, rien ne frotte contre le La. Chaque ville apporte sa note qui frotte : le Ré#, au triton ; le Sib, juste au-dessus ; le Sol#, juste en dessous. La guitare ne bouge pas ; c'est la basse qui marche : la fondamentale, une note de l'accord, puis un pas vers la note suivante. La caravane, en 4/4, La mineur : Do, Sol, Mim — la basse monte La, Si, puis s'ouvre sur le Mi, et rien ne frotte. Xi'an, le bloc de bois, La dorien #4 : Dom, Si, Sol augmenté — le Ré#, la quarte augmentée de l'ancienne gamme chinoise, frotte au triton du La. Samarcande, la doïra en 6/8, La phrygien : Do sus2, Sib, Solm — le Sib, un demi-ton au-dessus du La. Ispahan, le tombak en 6/8, La mineur harmonique : Mi, Fam, Do augmenté — le Sol#, un demi-ton en dessous ; le mode bayat-e Esfahan en a la couleur. Constantinople, le karşılama en 9/8, mode Hicaz : Do# diminué, Mi diminué, Solm — le Sib et le Do# ensemble, la seconde augmentée. Le sommet, Venise, en 3/4, La majeur : Mi sus2, Mi, Do#m — le Do#, le Fa# et le Sol# s'éclairent d'un coup ; puis on repart avec la caravane. D'une ville à la caravane, une ou deux notes changent, et un ou deux doigts bougent. Les gammes sont des couleurs choisies pour le voyage, pas des relevés de musique traditionnelle. Le Solo écrit joue le même thème à chaque caravane et un thème lent par ville ; en paysage, la ville s'affiche à son arrivée.",
         chords:[{name:"C/A",beats:4,sig:4,groove:"caravane",voicing:"x-0-5-5-5-x",scale:"A:major:5",pays:"🐫 La caravane · refrain",basseLigne:[[0,12,2],[2,19,1],[3,15,1]],soloEcrit:[[0,"E4",1],[1,"A4",1],[2,"C5",2]]},
@@ -5402,9 +5426,9 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"C/A",beats:4,sig:4,groove:"caravane",voicing:"x-0-5-5-5-x",scale:"A:major:5",pays:"🐫 La caravane · refrain",basseLigne:[[0,12,2],[2,19,1],[3,15,1]],soloEcrit:[[0,"E4",1],[1,"A4",1],[2,"C5",2]]},
                 {name:"G/A",beats:4,sig:4,groove:"caravane",voicing:"x-0-5-4-3-x",scale:"A:major:5",pays:"🐫 La caravane · refrain",basseLigne:[[0,14,2],[2,22,1],[3,20,1]],soloEcrit:[[0,"B4",2],[2,"D5",1],[3,"C5",1]]},
                 {name:"Em/A",beats:4,sig:4,groove:"caravane",voicing:"x-0-5-4-5-x",scale:"A:major:5",pays:"🐫 La caravane · refrain",basseLigne:[[0,19,2],[2,22,1],[3,20,1]],soloEcrit:[[0,"A4",2],[2,"G4",1],[3,"E4",1]]},
-                {name:"Esus2/A",beats:6,sig:3,groove:"venise",voicing:"x-0-4-4-5-x",scale:"A:major:0",pays:"✨ Venise · le sommet",basseLigne:[[0,19,1],[1,14,1],[2,21,1],[3,19,1],[4,14,1],[5,21,1]],soloEcrit:[[0,"B4",2],[2,"F#4",1],[3,"E4",3]]},
-                {name:"E/A",beats:6,sig:3,groove:"venise",voicing:"x-0-6-4-5-x",scale:"A:major:0",pays:"✨ Venise · le sommet",basseLigne:[[0,19,1],[1,23,1],[2,21,1],[3,19,1],[4,23,1],[5,17,1]],soloEcrit:[[0,"G#4",2],[2,"B4",1],[3,"E5",3]]},
-                {name:"C#m/A",beats:6,sig:3,groove:"venise",voicing:"x-0-6-6-5-x",scale:"A:major:0",pays:"✨ Venise · le sommet",basseLigne:[[0,16,1],[1,23,1],[2,17,1],[3,16,1],[4,23,1],[5,11,1]],soloEcrit:[[0,"C#5",2],[2,"B4",1],[3,"A4",3]]}]}
+                {name:"Esus2/A",beats:6,flute:false,sig:3,groove:"venise",voicing:"x-0-4-4-5-x",scale:"A:major:0",pays:"✨ Venise · le sommet",basseLigne:[[0,19,1],[1,14,1],[2,21,1],[3,19,1],[4,14,1],[5,21,1]],soloEcrit:[[0,"B4",2],[2,"F#4",1],[3,"E4",3]]},
+                {name:"E/A",beats:6,flute:false,sig:3,groove:"venise",voicing:"x-0-6-4-5-x",scale:"A:major:0",pays:"✨ Venise · le sommet",basseLigne:[[0,19,1],[1,23,1],[2,21,1],[3,19,1],[4,23,1],[5,17,1]],soloEcrit:[[0,"G#4",2],[2,"B4",1],[3,"E5",3]]},
+                {name:"C#m/A",beats:6,flute:false,sig:3,groove:"venise",voicing:"x-0-6-6-5-x",scale:"A:major:0",pays:"✨ Venise · le sommet",basseLigne:[[0,16,1],[1,23,1],[2,17,1],[3,16,1],[4,23,1],[5,11,1]],soloEcrit:[[0,"C#5",2],[2,"B4",1],[3,"A4",3]]}]}
     ]},
   { id:"manouche", label:"🎻 Manouche", groove:"pompe",
 grids:[
@@ -5692,19 +5716,40 @@ chords:[{name:"D",beats:4,basseLigne:[[0,12,2],[2,12,1],[3,11,1]],voicing:"x-5-7
                 {name:"E7b5",beats:8,voicing:"x-7-8-7-9-x",scale:"A:hungarianMinor:4"}]},
       // v1316 — Sous le nuage : la sœur posée du « Nuage » (v1315). Mi kumoijoshi, le vrai accord de koto (1 b2 4 5 b6 : Mi Fa La Si Do),
 //         « sur des accords mineurs et des basses tenues, dans un arrangement clairsemé ». Nylon en arpège, basse fretless tenue, Solo clair tiré au demi-ton
-      {id:"rock-friedman-sous-nuage", lecons:{exotiques:3, pentatoniques:2, "cordes-vides":3, immobile:2, basses:2}, root:"E", scale:"E:japanese:5", voix:"nylon", basseSon:"fretlessReel", soloGuitare:"electric",
+      {id:"rock-friedman-sous-nuage", soloDb:2, phraseDb:-2,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", lecons:{exotiques:3, pentatoniques:2, "cordes-vides":3, immobile:2, basses:2}, root:"E", scale:"E:japanese:5", voix:"nylon", basseSon:"fretlessReel", soloGuitare:"electric",
         arp:true, arpMotif:[0,2,-1,1,-2,2,-1,1], arpPas:0.5,
         name:"Sous le nuage — Mi kumoijoshi, Friedman en solo", tempo:66, groove:"atmos",
         desc:"Le geste : la basse tient le Mi, le Si et le Mi aigus sonnent à vide ; seuls deux doigts glissent sur les cordes de Ré et de Sol (cases 7-9, 10-9, 7-5, 3-2). La basse ne quitte le Mi que deux fois : le Fa, le moment le plus sombre, puis La mineur, avant que le Fa retombe sur le Mi. À écouter : le Do fait entendre le mineur, le Fa frotte contre le Mi. Pour improviser : Mi kumoijoshi partout (Mi, Fa, La, Si, Do). Allume Solo : peu de notes, tirées d'un demi-ton puis relâchées, comme sur un koto, avec un vibrato large.",
-        phrase:[["B3",0,3],["A3",3,1],["E4",4,4],["C4",8,4],["B3",12,2],["A3",14,2],["C4",16,4],["B3",20,2],["A3",22,2],["E4",24,2],["F4",26,1],["E4",27,1],["F4",28,4],["E4",32,2],["C4",34,2],["B3",36,4],["C4",40,2],["B3",42,1],["A3",43,1],["B3",44,8]],
-        chords:[{name:"Esus4",beats:8,nuance:"p",basseLigne:[[0,12,6],[6,19,2]],voicing:"0-x-7-9-0-0",scale:"E:japanese:5",soloEcrit:[[2,"B4",3,"tiré vib"],[5,"A4",1],[6,"E4",2,"vib"]]},
-                {name:"Cmaj7/E",beats:4,nuance:"p",basseLigne:[[0,12,4]],voicing:"0-x-10-9-0-0",scale:"E:japanese:5",soloEcrit:[[0,"C5",3,"tiré½ vib"],[3,"B4",1]]},
-                {name:"Am(add9)/E",beats:8,nuance:"p",basseLigne:[[0,12,6],[6,17,1],[7,19,1]],voicing:"0-x-7-5-0-0",scale:"E:japanese:5",soloEcrit:[[0,"A4",2,"vib"],[2,"C5",1],[3,"B4",1],[4,"E5",3,"tiré vib"],[7,"C5",1]]},
-                {name:"Fmaj7#11/E",beats:4,nuance:"mp",basseLigne:[[0,12,3],[3,13,1]],voicing:"0-x-3-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"F5",2,"tiré½ vib"],[2,"E5",1],[3,"C5",1]]},
-                {name:"Esus4",beats:4,nuance:"mp",basseLigne:[[0,12,2],[2,19,1],[3,12,1]],voicing:"0-0-2-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"B4",2,"lâché½ vib"],[2,"A4",1],[3,"F4",1]]},
-                {name:"Fmaj7#11",beats:8,nuance:"mf",basseLigne:[[0,12,4],[4,19,2],[6,16,2]],voicing:"1-x-3-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"A5",2,"tiré vib"],[2,"F5",1],[3,"E5",1],[4,"C5",3,"tiré½ vib"],[7,"B4",1]]},
-                {name:"Am(add9)",beats:8,nuance:"mp",basseLigne:[[0,12,4],[4,7,2],[6,8,2]],voicing:"x-0-7-5-0-0",scale:"E:japanese:5",soloEcrit:[[0,"C5",1],[1,"B4",1],[2,"A4",2,"vib"],[4,"E4",1],[5,"F4",1,"tiré½"],[6,"E4",2,"lâché½ vib"]]},
-                {name:"Esus4",beats:8,nuance:"pp",basseLigne:[[0,12,8]],voicing:"0-x-7-9-0-0",scale:"E:japanese:5",soloEcrit:[[1,"B4",3,"lâché½ vib"],[4,"A4",1],[5,"E4",3,"vib"]]}]}
+        phrase:[["B4",1,2],["A4",3,1],["B4",4,1],["E5",5,2.5],["C5",8,2.5],["B4",11,1],["A4",12,2],["C5",14,1],["B4",15,1],["A4",16,3.5],["F5",20,2.5],["E5",23,1],["E5",24,1.5],["C5",26,1],["B4",27,1],["A4",28,2.5],["C5",31,1],["E5",32,2.5],["F5",35,1],["E5",36,3],["C5",39,1],["B4",40,2],["A4",42,1.5],["B4",44,2],["F4",46,1],["E4",47,4.5]],
+        chords:[   // v1331 : plus de nuances (Jérémy : écarts de volume trop audibles)
+                {name:"Esus4",beats:8,basseLigne:[[0,12,6],[6,19,2]],voicing:"0-x-7-9-0-0",scale:"E:japanese:5",soloEcrit:[[2,"B4",3,"tiré vib"],[5,"A4",1],[6,"E4",2,"vib"]]},
+                {name:"Cmaj7/E",beats:4,basseLigne:[[0,12,4]],voicing:"0-x-10-9-0-0",scale:"E:japanese:5",soloEcrit:[[0,"C5",3,"tiré½ vib"],[3,"B4",1]]},
+                {name:"Am(add9)/E",beats:8,basseLigne:[[0,12,6],[6,17,1],[7,19,1]],voicing:"0-x-7-5-0-0",scale:"E:japanese:5",soloEcrit:[[0,"A4",2,"vib"],[2,"C5",1],[3,"B4",1],[4,"E5",3,"tiré vib"],[7,"C5",1]]},
+                {name:"Fmaj7#11/E",beats:4,basseLigne:[[0,12,3],[3,13,1]],voicing:"0-x-3-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"F5",2,"tiré½ vib"],[2,"E5",1],[3,"C5",1]]},
+                {name:"Esus4",beats:4,basseLigne:[[0,12,2],[2,19,1],[3,12,1]],voicing:"0-0-2-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"B4",2,"lâché½ vib"],[2,"A4",1],[3,"F4",1]]},
+                {name:"Fmaj7#11",beats:8,basseLigne:[[0,12,4],[4,19,2],[6,16,2]],voicing:"1-x-3-2-0-0",scale:"E:japanese:5",soloEcrit:[[0,"A5",2,"tiré vib"],[2,"F5",1],[3,"E5",1],[4,"C5",3,"tiré½ vib"],[7,"B4",1]]},
+                {name:"Am(add9)",beats:8,basseLigne:[[0,12,4],[4,7,2],[6,8,2]],voicing:"x-0-7-5-0-0",scale:"E:japanese:5",soloEcrit:[[0,"C5",1],[1,"B4",1],[2,"A4",2,"vib"],[4,"E4",1],[5,"F4",1,"tiré½"],[6,"E4",2,"lâché½ vib"]]},
+                {name:"Esus4",beats:8,basseLigne:[[0,12,8]],voicing:"0-x-7-9-0-0",scale:"E:japanese:5",soloEcrit:[[1,"B4",3,"lâché½ vib"],[4,"A4",1],[5,"E4",3,"vib"]]}]},
+      // v1317 → v1319 — Deux cordes du koto : troisième grille kumoi à la Friedman, sœur de « Sous le nuage » (v1316), même son (nylon en arpège, fretless tenue, Solo clair), 3/4 lent.
+//         v1319 : refaite sur les vraies notes du koto accordé en kumoi-jōshi (en Ré : Ré Sol Lab Do Ré Mib Sol Lab Do Ré Mib Sol La), donc Sol Lab Do Ré Mib.
+//         Les cordes de Ré et de Sol à vide sont deux cordes du koto (le Ré et le Sol y reviennent trois fois) : elles sonnent tout le temps.
+//         (v1317-1318 « Une case plus haut » : accords injouables, puis trop semblables)
+      {id:"rock-friedman-cordes-koto", soloDb:2, phraseDb:-3.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", lecons:{exotiques:3, pentatoniques:2, "cordes-vides":3, immobile:3, basses:2}, root:"G", scale:"G:japanese:5", sig:3, voix:"nylon", basseSon:"fretlessReel", soloGuitare:"electric",
+        arp:true, arpMotif:[0,2,-1,1,-2,2], arpPas:0.5,
+        name:"Deux cordes du koto — Sol kumoijoshi, Friedman en solo", tempo:72, groove:"atmos3",
+        desc:"Les notes du koto accordé en kumoi-jōshi : Sol, Lab, Do, Ré, Mib. Le geste : les cordes de Ré et de Sol sonnent à vide tout le temps, ce sont deux cordes du koto. Autour, un doigt pour la basse (Sol case 3, Do case 3 sur la corde de La, Lab case 4, Ré case 5 sur la corde de La) et un ou deux doigts sur Si et Mi aigu, jamais au-delà de la case 5. Sol 5 (cases 3 sur Si et Mi), c'est le koto presque à vide : rien que des Ré et des Sol. À la fin, Do sus2 → Sol sus4 : seule la basse change de corde. Premier changement : un seul doigt monte d'une case sur le Mi aigu, Sol → Lab, comme la corde pressée du koto. À écouter : le Lab frotte le Sol, le Do mineur arrive avec la basse. Pour improviser : Sol kumoijoshi partout. Allume Solo : tirés et relâchés d'un demi-ton ou d'un ton, comme une corde de koto qu'on presse.",
+        phrase:[["D5",0,2],["C5",2,1],["G4",3,2.5],["G#4",6,2],["G4",8,1],["D5",9,2.5],["D#5",12,2],["D5",14,1],["C5",15,2],["D#5",17,1],["D5",18,1],["C5",19,1.5],["G#4",21,2.5],["C5",24,1],["D#5",25,1.5],["G5",27,2.5],["D#5",30,1],["D5",31,1.5],["C5",33,2],["D5",35,1],["D5",36,2],["C5",38,1],["G4",39,5]],
+        chords:[   // v1330 : plus de nuances, Jérémy entendait trop les écarts de volume (p → mf → pp)
+                {name:"Gsus4",beats:6,basseLigne:[[0,12,5],[5,19,1]],voicing:"3-x-0-0-1-3",scale:"G:japanese:5",soloEcrit:[[1,"D5",2,"tiré vib"],[3,"C5",1],[4,"G4",2,"vib"]]},
+                {name:"Gsus4(b9)",beats:6,basseLigne:[[0,12,3],[3,13,3]],voicing:"3-x-0-0-1-4",scale:"G:japanese:5",soloEcrit:[[0,"Ab4",2,"tiré½ vib"],[2,"G4",1],[3,"Eb5",2,"tiré½ vib"],[5,"D5",1]]},
+                {name:"G5",beats:3,basseLigne:[[0,12,2],[2,7,1]],voicing:"3-x-0-0-3-3",scale:"G:japanese:5",soloEcrit:[[0,"D5",2,"lâché½ vib"],[2,"C5",1]]},
+                {name:"Cm(add9)",beats:6,basseLigne:[[0,0,4],[4,3,1],[5,7,1]],voicing:"x-3-0-0-4-3",scale:"G:japanese:5",soloEcrit:[[0,"Eb5",2,"vib"],[2,"D5",1],[3,"C5",1],[4,"Ab4",1,"tiré½"],[5,"G4",1,"lâché½"]]},
+                {name:"Abmaj7#11",beats:6,basseLigne:[[0,12,4],[4,16,1],[5,19,1]],voicing:"4-x-0-0-4-4",scale:"G:japanese:5",soloEcrit:[[0,"C5",2,"vib"],[2,"Eb5",1],[3,"D5",1],[4,"Ab4",2,"tiré½ vib"]]},
+                {name:"Ebmaj7/D",beats:6,basseLigne:[[0,12,4],[4,13,1],[5,12,1]],voicing:"x-5-0-0-4-3",scale:"G:japanese:5",soloEcrit:[[0,"G5",3,"lâché½ vib"],[3,"Eb5",1],[4,"D5",2,"tiré vib"]]},
+                {name:"Csus2",beats:3,basseLigne:[[0,12,2],[2,7,1]],voicing:"x-3-0-0-1-3",scale:"G:japanese:5",soloEcrit:[[0,"Eb5",2,"tiré½ vib"],[2,"D5",1]]},
+                {name:"Gsus4",beats:9,basseLigne:[[0,12,9]],voicing:"3-x-0-0-1-3",scale:"G:japanese:5",soloEcrit:[[1,"D5",3,"lâché½ vib"],[4,"C5",1],[5,"G4",4,"vib"]]}]}
     ]},
   { id:"metal", label:"🤘 Metal & Punk", groove:"metal",
 grids:[
@@ -5826,21 +5871,23 @@ chords:[{name:"Bm",beats:12,voicing:"x-2-4-4-3-2",scale:"B:5",basseLigne:[[0,0],
                 {name:"Fmaj7",beats:8,voicing:"1-x-2-2-1-x",scale:"A:hungarianMinor:6"},
                 {name:"F#7/E",beats:8,voicing:"x-7-8-6-7-x",scale:"A:hungarianMinor:6"}]},
       // v1315 — Le nuage ne bouge pas : Mi kumoi (1 2 b3 5 6, la définition des guitaristes), dans l'esprit de Marty Friedman. Solo tiré et vibré, Phrase et basse écrites
-      {id:"metal-friedman-nuage", lecons:{exotiques:3, pentatoniques:3, immobile:3}, root:"E", scale:"E:japanese:2", chug:"monthrash", soloGuitare:"electric",
+      {id:"metal-friedman-nuage", soloDb:1.5, phraseDb:-1.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+       phraseAuto:true, phraseSon:"shakuhachi", lecons:{exotiques:3, pentatoniques:3, immobile:3}, root:"E", scale:"E:japanese:2", chug:"monthrash", soloGuitare:"electric",
         name:"Le nuage ne bouge pas — Mi kumoi, à la Marty Friedman", tempo:96, groove:"atmos",
         desc:"Le geste : trois doigts ne bougent pas, Fa# case 4 sur la corde de Ré, Si case 4 sur la corde de Sol, Do# case 2 sur la corde de Si : c'est le nuage. Seule la basse change : Mi à vide, Sol case 3 au majeur, Do# case 4 sur la corde de La, puis l'index se couche case 2 pour Si et Fa#. À écouter : rien que les cinq notes du kumoi, Mi, Fa#, Sol, Si, Do# ; quand le Sol passe en basse, il fait un triton avec le Do# du nuage, la couleur sombre de la gamme. Intro claire, riff en galop, mur doom sur le Sol, retour au calme. Pour improviser : Mi kumoi partout. Allume Solo : la guitare tire ses notes à la Friedman, d'un ton ou d'un demi-ton, en relâche d'autres et les fait vibrer large. Phrase et basse écrites.",
-        phrase:[["B4",0,3],["C#5",3,1],["B4",4,2],["G4",6,2],["F#4",8,3],["G4",11,1],["E4",12,4],["B4",16,2],["C#5",18,1],["E5",19,1],["C#5",20,3],["B4",23,1],["G4",24,2],["F#4",26,2],["F#4",28,2],["G4",30,2],["C#5",32,4],["B4",36,2],["G4",38,2],["F#4",40,3],["G4",43,1],["E4",44,8]],
-        chords:[{name:"F#sus4/E",beats:8,nuance:"p",basseLigne:[[0,12,4],[4,19,2],[6,21,1],[7,14,1]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[1,"B4",2,"tiré vib"],[3,"C#5",1],[4,"B4",1,"lâché"],[5,"G4",1],[6,"F#4",2,"vib"]]},
-                {name:"Gmaj7#11",beats:4,nuance:"p",basseLigne:[[0,12,2],[2,18,1],[3,11,1]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G4",1.5,"tiré½"],[1.5,"F#4",0.5],[2,"C#5",2,"vib"]]},
-                {name:"F#sus4/E",beats:4,nuance:"p",basseLigne:[[0,12,2],[2,19,1],[3,14,1]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"E5",2,"tiré vib"],[2,"C#5",1],[3,"B4",1]]},
-                {name:"F#sus4/E",beats:4,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,14,0.5]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"E4",0.25],[0.25,"F#4",0.25],[0.5,"G4",0.25],[0.75,"B4",0.25],[1,"C#5",0.25],[1.25,"E5",0.25],[1.5,"F#5",0.5,"tiré½"],[2,"E5",1],[3,"C#5",1]]},
-                {name:"Gmaj7#11",beats:4,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,11,0.5]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G5",2,"tiré½ vib"],[2,"F#5",0.5],[2.5,"E5",0.5],[3,"C#5",1]]},
-                {name:"F#sus4/E",beats:4,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,9,0.5]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",0.5],[0.5,"C#5",0.5],[1,"E5",0.5],[1.5,"F#5",0.5],[2,"E5",2,"lâché vib"]]},
-                {name:"Bsus2",beats:2,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,0,0.75],[0.75,0,0.75],[1.5,0,0.5]],voicing:"x-2-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"F#5",1,"tiré"],[1,"C#5",1]]},
-                {name:"C#7sus4",beats:2,groove:"gallop",son:"crunch",nuance:"f",basseLigne:[[0,0,0.75],[0.75,0,0.75],[1.5,5,0.5]],voicing:"x-4-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",0.5],[0.5,"C#5",0.5],[1,"G5",1,"tiré½"]]},
-                {name:"Gmaj7#11",beats:8,groove:"doom",son:"crunch",nuance:"ff",basseLigne:[[0,12,4],[4,12,2],[6,18,1],[7,9,1]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G5",3,"vib"],[3,"F#5",0.5],[3.5,"E5",0.5],[4,"C#5",2,"tiré vib"],[6,"B4",1],[7,"G4",1,"tiré½"]]},
-                {name:"F#sus4",beats:4,groove:"gallop",son:"crunch",nuance:"ff",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,13,0.5]],voicing:"2-2-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"F#4",0.25],[0.25,"G4",0.25],[0.5,"B4",0.25],[0.75,"C#5",0.25],[1,"E5",0.25],[1.25,"F#5",0.25],[1.5,"G5",0.25],[1.75,"F#5",0.25],[2,"E5",2,"tiré vib"]]},
-                {name:"F#sus4/E",beats:8,nuance:"pp",basseLigne:[[0,12,4],[4,19,2],[6,14,2]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",4,"lâché vib"],[4,"G4",1],[5,"F#4",1],[6,"E4",2,"vib"]]}]}
+        phrase:[["B4",0,3],["C#5",3,1],["B4",4,1],["G4",5,2.5],["F#4",8,2.5],["G4",11,1],["E4",12,3.5],["B4",16,1.5],["C#5",17.5,0.5],["E5",18,1.5],["F#5",20,2.5],["E5",23,1],["C#5",24,1.5],["B4",25.5,0.5],["G4",26,1.5],["F#4",28,1.5],["G4",30,1.5],["B4",32,3],["C#5",35,1],["E5",36,2],["F#5",38,1.5],["E5",40,2.5],["C#5",43,1],["B4",44,3],["G4",47,1],["E4",48,3.5]],
+        chords:[   // v1331 : plus de nuances (Jérémy : écarts de volume trop audibles)
+                {name:"F#sus4/E",beats:8,basseLigne:[[0,12,4],[4,19,2],[6,21,1],[7,14,1]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[1,"B4",2,"tiré vib"],[3,"C#5",1],[4,"B4",1,"lâché"],[5,"G4",1],[6,"F#4",2,"vib"]]},
+                {name:"Gmaj7#11",beats:4,basseLigne:[[0,12,2],[2,18,1],[3,11,1]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G4",1.5,"tiré½"],[1.5,"F#4",0.5],[2,"C#5",2,"vib"]]},
+                {name:"F#sus4/E",beats:4,basseLigne:[[0,12,2],[2,19,1],[3,14,1]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"E5",2,"tiré vib"],[2,"C#5",1],[3,"B4",1]]},
+                {name:"F#sus4/E",beats:4,groove:"gallop",son:"crunch",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,14,0.5]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"E4",0.25],[0.25,"F#4",0.25],[0.5,"G4",0.25],[0.75,"B4",0.25],[1,"C#5",0.25],[1.25,"E5",0.25],[1.5,"F#5",0.5,"tiré½"],[2,"E5",1],[3,"C#5",1]]},
+                {name:"Gmaj7#11",beats:4,groove:"gallop",son:"crunch",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,11,0.5]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G5",2,"tiré½ vib"],[2,"F#5",0.5],[2.5,"E5",0.5],[3,"C#5",1]]},
+                {name:"F#sus4/E",beats:4,groove:"gallop",son:"crunch",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,9,0.5]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",0.5],[0.5,"C#5",0.5],[1,"E5",0.5],[1.5,"F#5",0.5],[2,"E5",2,"lâché vib"]]},
+                {name:"Bsus2",beats:2,groove:"gallop",son:"crunch",basseLigne:[[0,0,0.75],[0.75,0,0.75],[1.5,0,0.5]],voicing:"x-2-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"F#5",1,"tiré"],[1,"C#5",1]]},
+                {name:"C#7sus4",beats:2,groove:"gallop",son:"crunch",basseLigne:[[0,0,0.75],[0.75,0,0.75],[1.5,5,0.5]],voicing:"x-4-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",0.5],[0.5,"C#5",0.5],[1,"G5",1,"tiré½"]]},
+                {name:"Gmaj7#11",beats:8,groove:"doom",son:"crunch",basseLigne:[[0,12,4],[4,12,2],[6,18,1],[7,9,1]],voicing:"3-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"G5",3,"vib"],[3,"F#5",0.5],[3.5,"E5",0.5],[4,"C#5",2,"tiré vib"],[6,"B4",1],[7,"G4",1,"tiré½"]]},
+                {name:"F#sus4",beats:4,groove:"gallop",son:"crunch",basseLigne:[[0,12,0.75],[0.75,12,1.25],[2,12,0.75],[2.75,12,0.75],[3.5,13,0.5]],voicing:"2-2-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"F#4",0.25],[0.25,"G4",0.25],[0.5,"B4",0.25],[0.75,"C#5",0.25],[1,"E5",0.25],[1.25,"F#5",0.25],[1.5,"G5",0.25],[1.75,"F#5",0.25],[2,"E5",2,"tiré vib"]]},
+                {name:"F#sus4/E",beats:8,basseLigne:[[0,12,4],[4,19,2],[6,14,2]],voicing:"0-x-4-4-2-x",scale:"E:japanese:2",soloEcrit:[[0,"B4",4,"lâché vib"],[4,"G4",1],[5,"F#4",1],[6,"E4",2,"vib"]]}]}
 ]},
 { id:"prog", label:"🌀 Progressif", groove:"prog7",
 grids:[
@@ -6027,7 +6074,8 @@ chords:[{name:"Dm",beats:8,sig:4,voicing:"x-x-0-2-3-1",scale:"D:5"},
 {name:"Dm",beats:8,sig:4,voicing:"x-x-0-2-3-1",scale:"D:5"},
 {name:"Gm7",beats:8,sig:4,voicing:"3-x-3-3-3-x",scale:"D:5"},
 {name:"Dm",beats:16,sig:4,voicing:"x-x-0-2-3-1",scale:"D:5"}]},
-{id:"prog-in-sen-mi", root:"E", scale:"E:japanese:1", lecons:{pentatoniques:4, exotiques:4, "cordes-vides":4, voicings:2},
+{id:"prog-in-sen-mi", phraseAuto:true, phraseSon:"shakuhachi", phrase:[["E5",1.0,3.0],["F5",4.0,1.0],["E5",5.0,2.5],["D5",8.5,2.5],["E5",11.0,1.0],["A4",12.0,3.5],["E5",17.0,1.5],["F5",18.5,0.5],["A5",19.0,3.0],["F5",22.0,1.0],["E5",23.0,1.0],["D5",24.0,1.5],["B4",25.5,2.5],["A4",28.0,1.0],["B4",29.0,1.0],["D5",30.0,2.0],["F5",32.0,1.0],["E5",33.0,3.0],["B4",36.0,1.5],["A4",37.5,0.5],["E4",38.0,1.75]],   // v1332 : Phrase écrite pour le shakuhachi
+        root:"E", scale:"E:japanese:1", lecons:{pentatoniques:4, exotiques:4, "cordes-vides":4, voicings:2},
 name:"In sen — la gamme sans tierce", tempo:66, groove:"cinema",
 desc:"Le geste : Mi sus4, Ré sus2, La sus2, puis les quintes à vide Mi 5 et La 5 ; rien que des accords suspendus. À écouter : la gamme n'a que cinq notes, Mi, Fa, La, Si et Ré, sans tierce ; aucun accord ne peut dire majeur ou mineur. Pour improviser : ces cinq notes seulement ; le Fa, un demi-ton au-dessus du Mi, donne toute la couleur.",
 chords:[{name:"Esus4",beats:8,voicing:"0-0-2-2-0-0",scale:"E:japanese:1"},
@@ -8169,7 +8217,8 @@ chords:[{name:"Bm",beats:12,voicing:"x-2-4-4-3-2",scale:"B:5",basseLigne:[[0,0],
 {name:"Bm",beats:12,tempoX:1.5,voicing:"x-2-4-4-3-2",scale:"B:5",basseLigne:[[0,0],[1,7],[2,0],[3,7]]},
 {name:"D",beats:4,tempoX:1.5,voicing:"x-5-4-2-3-2",scale:"B:5",basseLigne:[[0,0],[1,7],[2,0],[3,7]]},
 {name:"F#",beats:16,tempoX:1.5,voicing:"2-4-4-3-2-2",scale:"F#:harmonicMinor:4",basseLigne:[[0,0],[1,7],[2,0],[3,7]]}]},
-{id:"cla-debussy-voiles", lecons:{exotiques:2, immobile:2, basses:1}, root:"C", scale:"C:symmetric:2", voix:"piano", notes:"doigte", nappe:false,
+{id:"cla-debussy-voiles", phraseAuto:true, phraseSon:"shakuhachi", phrase:[["G#5",0.5,1.5],["F#5",2.0,1.0],["E5",3.0,1.0],["D5",4.0,1.0],["C5",5.0,1.0],["A#4",6.0,1.5],["C5",7.5,0.5],["C#5",8.0,1.0],["D#5",9.0,1.0],["F#5",10.0,1.5],["D#5",11.5,0.5],["E5",12.0,1.5]],   // v1332 : Phrase écrite pour le shakuhachi
+        lecons:{exotiques:2, immobile:2, basses:1}, root:"C", scale:"C:symmetric:2", voix:"piano", notes:"doigte", nappe:false,
 name:"Debussy, Voiles — la gamme par tons", tempo:44, groove:"classique",
 desc:"Le geste : un accord augmenté qui descend de deux cases, case 7, 5, 3 ; à la case 3, on retrouve les mêmes notes qu'à la case 7. Puis Sib aug sur la pédale, deux accords des touches noires, Solb 6/9 et Mib m7, et le retour. Dessous, la basse tient le Sib sous tout le passage. À écouter : sans demi-ton, rien n'attire et rien ne se résout ; ça flotte. Les touches noires ouvrent une fenêtre, puis tout repart dans le flou. Pour improviser : gamme par tons, Do Ré Mi Fa# Sol# Sib ; pentatonique des touches noires sur Solb 6/9 et Mib m7.",
 chords:[{name:"Eaug",beats:2,voicing:"x-7-6-5-5-x",scale:"C:symmetric:2",basseLigne:[[0,-6]]},
@@ -11104,7 +11153,7 @@ const SOLO_NIVEAUX=[["discret",1.4,"Discret"],["moyen",2.8,"Moyen"],["fort",4.5,
 let _soloNiveauId="moyen"; try{ const v=localStorage.getItem("gmmSoloNiveau"); if(SOLO_NIVEAUX.some(n=>n[0]===v)) _soloNiveauId=v; }catch(e){}
 function _soloTon(){ return (typeof _activeGrid!=="undefined" && _activeGrid && _activeGrid.soloGuitare==="electric") ? "electric" : _gridGuitarTone; }   // v1299 — le Solo peut jouer une autre guitare que la rythmique
 const SOLO_FOLK_DB=3;   // v1298 — mesuré (bande 300-3000 Hz, 9 grilles Fusion) : en guitare folk, le Solo joue le même son que la rythmique et sortait 2 à 3 dB sous le sax, à peine au-dessus de la rythmique
-function _soloGain(){ const e=SOLO_NIVEAUX.find(n=>n[0]===_soloNiveauId); return (e?e[1]:2.8)*(_soloTon()==="acoustic" ? Math.pow(10,SOLO_FOLK_DB/20) : 1); }
+function _soloGain(){ const e=SOLO_NIVEAUX.find(n=>n[0]===_soloNiveauId); return (e?e[1]:2.8)*(_soloTon()==="acoustic" ? Math.pow(10,SOLO_FOLK_DB/20) : 1)*((typeof _activeGrid!=="undefined" && _activeGrid && typeof _activeGrid.soloDb==="number") ? Math.pow(10,_activeGrid.soloDb/20) : 1); }   // v1333 : une grille peut monter son Solo (soloDb, en dB)
 function _soloEcritDispo(gr){ return !!(gr && Array.isArray(gr.chords) && gr.chords.some(c=>Array.isArray(c.soloEcrit) && c.soloEcrit.length)); }
 function _soloNoteMidi(n){ const m=/^([A-G][#b]?)(-?\d)$/.exec(String(n)); if(!m) return null; let pc=NOTES.indexOf(m[1]);
   if(pc<0){ const B={Db:1,Eb:3,Gb:6,Ab:8,Bb:10}; pc=B[m[1]]; } return (pc===undefined||pc<0)?null:(+m[2]+1)*12+pc; }
@@ -11572,6 +11621,201 @@ function _gmmSolfegeHTML(){ if(_gmmSolfegeHTML.c) return _gmmSolfegeHTML.c;
   const bin=atob(document.getElementById("gmmSolfegeB64").textContent.trim()), u=new Uint8Array(bin.length);
   for(let k=0;k<bin.length;k++) u[k]=bin.charCodeAt(k);
   return _gmmSolfegeHTML.c=new TextDecoder("utf-8").decode(u); }
+// v1320 — KOTO VIRTUEL (Jérémy). v1322 : moins de ralentissements, mise en page compacte en paysage, noms lisibles en portrait. 13 cordes accordées en kumoi-jōshi (en Ré, la 1re corde une octave sous la 5e, comme dans les pièces modernes) :
+// Ré Sol Lab Do Ré Mib Sol Lab Do Ré Mib Sol La. Son émulé (corde pincée calculée, aucun échantillon : 0 octet de plus).
+// Toucher = pincer ; glisser en travers = arpège ; glisser vers le haut sur une corde = la presser (oshide), jusqu'à un ton ; lâcher = elle redescend.
+// Le pont vers la guitare : chaque corde jouée allume toutes les cases de sa note sur le manche du haut, avec son degré.
+// S'ouvre depuis l'accueil (carte 🎋) ou depuis le panneau 🎚 d'une grille, qui continue de tourner dessous.
+const KOTO_ACCORDAGE={nom:"kumoi-jōshi", tonique:2, cordes:[50,55,56,60,62,63,67,68,72,74,75,79,81]};
+const KOTO_NOMS=["Do","Do#","Ré","Mib","Mi","Fa","Fa#","Sol","Lab","La","Sib","Si"];
+const KOTO_DEG=["1","b2","2","b3","3","4","b5","5","b6","6","b7","7"];
+const KOTO_PX_TON=56;   // glisser de 56 px vers le haut = presser d'un ton
+const KOTO_ZONE_MORTE=12;   // v1325 : les 12 premiers pixels ne pressent pas (3 px de tremblement faisaient monter la corde de 10 cents)
+let _kotoBufs={}, _kotoBus=null, _kotoTimer=null, _kotoAllume={};
+// v1326 — LE KOTO S'ACCORDE SUR LA GRILLE. Quand une grille joue, les 13 cordes prennent la gamme de l'accord en cours, et changent à chaque
+// changement de gamme, comme un joueur de koto qui déplace ses chevalets (ji). Sans grille, le koto reste en kumoi-jōshi.
+let _kotoCordes=KOTO_ACCORDAGE.cordes.slice(), _kotoCle="", _kotoNomGamme=KOTO_ACCORDAGE.nom, _kotoBemols=true;
+const KOTO_DIESES=["Do","Do#","Ré","Ré#","Mi","Fa","Fa#","Sol","Sol#","La","La#","Si"];
+// v1327 — l'accord dont le koto prend la gamme : celui qui sonne, ou celui où la grille est en pause (pour regarder sans que tout bouge)
+function _kotoIdxGrille(){
+  if(typeof _activeGrid==="undefined" || !_activeGrid) return null;
+  if(_gridPlayOn) return _gridAudibleIdx||0;
+  if(typeof _gridReprise!=="undefined" && _gridReprise!==null) return _gridReprise;
+  return null;
+}
+function _kotoPlayPause(){   // v1327 — le même bouton que « Jouer la grille », pour que tout reste synchronisé
+  const b=document.getElementById("gridPlayBtn");
+  if(b) b.click(); else if(_activeGrid) toggleGridPlay(_activeGrid, document.createElement("button"));
+  setTimeout(_kotoInfoMaj, 60);
+}
+function _kotoGammeCourante(){
+  try{ const i=_kotoIdxGrille(); if(i===null) return null;
+    const c=_activeGrid.chords[i], code=(c && c.scale) || _activeGrid.scale; if(!code) return null;
+    const [r,fam,idx]=typeof code==="string" ? code.split(":") : [code.root, code.family, code.idx];   // au chargement, « F#:japanese:4 » devient {root, family, idx}
+    const md=SCALES[fam] && SCALES[fam].modes[+idx], root=NOTES.indexOf(r); if(!md || root<0) return null;
+    return {cle:r+":"+fam+":"+idx, root, pcs:md.formula.map(x=>(root+x)%12), nom:md.name, bemols:/b/.test(r) || r==="F", ints:(md.intervals||[]).map(x=>x==="R"?"1":x)};
+  }catch(e){ return null; }
+}
+function _kotoAccorder(){
+  const g=_kotoGammeCourante(), cle=g ? g.cle : "";
+  if(cle===_kotoCle) return false; _kotoCle=cle;
+  if(!g){ _kotoCordes=KOTO_ACCORDAGE.cordes.slice(); _kotoNomGamme=KOTO_ACCORDAGE.nom; _kotoBemols=true; }
+  else{   // la tonique entre Ré3 et Do#4, puis les notes de la gamme en montant, une par corde
+    let m=50+((g.root-2+12)%12); const pcs=new Set(g.pcs), out=[];
+    while(out.length<13){ if(pcs.has(m%12)) out.push(m); m++; }
+    _kotoCordes=out; _kotoNomGamme=g.nom; _kotoBemols=g.bemols;
+  }
+  const noms=_kotoBemols?KOTO_NOMS:KOTO_DIESES;
+  document.querySelectorAll("#kotoCordes .koto-corde").forEach((el,i)=>{ const m=_kotoCordes[i];
+    const n=el.querySelector(".koto-note"); if(n) n.textContent=noms[m%12];
+    const j=el.querySelector(".koto-ji"); if(j) j.style.top=Math.round(Math.max(10,Math.min(80,18+(m-50)*1.75)))+"%"; });   // le chevalet suit la hauteur de la corde
+  { const t=document.getElementById("kotoGamme"), f=document.getElementById("kotoFormule"), nn=document.getElementById("kotoNotesG");
+    const pcs=[...new Set(_kotoCordes.map(m=>m%12))], r0=g ? g.root : KOTO_ACCORDAGE.tonique, tri=pcs.sort((a,b)=>((a-r0+12)%12)-((b-r0+12)%12));
+    if(t) t.textContent=_kotoNomGamme+" · "+noms[r0];
+    if(f) f.textContent=(g && g.ints.length ? g.ints : tri.map(pc=>KOTO_DEG[(pc-r0+12)%12])).join(" ");
+    if(nn) nn.textContent=tri.map(pc=>noms[pc]).join(" ");
+    const band=document.getElementById("kotoBandeau"); if(band && band.animate) band.animate([{background:"rgba(245,197,24,.35)"},{background:"rgba(245,197,24,0)"}],{duration:700,easing:"ease-out"}); }
+  try{ _kotoCordes.forEach(_kotoBuffer); }catch(e){}
+  _kotoMancheRef=-1; _kotoManche();
+  return true;
+}
+function _kotoBuffer(midi){
+  const ctx=audioCtx, k=midi+":"+ctx.sampleRate; if(_kotoBufs[k]) return _kotoBufs[k];
+  const sr=ctx.sampleRate, f=440*Math.pow(2,(midi-69)/12), N=Math.max(2,Math.round(sr/f-0.38)), f0=sr/(N+0.38);   // v1321 : le filtre de la boucle retarde de 0,38 échantillon (1−0,62) ; oublié, les cordes sonnaient basses (jusqu'à −13 cents sur le La aigu)
+  const sec=3.6-1.2*Math.min(1,Math.max(0,(midi-50)/34)), n=Math.floor(sec*sr), b=ctx.createBuffer(1,n,sr), y=b.getChannelData(0);
+  const T60=3.6-1.6*Math.min(1,Math.max(0,(midi-50)/34)), rho=Math.pow(0.001,1/(f0*T60));   // graves plus longues que les aiguës
+  const x=new Float32Array(N); let lp=0; for(let i=0;i<N;i++){ lp=0.35*lp+0.65*(Math.random()*2-1); x[i]=lp; }
+  const p=Math.max(1,Math.round(0.12*N)), e=new Float32Array(N); for(let i=0;i<N;i++) e[i]=x[i]-(i>=p?x[i-p]:0);   // onglet près du chevalet : son nasal
+  const s=0.62; for(let i=0;i<n;i++){ const a=i-N>=0?y[i-N]:0, c=i-N-1>=0?y[i-N-1]:0; y[i]=(i<N?e[i]:0)+rho*(s*a+(1-s)*c); }
+  for(let i=0;i<Math.min(n,265);i++) y[i]+=0.5*(Math.random()*2-1)*Math.exp(-i/60);   // le clic de l'onglet (tsume)
+  let m=0; for(let i=0;i<n;i++) m=Math.max(m,Math.abs(y[i])); for(let i=0;i<n;i++) y[i]/=(m||1);
+  for(let i=Math.max(0,n-Math.floor(0.25*sr));i<n;i++) y[i]*=(n-i)/(0.25*sr);   // fin sans clic
+  return _kotoBufs[k]={b, rate:f/f0};
+}
+function _kotoSortie(){
+  if(_kotoBus && _kotoBus.context===audioCtx) return _kotoBus;
+  const ctx=audioCtx, b1=ctx.createBiquadFilter(), b2=ctx.createBiquadFilter(), air=ctx.createBiquadFilter(), g=ctx.createGain();
+  b1.type="peaking"; b1.frequency.value=260; b1.Q.value=1.2; b1.gain.value=4;   // le bois de paulownia
+  b2.type="peaking"; b2.frequency.value=1400; b2.Q.value=1.5; b2.gain.value=3;
+  air.type="highshelf"; air.frequency.value=3500; air.gain.value=2;
+  g.gain.value=0.5; b1.connect(b2); b2.connect(air); air.connect(g);
+  try{ g.connect(_sortieFinale()); }catch(e){ g.connect(ctx.destination); }
+  return _kotoBus=b1;
+}
+function _kotoPincer(i){
+  try{ initAudio(); if(audioCtx.state==="suspended") audioCtx.resume(); }catch(e){}
+  const midi=_kotoCordes[i], {b,rate}=_kotoBuffer(midi), t=audioCtx.currentTime;
+  const src=audioCtx.createBufferSource(); src.buffer=b; const g=audioCtx.createGain(); g.gain.value=0.6;
+  const pr=src.playbackRate; pr.setValueAtTime(rate*Math.pow(2,0.12/12),t); pr.exponentialRampToValueAtTime(rate,t+0.06);   // la corde se tend sous l'attaque
+  src.connect(g); g.connect(_kotoSortie()); src.start(t);
+  _kotoMontrer(midi); _kotoVibrer(i);
+  return {src, rate, presse:0};
+}
+function _kotoPresser(v, demiTons){
+  if(!v) return; const d=Math.max(0,Math.min(2,demiTons)); if(Math.abs(d-v.presse)<0.02) return; v.presse=d;
+  try{ const t=audioCtx.currentTime, pr=v.src.playbackRate; pr.cancelScheduledValues(t); pr.setTargetAtTime(v.rate*Math.pow(2,d/12), t, d>0?0.03:0.05); }catch(e){}
+}
+function _kotoRef(){   // le degré se compte depuis la tonique de la gamme en cours (grille qui joue ou en pause), sinon depuis le Ré du koto
+  try{ const g=_kotoGammeCourante(); if(g) return g.root; }catch(e){}
+  return KOTO_ACCORDAGE.tonique;
+}
+// v1322 — ralentissements : le manche n'est plus redessiné à chaque corde pincée (≈ 90 pastilles reconstruites, puis une mise en page forcée
+// au mouvement suivant du doigt). Il est construit une fois ; un toucher ne fait qu'allumer ou éteindre des pastilles (classes CSS).
+let _kotoMancheRef=-1, _kotoPastilles={}, _kotoInfoMaj=()=>{};
+function _kotoManche(){   // v1327 : le manche se dessine à la taille réelle de sa place (pastilles rondes et grandes), cases 0 à 12
+  const sv=document.getElementById("kotoManche"); if(!sv) return;
+  const W=Math.max(300,Math.round(sv.clientWidth||760)), H=Math.max(90,Math.round(sv.clientHeight||150));
+  const ref=_kotoRef(), cleM=ref+"|"+_kotoCle+"|"+W+"x"+H; if(cleM===_kotoMancheRef && sv.firstChild) return; _kotoMancheRef=cleM; _kotoPastilles={};
+  sv.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const pcs=new Set(_kotoCordes.map(m=>m%12)), tun=[64,59,55,50,45,40], F=12, x0=34, y0=12, dy=(H-y0-20)/5, dx=(W-x0-10)/F;
+  const r=Math.max(7,Math.min(dy*0.46,dx*0.4)), fs=Math.round(r*0.95);
+  const fx=f=>f===0?x0-r-4:x0+(f-0.5)*dx;
+  let h=`<rect x="0" y="0" width="${W}" height="${H}" fill="#000"/>`;
+  for(let f=1;f<=F;f++) h+=`<line x1="${x0+f*dx}" y1="${y0}" x2="${x0+f*dx}" y2="${y0+5*dy}" stroke="#2c3240" stroke-width="1.2"/>`;
+  h+=`<line x1="${x0}" y1="${y0-3}" x2="${x0}" y2="${y0+5*dy+3}" stroke="#c9d1e0" stroke-width="4"/>`;
+  [3,5,7,9,12].forEach(f=>{ h+=`<text x="${x0+(f-0.5)*dx}" y="${H-4}" text-anchor="middle" font-size="${Math.max(9,fs-2)}" fill="#6b7489" font-family="system-ui,sans-serif">${f}</text>`; });
+  for(let s=0;s<6;s++) h+=`<line x1="${x0}" y1="${y0+s*dy}" x2="${W-10}" y2="${y0+s*dy}" stroke="#5b6478" stroke-width="${1+s*0.35}"/>`;
+  for(let s=0;s<6;s++) for(let f=0;f<=F;f++){
+    const m=tun[s]+f, pc=m%12; if(!pcs.has(pc)) continue;
+    const deg=KOTO_DEG[(pc-ref+12)%12], cx=fx(f), cy=y0+s*dy;
+    h+=`<g class="kd${pc===ref?" ton":""}" data-pc="${pc}" data-m="${m}"><circle cx="${cx}" cy="${cy}" r="${r}"/><text x="${cx}" y="${cy+fs*0.36}" text-anchor="middle" font-size="${fs}">${deg}</text></g>`;
+  }
+  sv.innerHTML=h;
+  sv.querySelectorAll(".kd").forEach(g=>{ (_kotoPastilles[g.dataset.pc]=_kotoPastilles[g.dataset.pc]||[]).push(g); });
+}
+function _kotoMontrer(midi){
+  const pc=midi%12, id=Date.now()+Math.random(); _kotoAllume[pc]={midi,id};
+  (_kotoPastilles[pc]||[]).forEach(g=>{ g.classList.add("on"); g.classList.toggle("pile", +g.dataset.m===midi); });
+  setTimeout(()=>{ if(_kotoAllume[pc] && _kotoAllume[pc].id===id){ delete _kotoAllume[pc]; (_kotoPastilles[pc]||[]).forEach(g=>g.classList.remove("on","pile")); } }, 900);
+}
+function _kotoVibrer(i){ const f=document.querySelectorAll("#kotoCordes .koto-fil")[i]; if(!f || !f.animate) return;   // animation sans relecture de la mise en page
+  f.animate([{transform:"translateX(0)",background:"#fff"},{transform:"translateX(2px)"},{transform:"translateX(-2px)"},{transform:"translateX(1px)"},{transform:"translateX(0)"}],{duration:350,easing:"ease-out"}); }
+function _kotoOuvrir(){
+  let ov=document.getElementById("kotoOverlay");
+  if(!ov){
+    ov=document.createElement("div"); ov.id="kotoOverlay";
+    const cordes=KOTO_ACCORDAGE.cordes.map((m,i)=>`<div class="koto-corde${i%2?" impaire":""}" data-i="${i}"><span class="koto-num">${i+1}</span><span class="koto-ji" style="top:${Math.round(18+i*4.5)}%;transition:top .35s ease"></span><span class="koto-fil"></span><span class="koto-note">${KOTO_NOMS[m%12]}</span></div>`).join("");
+    ov.innerHTML=`<div class="koto-bar"><button type="button" class="koto-fermer">✕</button><button type="button" class="koto-pp" id="kotoPP" title="Lecture / pause de la grille">▶</button>
+        <div class="koto-bandeau" id="kotoBandeau"><span class="koto-gamme" id="kotoGamme">${_kotoNomGamme}</span><span class="koto-formule" id="kotoFormule"></span><span class="koto-notesg" id="kotoNotesG"></span></div>
+        <button type="button" class="koto-guidebtn on" id="kotoGuideBtn" title="Guide : la corde de la Phrase s'allume">♪ Phrase</button><span class="koto-info" id="kotoInfo"></span></div>
+      <svg id="kotoManche" viewBox="0 0 760 150" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="koto-aide">Toucher : pincer · glisser en travers : arpège · glisser vers le haut : presser la corde (jusqu'à un ton)</div>
+      <div id="kotoCordes">${cordes}</div>
+      <div class="koto-portrait">↻ Tourne le téléphone en paysage pour avoir les 13 cordes bien larges</div>`;
+    document.body.appendChild(ov);
+    ov.querySelector(".koto-fermer").addEventListener("click",_kotoFermer);
+    ov.querySelector("#kotoPP").addEventListener("click",_kotoPlayPause);
+    ov.querySelector("#kotoGuideBtn").addEventListener("click",e=>{ _kotoGuideOn=!_kotoGuideOn; e.currentTarget.classList.toggle("on",_kotoGuideOn); if(!_kotoGuideOn) _kotoGuide=[]; });
+    window.addEventListener("resize",()=>{ if(ov.classList.contains("ouvert")){ _kotoMancheRef=-1; _kotoManche(); } });
+    const zone=ov.querySelector("#kotoCordes"), voix={};
+    let rz=null; const corde=x=>{ const r=rz||(rz=zone.getBoundingClientRect()), n=KOTO_ACCORDAGE.cordes.length; return Math.max(0,Math.min(n-1,Math.floor((x-r.left)/r.width*n))); };
+    zone.addEventListener("pointerdown",e=>{ e.preventDefault(); rz=zone.getBoundingClientRect(); try{ zone.setPointerCapture(e.pointerId); }catch(_){}
+      const i=corde(e.clientX); voix[e.pointerId]={i, y0:e.clientY, v:_kotoPincer(i)}; });
+    zone.addEventListener("pointermove",e=>{ const p=voix[e.pointerId]; if(!p) return; const i=corde(e.clientX);
+      if(i!==p.i){ const pas=i>p.i?1:-1; for(let k=p.i+pas; k!==i+pas; k+=pas) p.v=_kotoPincer(k); p.i=i; p.y0=e.clientY; return; }   // glissando : chaque corde traversée sonne
+      const dy=p.y0-e.clientY; _kotoPresser(p.v, dy>KOTO_ZONE_MORTE ? (dy-KOTO_ZONE_MORTE)/KOTO_PX_TON*2 : 0); });   // v1325 : zone morte, le doigt qui tremble ne désaccorde plus la corde
+    const fin=e=>{ const p=voix[e.pointerId]; if(p){ _kotoPresser(p.v,0); delete voix[e.pointerId]; } };   // on lâche : la corde redescend
+    zone.addEventListener("pointerup",fin); zone.addEventListener("pointercancel",fin);
+  }
+  ov.classList.add("ouvert"); document.body.classList.add("koto-ouvert");
+  try{ initAudio(); KOTO_ACCORDAGE.cordes.forEach(_kotoBuffer); }catch(e){}   // les 13 cordes calculées d'avance : pas d'attente au premier toucher
+  _kotoCle=null;   // v1327 : à l'ouverture, le bandeau de la gamme se remplit toujours
+  _kotoManche();
+  const info=_kotoInfoMaj=()=>{ const el=document.getElementById("kotoInfo"); if(!el) return; let t="";
+    const pp=document.getElementById("kotoPP"); if(pp){ const i=_kotoIdxGrille(); pp.style.display=(typeof _activeGrid!=="undefined" && _activeGrid)?"":"none"; pp.textContent=_gridPlayOn?"⏸":"▶"; }
+    try{ const i=_kotoIdxGrille(); if(i!==null){ const c=_activeGrid.chords[i]; t=(_gridPlayOn?"":"⏸ ")+(c?c.name:""); } }catch(e){}
+    _kotoAccorder();   // v1326 : nouvelle gamme → les chevalets bougent
+    if(el.textContent!==t){ el.textContent=t; _kotoManche(); } };   // le manche ne se redessine que si la tonique ou la gamme change
+  info(); clearInterval(_kotoTimer); _kotoTimer=setInterval(info,100);
+  if(!_kotoGuideRaf) _kotoGuideRaf=requestAnimationFrame(_kotoGuideBoucle);   // v1328
+}
+// v1328 — GUIDE DE LA PHRASE. Pendant que la grille joue (Phrase allumée ou non), la corde du koto qui porte la note de la Phrase s'allume
+// en jaune au moment où il faut la pincer, et la suivante s'annonce en pâle. Les notes viennent de la Phrase écrite de la grille
+// (ou de la Phrase calculée), au même temps que la Phrase elle-même.
+let _kotoGuide=[], _kotoGuideOn=true, _kotoGuideRaf=0;
+function _kotoGuidePlanifier(gr, chordIdx, startTime, chordBeats, beatSec){
+  const ov=document.getElementById("kotoOverlay"); if(!ov || !ov.classList.contains("ouvert") || !_kotoGuideOn) return;
+  try{ const s0=_phraseDebutAccord(gr, chordIdx);
+    _phraseDe(gr, Math.floor(chordIdx/Math.max(1,gr.chords.length))).forEach(([m,t,d])=>{
+      if(t<s0-1e-6 || t>=s0+chordBeats-1e-6) return;
+      const a=startTime+(t-s0)*beatSec; _kotoGuide.push({m, a, b:a+Math.max(0.15,d*beatSec*0.9)}); });
+  }catch(e){}
+}
+function _kotoCordeDe(m){   // la corde qui porte cette note : la même hauteur si le koto l'a, sinon la même note à l'octave la plus proche
+  let best=-1, d=1e9; _kotoCordes.forEach((x,i)=>{ if(x%12!==m%12) return; const e=Math.abs(x-m); if(e<d){ d=e; best=i; } }); return best;
+}
+function _kotoGuideBoucle(){
+  const ov=document.getElementById("kotoOverlay"); if(!ov || !ov.classList.contains("ouvert")){ _kotoGuideRaf=0; return; }
+  const cs=ov.querySelectorAll("#kotoCordes .koto-corde"); let on=-1, ensuite=-1;
+  if(_gridPlayOn && _kotoGuideOn && audioCtx){ const t=audioCtx.currentTime;
+    _kotoGuide=_kotoGuide.filter(e=>e.b>t-0.05);
+    const cur=_kotoGuide.find(e=>e.a<=t && t<e.b), nxt=_kotoGuide.filter(e=>e.a>t).sort((x,y)=>x.a-y.a)[0];
+    if(cur) on=_kotoCordeDe(cur.m); if(nxt && nxt.a-t<1.5) ensuite=_kotoCordeDe(nxt.m);
+  } else _kotoGuide=[];
+  cs.forEach((c,i)=>{ c.classList.toggle("guide", i===on); c.classList.toggle("bientot", i===ensuite && i!==on); });
+  _kotoGuideRaf=requestAnimationFrame(_kotoGuideBoucle);
+}
+function _kotoFermer(){ const ov=document.getElementById("kotoOverlay"); if(ov) ov.classList.remove("ouvert"); document.body.classList.remove("koto-ouvert"); clearInterval(_kotoTimer); }
 function _gmmFermerSolfege(){ const ov=document.getElementById("gmmSolfegeOverlay"); if(!ov) return;
   ov.classList.remove("ouvert"); document.body.classList.remove("gso-ouvert"); ov.querySelector("iframe").srcdoc=""; }   // vider le cadre coupe aussi son son
 window.addEventListener("message",e=>{ if(e.data && e.data.type==="gmm-fermer-solfege") _gmmFermerSolfege(); });
@@ -13726,8 +13970,8 @@ function _phraseAppliquerNiveau(){ if(_amGains && _amGains.phrase) _amGains.phra
 var _phraseAuto=false;   // v951 : vrai si la Phrase a été allumée par une grille (phraseAuto), pas par le bouton
 var _gridPhraseOn=false;   // v946 : éteinte au lancement (demande de Jérémy) ; le bouton Phrase la rallume
 let _phraseMute=null, _phraseVoix=[], _phraseOnde=null;
-const _PHRASE_PC={C:0,"C#":1,D:2,"D#":3,E:4,F:5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11};
-function _phraseMidi(n){ const m=/^([A-G]#?)(-?\d)$/.exec(n); return m ? 12*(+m[2]+1)+_PHRASE_PC[m[1]] : null; }
+const _PHRASE_PC={C:0,"C#":1,D:2,"D#":3,E:4,F:5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11, Db:1,Eb:3,Gb:6,Ab:8,Bb:10};   // v1329 : les bémols aussi (Lab, Mib étaient perdus)
+function _phraseMidi(n){ const m=/^([A-G][#b]?)(-?\d)$/.exec(n); return m ? 12*(+m[2]+1)+_PHRASE_PC[m[1]] : null; }
 function _phraseBus(){
 if(_phraseMute) return _phraseMute;
 const ctx=audioCtx, out=_amBus().master;
@@ -13744,10 +13988,39 @@ _phraseOnde=ctx.createPeriodicWave(new Float32Array([0,0,0,0,0,0]), new Float32A
 return _phraseMute;
 }
 const PHRASE_SON_FAMILLE={jazz:"sax", funk:"sax", fusion:"sax"};   // v1297 : aussi en Fusion / Néo-Soul (Jérémy)
-function _phraseNom(){ return _phraseSonGrille==="sax" ? "Sax" : "Phrase"; }   // v1297 — le bouton dit « Sax » quand c'est le sax qui joue la Phrase
-function _phraseIco(){ return _phraseSonGrille==="sax" ? "🎷" : "🎵"; }   // v1283 — Jérémy : le sax à la place de la Phrase, par défaut en Jazz et en Funk
+function _phraseNom(){ return _phraseSonGrille==="sax" ? "Sax" : _phraseSonGrille==="shakuhachi" ? "Shakuhachi" : "Phrase"; }   // v1297 — le bouton dit « Sax » quand c'est le sax qui joue la Phrase
+function _phraseIco(){ return _phraseSonGrille==="sax" ? "🎷" : _phraseSonGrille==="shakuhachi" ? "🌬️" : "🎵"; }   // v1283 — Jérémy : le sax à la place de la Phrase, par défaut en Jazz et en Funk
 let _phraseSonGrille=null;   // v1282 : "sax" = sax alto enregistré
+// v1329 — SHAKUHACHI ÉMULÉ (Jérémy, pour les grilles japonaises) : flûte de bambou calculée, 0 octet. Un son creux (fondamentale forte,
+// quelques harmoniques), le souffle qui passe dans le bambou (bruit filtré autour de la note, fort à l'attaque), la note qui arrive par
+// en dessous (meri → kari, un tiers de demi-ton), puis le vibrato de tête (yuri) qui s'installe sur les notes tenues.
+let _shakuOnde=null, _shakuBruit=null;
+function _shakuNote(midi, t, dur, vel){
+  const ctx=audioCtx, bus=_phraseBus(), f=440*Math.pow(2,(midi-69)/12);
+  if(!_shakuOnde || _shakuOnde.ctx!==ctx){ const re=new Float32Array([0,0,0,0,0,0]), im=new Float32Array([0,1,0.2,0.24,0.06,0.04]); _shakuOnde={w:ctx.createPeriodicWave(re,im),ctx}; }
+  if(!_shakuBruit || _shakuBruit.sampleRate!==ctx.sampleRate){ const n=ctx.sampleRate*2; _shakuBruit=ctx.createBuffer(1,n,ctx.sampleRate); const d=_shakuBruit.getChannelData(0); for(let i=0;i<n;i++) d[i]=Math.random()*2-1; }
+  const o=ctx.createOscillator(); o.setPeriodicWave(_shakuOnde.w);
+  o.frequency.setValueAtTime(f*Math.pow(2,-0.35/12),t); o.frequency.exponentialRampToValueAtTime(f,t+Math.min(0.14,dur*0.4));   // la note monte se poser (meri)
+  const lfo=ctx.createOscillator(); lfo.frequency.value=4.6; const vib=ctx.createGain(); vib.gain.setValueAtTime(0,t);
+  if(dur>0.6){ vib.gain.setValueAtTime(0,t+0.35); vib.gain.linearRampToValueAtTime(f*0.007,t+Math.min(dur*0.8,1.2)); }   // yuri : seulement sur les notes tenues
+  lfo.connect(vib); vib.connect(o.frequency);
+  const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=Math.min(9000,f*7);
+  const g=ctx.createGain(), rel=Math.min(0.16,dur*0.35), v=vel*1.15;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v*0.8,t+0.07); g.gain.linearRampToValueAtTime(v,t+Math.min(0.5,dur*0.6));
+  g.gain.setValueAtTime(v,t+Math.max(0.08,dur-rel)); g.gain.linearRampToValueAtTime(0.0001,t+dur+0.04);
+  o.connect(lp); lp.connect(g); g.connect(bus);
+  const nz=ctx.createBufferSource(); nz.buffer=_shakuBruit; nz.loop=true; nz.loopStart=Math.random();
+  const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=f*1.5; bp.Q.value=2.2;
+  const hp=ctx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=900;
+  const gn=ctx.createGain(); gn.gain.setValueAtTime(0.0001,t); gn.gain.linearRampToValueAtTime(v*0.55,t+0.03); gn.gain.setTargetAtTime(v*0.12,t+0.05,0.12);
+  gn.gain.setValueAtTime(v*0.12,t+Math.max(0.08,dur-rel)); gn.gain.linearRampToValueAtTime(0.0001,t+dur+0.04);   // le souffle : fort à l'attaque, puis il reste un peu
+  nz.connect(bp); bp.connect(hp); hp.connect(gn); gn.connect(bus);
+  o.start(t); lfo.start(t); nz.start(t); o.stop(t+dur+0.06); lfo.stop(t+dur+0.06); nz.stop(t+dur+0.06);
+  const vx={o:o,lfo:lfo,fin:t+dur}; _phraseVoix.push(vx); o.onended=()=>{ _phraseVoix=_phraseVoix.filter(x=>x!==vx); };
+  try{ vx.nz=nz; const st=vx.o.stop.bind(vx.o); vx.o.stop=(tt)=>{ try{ nz.stop(tt); }catch(e){} st(tt); }; }catch(e){}   // couper la Phrase coupe aussi le souffle
+}
 function _phraseNote(midi, t, dur, vel){
+if(_phraseSonGrille==="shakuhachi"){ try{ _shakuNote(midi, t, dur, vel); return; }catch(e){} }   // v1329
 if(_phraseSonGrille==="sax"){ try{ if(_guitEchJouer("saxAlto", midi, t, dur, vel, _phraseBus(), 0.03)) return; }catch(e){} }   // v1282
 const ctx=audioCtx, bus=_phraseBus(), f=440*Math.pow(2,(midi-69)/12);
 const o=ctx.createOscillator(); o.setPeriodicWave(_phraseOnde); o.frequency.setValueAtTime(f,t);
@@ -13775,10 +14048,14 @@ try{ _phrasePlanifier0(gr, chordIdx, startTime, chordBeats, beatSec); }catch(e){
 function _phrasePlanifier0(gr, chordIdx, startTime, chordBeats, beatSec){
 const s=_phraseDebutAccord(gr, chordIdx), bus=_phraseBus();
 if(bus.gain.value<0.5){ bus.gain.cancelScheduledValues(audioCtx.currentTime); bus.gain.setValueAtTime(1,audioCtx.currentTime); }
+const _acc=gr.chords[chordIdx%Math.max(1,gr.chords.length)], _sonAv=_phraseSonGrille;   // v1332 : flute:false = pays sans flûte, la voix Phrase habituelle reprend le temps de l'accord
+if(_acc && _acc.flute===false && _phraseSonGrille==="shakuhachi") _phraseSonGrille=null;
+try{
 _phraseDe(gr, Math.floor(chordIdx/Math.max(1,gr.chords.length))).forEach(([m,t,d])=>{
 if(t<s-1e-6 || t>=s+chordBeats-1e-6) return;
 try{ _phraseNote(m, startTime+(t-s)*beatSec, d*beatSec, 0.2); }catch(e){}
 });
+} finally { _phraseSonGrille=_sonAv; }
 }
 function _phraseCouper(){
 if(!audioCtx) return;
@@ -14045,6 +14322,7 @@ const sig=_chordSig(gr, chord);          // v582 : l'accord d'abord, la grille e
 const chordBeats=_chordBeats(chord, sig);
 const chordDur=chordBeats*beatSec;
 if(_gridPhraseOn && gr) _phrasePlanifier(gr, chordIdx, startTime, chordBeats, beatSec);   // v900 — phrase-guide
+if(typeof _kotoGuidePlanifier==="function") _kotoGuidePlanifier(gr, chordIdx, startTime, chordBeats, beatSec);   // v1328 — la Phrase s'allume sur le koto
 _nuancePlanifier(chord, startTime);   // v917
 const voicingMidi=voicingToMidi(_parseVoicing(chord.voicing), [...INSTRUMENTS[appState.instrument].tunings].reverse());
 if(!voicingMidi.length) return chordDur;
@@ -17862,6 +18140,9 @@ function _couchesInit(){
     { const sb=document.createElement("button"); sb.type="button"; sb.className="cp-ch"; sb.textContent="📖 Solfège"; sb.title="Lire cette grille en partition dans le Solfège";   // v1167
       sb.addEventListener("click",e=>{ e.stopPropagation(); _gmmOuvrirSolfege(_gmmSolfegeGrille()); });
       queueMicrotask(()=>tete.appendChild(sb)); }
+    { const kb=document.createElement("button"); kb.type="button"; kb.className="cp-ch"; kb.textContent="🎋 Koto"; kb.title="Jouer du koto par-dessus la grille, qui continue de tourner";   // v1320
+      kb.addEventListener("click",e=>{ e.stopPropagation(); _kotoOuvrir(); });
+      queueMicrotask(()=>tete.appendChild(kb)); }
     { /* v1305 — PEDALBOARD (Jérémy) : un bouton « Pédales » ouvre la planche ; chaque pédale a son interrupteur et son – / + (le chorus v1247 y a déménagé) */
       const NOMS=["","léger","moyen","ample","marqué"];
       const pb=document.createElement("button"); pb.type="button"; pb.className="cp-ch"; pb.id="cpPedales"; pb.title="Les pédales de la guitare, dans l'ordre de la planche : auto-wah, drive, chorus, delay.";
@@ -19168,6 +19449,18 @@ try{ const a=localStorage.getItem("guitarModalMorpher.axe"); if(a==="lecon"||a==
 // Retirer cette liste (la vider) une fois le correctif moteur validé. Les versions affichées restent celles de NOUVEAUTES.
 const A_ECOUTER=[];   // v949 : vidée à la demande de Jérémy, les Nouveautés repartent de la plus récente
 const NOUVEAUTES=[
+["prog-in-sen-mi","v1332"],   // v1332 — Phrase écrite au shakuhachi
+["cin-hirajoshi-mi","v1332"],   // v1332 — Phrase écrite au shakuhachi
+["cin-penta-re-lumieres","v1332"],   // v1332 — Phrase écrite au shakuhachi
+["cla-debussy-voiles","v1332"],   // v1332 — Phrase écrite au shakuhachi
+["cin-tour-asie-la","v1332"],   // v1332 — Phrase écrite au shakuhachi
+["cin-journee-ragas-do","v1332"],   // v1332 — Phrase écrite au shakuhachi
+["cin-tour-du-monde-mi","v1332"],   // v1332 — Phrase écrite au shakuhachi (flûte seulement dans les pays à flûte)
+["cin-tour-ameriques-afrique-sol","v1332"],   // v1332 — Phrase écrite au shakuhachi (flûte seulement dans les pays à flûte)
+["voy-route-soie-la","v1332"],   // v1332 — Phrase écrite au shakuhachi (flûte seulement dans les pays à flûte)
+["cin-rondo-dorien-si","v1332"],   // v1332 — Phrase écrite au shakuhachi (flûte seulement dans les pays à flûte)
+["cin-japon-cinq-gammes","v1324"],   // v1324 — Le Japon en cinq gammes resserrée : 10 accords, son de « Sous le nuage », gestes du koto au Solo
+["rock-friedman-cordes-koto","v1319"],   // v1319 — Deux cordes du koto (Sol kumoijoshi, vraies notes du koto en kumoi-jōshi, Friedman en solo, 3/4) ; remplace « Une case plus haut » (v1317-1318)
 ["rock-friedman-sous-nuage","v1316"],   // v1316 — Sous le nuage (Mi kumoijoshi, Friedman en solo) : nylon en arpège, fretless tenue, Solo clair tiré au demi-ton
 ["metal-friedman-nuage","v1315"],   // v1315 — Le nuage ne bouge pas (Mi kumoi, à la Marty Friedman) : Solo tiré et vibré, Phrase et basse écrites
 ["fus-carlton-fa-dorien","v1300"],   // v1300 : pont ; v1299 — Le Fa# dorien (Carlton) : rythmique folk égrenée, Solo électrique claire, sax, basse écrite
@@ -19628,9 +19921,9 @@ if(_guitareEnregistree){ try{   // v1244 : les guitares de la grille aussi, avan
 _phraseDbGrille=(typeof gr.phraseDb==="number")?gr.phraseDb:(gr.phrase ? 0 : PHRASE_AUTO_DB);   // v1266 : la Phrase inventée plus bas que les Phrases écrites _chorusGrille=(gr.chorus>=1&&gr.chorus<=4)?gr.chorus:0; try{ if(typeof _chorusAppliquer==="function") _chorusAppliquer(); }catch(e){}   // v1255
 _rythmeDbGrille=(typeof gr.rythmeDb==="number")?gr.rythmeDb:(RYTHME_DB_FAMILLE[(STYLE_FAMILIES.find(f=>!f.nouveautes && (f.grids||[]).indexOf(gr)>=0)||{}).id]||0);   // v1250 ; v1253 : guitare funk −3 dB (Jérémy : trop forte)
  try{ _phraseAppliquerNiveau(); }catch(e){}   // v1246
-_phraseSonGrille=(gr.phraseSon==="sax"||gr.phraseSon==="synthe") ? (gr.phraseSon==="sax"?"sax":null)
+_phraseSonGrille=(gr.phraseSon==="shakuhachi") ? "shakuhachi" : (gr.phraseSon==="sax"||gr.phraseSon==="synthe") ? (gr.phraseSon==="sax"?"sax":null)
   : (PHRASE_SON_FAMILLE[(STYLE_FAMILIES.find(f=>!f.nouveautes && (f.grids||[]).indexOf(gr)>=0)||{}).id]||null);   // v1283 : sax par défaut en Jazz et en Funk ; phraseSon:"synthe" garde l'ancienne voix
- if(_phraseSonGrille){ try{ _guitEchPrepare("saxAlto"); }catch(e){} }   // v1282
+ if(_phraseSonGrille==="sax"){ try{ _guitEchPrepare("saxAlto"); }catch(e){} }   // v1282 (v1329 : pas pour le shakuhachi, calculé)
 if(gr.phraseAuto){ if(!_gridPhraseOn){ _gridPhraseOn=true; _phraseAuto=true; } }   // v951 : la mélodie est la leçon, la grille allume la Phrase
 else if(_phraseAuto){ _gridPhraseOn=false; _phraseAuto=false; }                    // et la rend éteinte en partant, si c'est elle qui l'avait allumée
 if(typeof _gridSyncToggles==="function") _gridSyncToggles();
@@ -23814,6 +24107,52 @@ function _memRaz(){ if(!_memRazArme){ _memRazArme=true; _memRender(); setTimeout
 </script>
 
 <style>/* v1165 — le Solfège intégré, par-dessus le Morpher */
+/* v1320 — koto virtuel */
+#kotoOverlay{display:none}
+#kotoOverlay.ouvert{display:flex;flex-direction:column;position:fixed;inset:0;z-index:99998;background:#000;color:#e8ebf2;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+#kotoOverlay .koto-bar{display:flex;align-items:center;gap:10px;padding:4px 10px;flex:none;padding-top:max(6px,env(safe-area-inset-top));background:#14161b;border-bottom:1px solid rgba(47,140,255,.45)}
+#kotoOverlay .koto-fermer{border:1.5px solid #3a4152;background:transparent;color:#e8ebf2;border-radius:999px;padding:4px 12px;font-weight:700;cursor:pointer;white-space:nowrap;flex:none}
+#kotoOverlay .koto-titre{font-weight:800;white-space:nowrap}
+#kotoOverlay .koto-titre small{font-weight:600;color:#8a93a6;margin-left:4px}
+#kotoOverlay .koto-info{margin-left:auto;color:#f5c518;font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#kotoManche{width:100%;height:30vh;min-height:110px;flex:none;background:#000;display:block}
+#kotoOverlay .koto-aide{font-size:.75rem;color:#8a93a6;text-align:center;padding:2px 6px}
+#kotoCordes{flex:1;display:flex;touch-action:none;background:linear-gradient(180deg,#3b2a17,#5a3f22 60%,#3b2a17);margin:4px 8px 8px;border-radius:12px;overflow:hidden;position:relative}
+#kotoCordes .koto-corde{flex:1;position:relative;display:flex;justify-content:center}
+#kotoCordes .koto-fil{position:absolute;top:0;bottom:0;width:2px;background:linear-gradient(90deg,#d8cfb8,#fff8e6,#bfb59c);box-shadow:0 0 2px rgba(0,0,0,.6)}
+#kotoCordes .koto-ji{position:absolute;width:16px;height:12px;margin-left:-1px;background:#efe6d0;clip-path:polygon(50% 0,100% 100%,0 100%);z-index:1}
+#kotoCordes .koto-num{position:absolute;top:4px;font-size:.62rem;color:#e8d9b5;opacity:.6;z-index:2}
+#kotoCordes .koto-note{position:absolute;bottom:6px;font-size:clamp(.55rem,2.6vw,.85rem);font-weight:800;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:1px 3px;white-space:nowrap;z-index:2}
+#kotoCordes .koto-corde.impaire .koto-note{bottom:30px}   /* noms en quinconce : ils ne se chevauchent plus en portrait */
+#kotoOverlay .koto-portrait{display:none;text-align:center;color:#f5c518;font-size:.85rem;padding:4px}
+@media (orientation:portrait){ #kotoOverlay .koto-portrait{display:block} #kotoManche{height:24vh} #kotoOverlay .koto-notesg{display:none} #kotoOverlay .koto-bandeau{flex-wrap:wrap;row-gap:0} }
+#kotoManche .kd{opacity:.75;transition:opacity .25s}   /* v1327 : la gamme se lit au repos (en pause, on la regarde) */
+#kotoManche .kd circle{fill:#1f5fb4}
+#kotoManche .kd text{font-weight:800;fill:#fff;font-family:system-ui,sans-serif}
+/* v1327 : bandeau de la gamme, lecture/pause, manche plus grand */
+#kotoOverlay .koto-pp{border:1.5px solid #f5c518;background:transparent;color:#f5c518;border-radius:999px;width:38px;height:32px;font-size:1rem;cursor:pointer;flex:none}
+#kotoOverlay .koto-bandeau{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1;padding:2px 8px;border-radius:8px;overflow:hidden;white-space:nowrap}
+#kotoOverlay .koto-gamme{font-weight:900;font-size:1.15rem;color:#f5c518}
+#kotoOverlay .koto-formule{font-weight:800;color:#8fc1ff;letter-spacing:.06em}
+#kotoOverlay .koto-notesg{color:#c9d1e0;font-size:.85rem;overflow:hidden;text-overflow:ellipsis}
+#kotoOverlay .koto-info{margin-left:0;flex:none}
+/* v1328 : guide de la Phrase */
+#kotoOverlay .koto-guidebtn{border:1.5px solid #3a4152;background:transparent;color:#8a93a6;border-radius:999px;padding:3px 10px;font-weight:700;cursor:pointer;flex:none;white-space:nowrap}
+#kotoOverlay .koto-guidebtn.on{border-color:#f5c518;color:#f5c518}
+#kotoCordes .koto-corde.guide .koto-fil{width:5px;background:#f5c518;box-shadow:0 0 12px 4px rgba(245,197,24,.75)}
+#kotoCordes .koto-corde.guide .koto-note{background:#f5c518;color:#000}
+#kotoCordes .koto-corde.bientot .koto-fil{width:4px;background:rgba(245,197,24,.5)}
+#kotoCordes .koto-corde.guide{background:radial-gradient(ellipse at center,rgba(245,197,24,.18),transparent 70%)}
+#kotoManche .kd.ton circle{stroke:#f5c518;stroke-width:2.5}
+#kotoManche .kd.on{opacity:1;transition:opacity .05s}
+#kotoManche .kd.on circle{fill:#2f8cff}
+#kotoManche .kd.pile circle{stroke:#fff;stroke-width:3}
+@media (orientation:landscape) and (max-height:520px){   /* v1322 : en paysage sur téléphone, les cordes prennent la place */
+  #kotoManche{height:42vh;min-height:0}
+  #kotoOverlay .koto-aide{display:none}
+  #kotoCordes{margin:3px 6px 6px}
+  #kotoOverlay .koto-bar{font-size:.85rem}
+}
 #gmmSolfegeOverlay{display:none}
 #gmmSolfegeOverlay .gso-qc{margin-left:auto;border:1.5px solid #c9a227;background:transparent;color:#f5c518;border-radius:999px;padding:5px 14px;font-weight:800;font-size:.9rem;cursor:pointer}
 #gmmSolfegeOverlay.ouvert{display:flex;flex-direction:column;position:fixed;inset:0;z-index:99999;background:#000}
