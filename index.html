@@ -4964,6 +4964,19 @@ chords:[{name:"C6",beats:4,voicing:"x-3-2-2-1-x",scale:"C:0"},
 {name:"Dm7",beats:4,voicing:"x-5-7-5-6-x",scale:"D:1"},
 {name:"G7b9",beats:4,voicing:"3-x-3-1-0-1",scale:"G:harmonicMinor:4"},
 {name:"C6",beats:4,voicing:"x-3-2-2-1-x",scale:"C:0"}]},
+{id:"cin-deux-pentas-la", basseDb:2,   /* v1370 : 5 → 2, la basse de toute l'app monte de 3 dB */   /* v1369 : Jérémy — basse plus forte par défaut (le taiko la couvrait) */ soloDb:7,   /* v1365 : Jérémy — le Solo beaucoup trop faible (taiko, shō et arpège à 100 bpm) */ basseHarmoniques:-16, voix:"nylon", basseSon:"fingerReel", nappe:"sho", shoFixe:["A4","D5","E5","A5"], arp:true, arpMotif:[0,1,-1,2,-2,1,-1,2], arpPas:0.5,   // v1364 — Jérémy : « Deux pentas, un dorien ». Ombre = penta mineure (Do, Sol), lumière = yo (Si, Fa#) ; chaque note d'ombre descend d'une case. Taiko d'office (tempo 100), Solo guitare sur l'ombre, shamisen sur la lumière
+        root:"A", scale:"A:1", lecons:{pentatoniques:4, modal:3, immobile:3, exotiques:2},
+name:"Deux pentas, un dorien — l'ombre descend d'une case, sur un La", tempo:100, groove:"cinemaOst",
+desc:"Le geste : le La à vide tient la basse ; dans chaque paire d'accords, les doigts qui tiennent le Do et le Sol reculent d'une case (Si et Fa#), les autres restent posés. À écouter : penta mineure de La (l'ombre, le blues) puis yo de La (la lumière, le Japon) ; ensemble, les deux font le La dorien. Pour improviser : ta boîte de La mineur sur l'ombre, ta boîte de Si mineur sur la lumière. Au deuxième tour, le Solo ne coupe plus : ses phrases traversent la frontière, le Do relâché sur le Si, le Sol sur le Fa#.",
+chords:[
+                {name:"Am7",beats:4,voicing:"x-0-2-2-1-3",scale:"A:pentatonic:4",basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[0.5,"E5",0.5],[1,"G5",1],[2,"E5",0.5],[2.5,"D5",0.5],[3,"C5",0.5],[3.5,"D5",0.5]],soloEcrit:[[0,"A4",0.5],[0.5,"C5",0.5],[1,"D5",1],[2,"E5",0.5],[2.5,"G5",0.5],[3,"E5",1,"vib"]]},
+                {name:"A6sus2",beats:4,voicing:"x-0-2-2-0-2",scale:"A:japanese:4",basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[0,"E5",1.5,"vib"],[1.5,"F#5",0.5],[2,"E5",0.5],[2.5,"B4",1.5]],soloEcrit:[[0,"E5",0.5],[0.5,"F#5",0.5],[1,"E5",1],[2,"B4",0.5],[2.5,"D5",0.5],[3,"B4",1]]},
+                {name:"D7sus4/A",beats:4,voicing:"x-0-0-2-1-3",scale:"A:pentatonic:4",basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[0,"A4",1],[1,"C5",0.5],[1.5,"D5",0.5],[2,"E5",0.5],[2.5,"G5",1.5,"vib"]],soloEcrit:[[0,"D5",1],[1,"C5",0.5],[1.5,"A4",0.5],[2,"G4",1,"vib"],[3,"A4",1]]},
+                {name:"D6/A",beats:4,voicing:"x-0-0-2-0-2",scale:"A:japanese:4",basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[0,"F#5",0.5,"lâché½"],[0.5,"E5",0.5],[1,"D5",1],[2,"B4",0.5],[2.5,"A4",1.5]],soloEcrit:[[0,"F#5",1,"vib"],[1,"E5",0.5],[1.5,"D5",0.5],[2,"B4",1],[3,"A4",1]]},
+                {name:"Am7",beats:4,voicing:"x-0-5-5-5-x",scale:"A:pentatonic:4",basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[2,"A5",0.5],[2.5,"C6",1.5,"vib"]],soloEcrit:[[0,"G5",0.5],[0.5,"A5",0.5],[1,"C6",1,"vib"],[2,"A5",0.5],[2.5,"G5",0.5],[3,"E5",1]]},
+                {name:"A6sus2",beats:4,voicing:"x-0-4-4-5-x",scale:"A:japanese:4",   /* v1366 : x-0-4-4-5-2 tirait à la longue (Jérémy) : plus de Mi aigu, trois doigts, deux reculent d'une case */ basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[0,"B5",1,"lâché½"],[1,"A5",0.5],[1.5,"F#5",0.5],[2,"E5",2]],soloEcrit:[[0,"F#5",0.5],[0.5,"A5",0.5],[1,"B5",1,"vib"],[2,"A5",0.5],[2.5,"F#5",0.5],[3,"E5",1]]},
+                {name:"Am7",beats:4,voicing:"x-0-2-2-1-3",scale:"A:pentatonic:4",basseLigne:[[0,12,1.5],[1.5,12,0.5],[2,19,1],[3,12,1]],soloEcrit2:[[0,"D5",0.5],[0.5,"C5",0.5],[1,"A4",1],[2,"G4",0.5],[2.5,"A4",0.5],[3,"C5",1]],soloEcrit:[[0,"C5",1],[1,"A4",0.5],[1.5,"G4",0.5],[2,"E4",1],[3,"G4",1]]},
+                {name:"A6sus2",beats:4,voicing:"x-x-4-4-0-2",scale:"A:japanese:4",basseLigne:[[0,3,2],[2,10,2]],   /* v1368 : dernier accord proposé par Jérémy — seulement les notes de lumière, Fa# et Si, le Si doublé à l'unisson comme une cloche */ soloEcrit2:[[0,"B4",1,"lâché½"],[1,"A4",3,"vib"]],soloEcrit:[[0,"F#4",1],[1,"A4",0.5],[1.5,"B4",0.5],[2,"A4",2,"vib"]]}]},
 {id:"cin-miyako-nuage-la", basseHarmoniques:-16, voix:"nylon", basseSon:"fingerReel", nappe:"sho", arp:true, arpMotif:[0,1,-1,2,-2,1,-1,2], arpPas:0.5,   // v1360 — Jérémy : nouvelle grille japonaise. Kakeai : la flûte joue, se tait, le shamisen répond dans le silence ; le shō tient un nuage immobile
        shoFixe:["A4","D5","E5","A5"], phraseAuto:true, phraseSon:"shakuhachi", phrase:[["E5",0,2],["F5",2,1],["E5",3,1],["D5",4,1.5],["A4",5.5,2],
          ["A4",16,1],["D5",17,1],["E5",18,3],["F5",21,1],["E5",22,1.5],
@@ -5436,7 +5449,7 @@ chords:[{name:"F",beats:4,voicing:"1-3-3-2-1-1",scale:"D#:melodicMinor:2"},
                 {name:"F#m/E",beats:3,sig:3,groove:"sevillanas",voicing:"0-x-7-6-7-x",scale:"E:major:0",pays:"✨ Séville · les sevillanas, le sommet",basseLigne:[[0,14,1],[1,17,1],[2,19,1]],soloEcrit:[[0,"A4",1],[1,"C#5",1],[2,"F#4",1]]},
                 {name:"C#m/E",beats:3,sig:3,groove:"sevillanas",voicing:"0-x-6-6-5-x",scale:"E:major:0",pays:"✨ Séville · les sevillanas, le sommet",basseLigne:[[0,21,1],[1,16,1],[2,19,1]],soloEcrit:[[0,"G#4",1],[1,"B4",1],[2,"C#5",1]]}]},
       // v1076 — La Route de la soie : La à vide en bourdon, triades Ré-Sol-Si cases 3 à 6 ; rondo, la caravane entre chaque ville ; la basse marche.
-      {id:"voy-route-soie-la", basseDb:4, basseHarmoniques:-16,   /* v1357 : basse +4 dB et ses harmoniques pour le téléphone (Jérémy : la basse trop faible) */ soloDb:9.5,   /* v1359 : +4 dB (Jérémy : le Solo trop faible, même sans wah) */ phraseDb:-5.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+      {id:"voy-route-soie-la", basseDb:1,   /* v1370 : 4 → 1, la basse de toute l'app monte de 3 dB */ basseHarmoniques:-16,   /* v1357 : basse +4 dB et ses harmoniques pour le téléphone (Jérémy : la basse trop faible) */ soloDb:9.5,   /* v1359 : +4 dB (Jérémy : le Solo trop faible, même sans wah) */ phraseDb:-5.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
        phraseAuto:false,   /* v1338 : Phrase éteinte par défaut (Jérémy : le shakuhachi couvre le shō) */ phraseSon:"shakuhachi", phrase:[["E5",0.0,2.0],["G5",2.0,1.0],["E5",3.0,1.0],["D5",4.0,2.0],["G4",6.0,1.75],["E5",8.0,2.0],["B4",10.0,1.75],["G4",12.0,2.0],["G5",14.0,1.75],["D#5",16.0,2.0],["F#5",18.0,1.75],["G5",20.0,2.0],["G4",22.0,1.75],["E5",24.0,2.0],["G5",26.0,1.0],["E5",27.0,1.0],["D5",28.0,2.0],["G4",30.0,1.75],["E5",32.0,2.0],["B4",34.0,1.75],["E5",36.0,1.5],["G5",37.5,1.5],["F5",39.0,1.5],["E5",40.5,1.25],["D5",42.0,3.0],["C5",45.0,1.5],["A#4",46.5,1.25],["D5",48.0,1.5],["F5",49.5,1.5],["D5",51.0,2.75],["E5",54.0,2.0],["G5",56.0,1.0],["E5",57.0,1.0],["D5",58.0,2.0],["G4",60.0,1.75],["E5",62.0,2.0],["B4",64.0,1.75],["E5",66.0,1.5],["B4",67.5,1.5],["D5",69.0,1.5],["B4",70.5,1.25],["C5",72.0,1.5],["F5",73.5,1.5],["E5",75.0,2.75],["E5",78.0,1.5],["G#4",79.5,1.5],["C5",81.0,2.75],["E5",84.0,2.0],["G5",86.0,1.0],["E5",87.0,1.0],["D5",88.0,2.0],["G4",90.0,1.75],["E5",92.0,2.0],["B4",94.0,1.75],["E5",96.0,2.0],["G5",98.0,1.0],["E5",99.0,1.5],["A#4",100.5,1.5],["C#5",102.0,2.75],["G5",105.0,2.0],["F5",107.0,1.0],["E5",108.0,1.5],["G4",109.5,1.5],["E5",111.0,2.75],["D5",114.0,2.0],["F5",116.0,2.0],["E5",118.0,2.0],["A#4",120.0,2.75],["E5",123.0,2.0],["G5",125.0,1.0],["E5",126.0,1.0],["D5",127.0,2.0],["G4",129.0,1.75],["E5",131.0,2.0],["B4",133.0,1.75],["E5",135.0,2.0],["F#5",137.0,1.0],["B4",138.0,2.75],["B4",141.0,2.0],["E5",143.0,1.0],["G#5",144.0,2.75],["E5",147.0,2.0],["G#4",149.0,1.0],["C#5",150.0,2.75]],   // v1332 : Phrase écrite pour le shakuhachi (flute:false = pays sans flûte, la voix Phrase habituelle reprend)
         lecons:{exotiques:3, immobile:3, modal:3}, fondamentale:"nom", root:"A", scale:"A:major:5", voix:"guitar", sig:4,
         name:"La Route de la soie — la caravane entre chaque ville, sur un La", tempo:66, groove:"caravane",
@@ -11512,7 +11525,7 @@ const _SOLO_ECHO=[[0.75,0.5],[1.5,0.3],[2.25,0.17]];
 // Ça ne change que la hauteur pendant que la note sonne (playbackRate) : la note écrite reste la note d'arrivée, partout ailleurs.
 var _geste=null;
 function _gesteDe(mots){
-  const g={}; if(mots.includes("tiré")) g.de=-2; else if(mots.includes("tiré½")) g.de=-1; else if(mots.includes("lâché")){ g.de=2; g.lache=true; } else if(mots.includes("lâché½")){ g.de=1; g.lache=true; }   // v1316 : relâché d'un demi-ton (le Fa qui retombe sur Mi, comme au koto)
+  const g={}; if(mots.includes("tiré½")) g.de=-1; else if(mots.includes("tiré")) g.de=-2; else if(mots.includes("lâché½")){ g.de=1; g.lache=true; } else if(mots.includes("lâché")){ g.de=2; g.lache=true; }   /* v1367 : les demi-tons d'abord — « tiré½ » contient « tiré » et partait d'un ton entier */   // v1316 : relâché d'un demi-ton (le Fa qui retombe sur Mi, comme au koto)
   if(mots.includes("vib")) g.vib=true;
   return (g.de||g.vib) ? g : null;
 }
@@ -11680,7 +11693,9 @@ function _scheduleSoloBar(barStart,ch,gr,chordIdx,barDansAccord,barBeats,beatSec
 try{ if(!barDansAccord && gr && gr.chords && gr.chords.some(c=>c.wah)){ const w=!!(ch&&ch.wah); setTimeout(()=>{ if(_wahGrilleCur!==w){ _wahGrilleCur=w; _planchesAppliquer(); } }, Math.max(0,(barStart-audioCtx.currentTime)*1000-20)); } }catch(e){}   // v1358 : la wah écrite s'allume pile au début de l'accord
 if(!_gridSoloOn||!ch)return;
 let evs;
-if(_soloMode==="ecrit" && Array.isArray(ch.soloEcrit) && ch.soloEcrit.length) evs=_soloEcritBar(ch,barBeats,barDansAccord,debutDansAccord);
+const _tour2=!!(gr && gr.chords && gr.chords.length && Math.floor(chordIdx/gr.chords.length)%2===1 && Array.isArray(ch.soloEcrit2));   // v1367 : un tour sur deux, le Solo écrit joue sa variante (soloEcrit2), à la guitare
+if(_soloMode==="ecrit" && _tour2) evs=_soloEcritBar(Object.assign({},ch,{soloEcrit:ch.soloEcrit2}),barBeats,barDansAccord,debutDansAccord);
+else if(_soloMode==="ecrit" && Array.isArray(ch.soloEcrit) && ch.soloEcrit.length) evs=_soloEcritBar(ch,barBeats,barDansAccord,debutDansAccord);
 else if(_soloMode==="ecrit" && _soloEcritDispo(gr)) evs=[];   // v1046 : sur une grille à thème, l'accord sans thème laisse respirer (pas d'impro glissée au milieu)
 else {
   evs=_soloGenerateBar(ch,gr,barBeats,chordIdx,barDansAccord);
@@ -11691,7 +11706,7 @@ else {
   }
 }
 const relBase=barStart-audioCtx.currentTime;
-evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; if(_soloShami(ch,gr)) _shamiNote(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); else playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()*((ch&&ch.wah)?1.41:1)); }catch(err){}   /* v1359 : +3 dB sur les accords à wah écrite, la wah creuse le son */ finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
+evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; if(!_tour2 && _soloShami(ch,gr)) _shamiNote(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); else playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()*((ch&&ch.wah)?1.41:1)); }catch(err){}   /* v1359 : +3 dB sur les accords à wah écrite, la wah creuse le son */ finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
 }
 function _soloReset(){_soloLastMidi=72;_soloPhraseSeed=(Math.random()*0xffffffff)>>>0;_soloMotif=null;_soloMotifBar=0;}
 // v893 — renderGridChords découpée en sections nommées. Comportement identique (photographie jsdom des 234 grilles).
@@ -14058,7 +14073,7 @@ const BASSE_CORR_DB={pickReel:19, fingerReel:23.5, fretlessReel:26.9, uprightRee
 // v1026 — NIVEAU RAISONNABLE (vérifié : 8 familles, basse à ±1,5 dB de la cible). Mesuré à la sortie (filtre K approché, chaque couche seule) : la basse passait 8 à 10 dB
 // au-dessus de la batterie et 17 dB au-dessus de la guitare (Beatles, rock). Le rabot ramène la basse juste sous la batterie.
 // Les écarts entre kits (BASSE_CORR_DB, mesurés en v1001) restent les mêmes : toutes les basses baissent ensemble.
-const BASSE_RABOT_DB=-4;
+const BASSE_RABOT_DB=-1;   // v1370 : +3 dB pour toutes les basses (Jérémy : la basse trop faible par défaut, au téléphone)
 // v1231 — PRÉSENCE TÉLÉPHONE : avec « Basse HP tél. » allumé, chaque modèle reçoit un renfort en cloche (700 Hz, large) mesuré pour que
 // sa présence dans la bande 300-3000 Hz (ce qu'un haut-parleur de téléphone ou des écouteurs restituent) revienne à ~3 dB de la Höfner.
 // Mesure v1230 sur « Just the Two of Us » : fretless −9 dB, upright −20, sub808 −32 → « la basse ne s'entend pas » (Jérémy, Honor + Bluetooth).
@@ -19817,6 +19832,7 @@ try{ const a=localStorage.getItem("guitarModalMorpher.axe"); if(a==="lecon"||a==
 // Retirer cette liste (la vider) une fois le correctif moteur validé. Les versions affichées restent celles de NOUVEAUTES.
 const A_ECOUTER=[];   // v949 : vidée à la demande de Jérémy, les Nouveautés repartent de la plus récente
 const NOUVEAUTES=[
+["cin-deux-pentas-la","v1367"],   // v1367 — Deux pentas, un dorien (La) : 2e tour, le Solo traverse la frontière ; v1364 : l'ombre (penta mineure) descend d'une case vers la lumière (yo), taiko d'office
 ["cin-miyako-nuage-la","v1361"],   // v1361 — Le nuage s'éclaircit (La miyako-bushi puis yo) : kakeai flûte / shamisen, shō immobile
 ["prog-in-sen-mi","v1347"],   // v1347 — enrichie : accords de couleur, basse et Solo écrits
 ["cin-hirajoshi-mi","v1347"],   // v1347 — enrichie : accords de couleur, basse et Solo écrits
