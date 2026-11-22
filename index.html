@@ -3403,7 +3403,7 @@ let _sfMix=null, _sfLim=null, _sfAnalyseur=null, _diag={on:false, crete:0, satur
 function _courbeSecurite(){ const N=2048, c=new Float32Array(N); for(let i=0;i<N;i++){ const x=(i/(N-1))*2-1, a=Math.abs(x), s=x<0?-1:1;
   c[i]= a<=0.9 ? x : s*(0.9+0.1*Math.tanh((a-0.9)/0.1)); } return c; }
 function _sortieFinale(){ if(!_sfMix || _sfMix.context!==audioCtx){
-    _sfMix=audioCtx.createGain(); _sfMix.gain.value=0.79;   // v991 : −2 dB de marge (crête mesurée à −1,3 dB sur le téléphone)
+    _sfMix=audioCtx.createGain(); _sfMix.gain.value=0.63;   // v991 : −2 dB de marge (crête mesurée à −1,3 dB sur le téléphone) ; v1344 : −2 dB de plus — avec le shō, le shamisen et le taiko, l'écrêteur de sortie travaillait trop (craquements, mesuré sur Le nuage : 4 à 6 fois moins d'échantillons écrêtés)
     _sfLim=audioCtx.createDynamicsCompressor(); _sfLim.threshold.value=-1.5; _sfLim.knee.value=0; _sfLim.ratio.value=20; _sfLim.attack.value=0.001; _sfLim.release.value=0.08;
     const ws=audioCtx.createWaveShaper(); ws.curve=_courbeSecurite(); ws.oversample="2x";
     _sfMix.connect(_sfLim); _sfLim.connect(ws); ws.connect(audioCtx.destination); }
@@ -5873,7 +5873,8 @@ chords:[{name:"Bm",beats:12,voicing:"x-2-4-4-3-2",scale:"B:5",basseLigne:[[0,0],
                 {name:"Fmaj7",beats:8,voicing:"1-x-2-2-1-x",scale:"A:hungarianMinor:6"},
                 {name:"F#7/E",beats:8,voicing:"x-7-8-6-7-x",scale:"A:hungarianMinor:6"}]},
       // v1315 — Le nuage ne bouge pas : Mi kumoi (1 2 b3 5 6, la définition des guitaristes), dans l'esprit de Marty Friedman. Solo tiré et vibré, Phrase et basse écrites
-      {id:"metal-friedman-nuage", soloDb:1.5, phraseDb:-1.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
+      {id:"metal-friedman-nuage", basseSon:"corde",   // v1346 : basse « Additif » (choisie par Jérémy à l'oreille ; rendu calculé d'avance, bien plus léger que « Metal grit » qui faisait craquer le téléphone)
+      soloDb:1.5, phraseDb:-1.5,   // v1333 : Solo et shakuhachi au même niveau (mesuré)
        phraseAuto:false,   /* v1338 : Phrase éteinte par défaut (Jérémy : le shakuhachi couvre le shō) */ phraseSon:"shakuhachi", lecons:{exotiques:3, pentatoniques:3, immobile:3}, root:"E", scale:"E:japanese:2", chug:"monthrash", soloGuitare:"electric",
         name:"Le nuage ne bouge pas — Mi kumoi, à la Marty Friedman", tempo:96, groove:"atmos",
         desc:"Le geste : trois doigts ne bougent pas, Fa# case 4 sur la corde de Ré, Si case 4 sur la corde de Sol, Do# case 2 sur la corde de Si : c'est le nuage. Seule la basse change : Mi à vide, Sol case 3 au majeur, Do# case 4 sur la corde de La, puis l'index se couche case 2 pour Si et Fa#. À écouter : rien que les cinq notes du kumoi, Mi, Fa#, Sol, Si, Do# ; quand le Sol passe en basse, il fait un triton avec le Do# du nuage, la couleur sombre de la gamme. Intro claire, riff en galop, mur doom sur le Sol, retour au calme. Pour improviser : Mi kumoi partout. Allume Solo : la guitare tire ses notes à la Friedman, d'un ton ou d'un demi-ton, en relâche d'autres et les fait vibrer large. Phrase et basse écrites.",
@@ -11277,7 +11278,7 @@ function _soloGain(){ const e=SOLO_NIVEAUX.find(n=>n[0]===_soloNiveauId); return
 // ═══ v1343 — 🥁 TAIKO, couche en plus de la batterie (émulé) : ōdaiko (le gros tambour grave) et shime-daiko (le petit, tendu, qui claque) ═══
 // Le grave de l'ōdaiko (vers 60 Hz) ne passe pas sur un haut-parleur de téléphone : le corps de la peau (150-260 Hz) et le coup de baguette, si.
 // D'office sur les grilles japonaises énergiques (tempo ≥ 100 ou groove metal), au choix partout ailleurs.
-const TAIKO_GAIN=1.4;   // mesuré seul sur Le nuage : au niveau de la batterie en plein spectre, ~5 dB sous elle au haut-parleur d'un téléphone (une couche, pas un remplaçant)
+const TAIKO_GAIN=1.0;   // v1344 : −3 dB et coups de bruit adoucis — les crêtes du taiko faisaient travailler l'écrêteur de sortie (craquements mesurés : 8 fois plus d'échantillons écrêtés)
 let _gridTaikoOn=false, _taikoLock=null, _taikoBusNode=null, _taikoBruitBuf=null;
 function _taikoAuto(gr){
   if(!gr || !Array.isArray(gr.chords)) return false;
@@ -11311,20 +11312,59 @@ function _taikoSat(){   // une légère saturation de la peau : elle donne au gr
   const w=audioCtx.createWaveShaper(), n=2048, c=new Float32Array(n); for(let i=0;i<n;i++){ const x=i/(n-1)*2-1; c[i]=Math.tanh(5*x)/Math.tanh(5); }
   w.curve=c; w.oversample="2x"; const g=audioCtx.createGain(); g.gain.value=0.5; w.connect(g); g.connect(_taikoBus()); return _taikoSatNode=w;
 }
+// v1345 — TAIKO PRÉ-ENREGISTRÉ : le diagnostic du téléphone de Jérémy montrait des craquements sur Le nuage. Chaque coup de taiko
+// construisait une douzaine de modules audio (oscillateurs, bruits, filtres, saturation) : trop pour le processeur d'un téléphone
+// au milieu de la basse metal en galop. Les coups sont maintenant calculés une fois, hors du temps réel (OfflineAudioContext,
+// trois variantes par frappe), puis rejoués comme un échantillon : 2 modules par coup au lieu de 12 à 18.
+let _taikoEch=null, _taikoEchEnCours=false;
+function _taikoRendre(){
+  if(!audioCtx || _taikoEchEnCours || (_taikoEch && _taikoEch.sr===audioCtx.sampleRate)) return;
+  if(typeof OfflineAudioContext==="undefined") return;
+  _taikoEchEnCours=true; const sr=audioCtx.sampleRate;
+  const un=(type)=>{
+    const C=new OfflineAudioContext(1, Math.ceil(sr*(type==="don"?0.95:0.3)), sr);
+    const nb=C.createBuffer(1,Math.floor(sr*0.5),sr), nd=nb.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i]=Math.random()*2-1;
+    const ton=(f0,f1,gl,dur,amp,out)=>{ const o=C.createOscillator(), g=C.createGain(); o.type="sine"; o.frequency.setValueAtTime(f0,0.005); o.frequency.exponentialRampToValueAtTime(f1,0.005+gl);
+      g.gain.setValueAtTime(0.0001,0.005); g.gain.linearRampToValueAtTime(amp,0.009); g.gain.exponentialRampToValueAtTime(0.0001,0.005+dur); o.connect(g); g.connect(out); o.start(0.005); o.stop(0.005+dur+0.02); };
+    const bruit=(ty,fr,q,dur,amp,out)=>{ const n=C.createBufferSource(); n.buffer=nb; const fl=C.createBiquadFilter(); fl.type=ty; fl.frequency.value=fr; fl.Q.value=q;
+      const g=C.createGain(); g.gain.setValueAtTime(amp,0.005); g.gain.exponentialRampToValueAtTime(0.0001,0.005+dur); n.connect(fl); fl.connect(g); g.connect(out); n.start(0.005, Math.random()*0.3); n.stop(0.005+dur+0.02); };
+    const dest=C.destination, v=0.92+Math.random()*0.16;
+    if(type==="don"){
+      const w=C.createWaveShaper(), cn=2048, cv=new Float32Array(cn); for(let i=0;i<cn;i++){ const x=i/(cn-1)*2-1; cv[i]=Math.tanh(5*x)/Math.tanh(5); }
+      w.curve=cv; w.oversample="2x"; const gs=C.createGain(); gs.gain.value=0.5; w.connect(gs); gs.connect(dest);
+      ton(96,58,0.12,0.8,0.22*v,w); ton(168,142,0.08,0.38,0.28*v,w); ton(262,250,0.05,0.2,0.22*v,w); bruit("lowpass",650,0.7,0.07,0.55*v,w);
+      bruit("bandpass",2400,1.0,0.022,0.6*v,dest); bruit("bandpass",900,1.2,0.07,0.8*v,dest);
+    } else {
+      ton(560,500,0.02,0.15,0.8*v,dest); ton(820,790,0.02,0.07,0.22*v,dest); bruit("bandpass",3200,1.4,0.035,0.9*v,dest);
+    }
+    return C.startRendering();
+  };
+  Promise.all(["don","don","don","ten","ten","ten"].map(un)).then(bs=>{ _taikoEch={sr, don:bs.slice(0,3), ten:bs.slice(3)}; })
+    .catch(()=>{}).then(()=>{ _taikoEchEnCours=false; });
+}
+function _taikoEchJouer(type, t, vel){
+  if(!_taikoEch || _taikoEch.sr!==audioCtx.sampleRate) return false;
+  const L=_taikoEch[type], src=audioCtx.createBufferSource(), g=audioCtx.createGain();
+  src.buffer=L[Math.floor(Math.random()*L.length)]; g.gain.value=vel; src.connect(g); g.connect(_taikoBus());
+  src.start(Math.max(audioCtx.currentTime, t-0.005)); src.onended=()=>{ try{ src.disconnect(); g.disconnect(); }catch(e){} };
+  return true;
+}
 function _taikoDon(t, vel){   // ōdaiko : « don »
+  if(_taikoEchJouer("don", t, vel)) return; _taikoRendre();   // v1345 : tant que les échantillons se calculent, la synthèse en direct dépanne
   const out=_taikoSat(), v=vel*(0.92+Math.random()*0.16);
   _taikoTon(t, 96, 58, 0.12, 0.8, 0.22*v, out);          // le grave de la peau
   _taikoTon(t, 168, 142, 0.08, 0.38, 0.28*v, out);      // le corps, ce qu'entend un téléphone
   _taikoTon(t, 262, 250, 0.05, 0.2, 0.22*v, out);
   _taikoBruitCoup(t, "lowpass", 650, 0.7, 0.07, 0.55*v, out);   // le souffle de la frappe
-  _taikoBruitCoup(t, "bandpass", 2400, 1.0, 0.022, 1.0*v, _taikoBus()); // la baguette (bachi)
-  _taikoBruitCoup(t, "bandpass", 900, 1.2, 0.07, 1.1*v, _taikoBus());   // la peau qui claque sous la baguette
+  _taikoBruitCoup(t, "bandpass", 2400, 1.0, 0.022, 0.6*v, _taikoBus()); // la baguette (bachi)
+  _taikoBruitCoup(t, "bandpass", 900, 1.2, 0.07, 0.8*v, _taikoBus());   // la peau qui claque sous la baguette
 }
 function _taikoTen(t, vel){   // shime-daiko : « ten »
+  if(_taikoEchJouer("ten", t, vel*(0.9+Math.random()*0.2))) return; _taikoRendre();
   const out=_taikoBus(), v=vel*(0.9+Math.random()*0.2);
   _taikoTon(t, 560, 500, 0.02, 0.15, 0.8*v, out);
   _taikoTon(t, 820, 790, 0.02, 0.07, 0.22*v, out);
-  _taikoBruitCoup(t, "bandpass", 3200, 1.4, 0.035, 1.3*v, out);   // le claquement de la peau très tendue
+  _taikoBruitCoup(t, "bandpass", 3200, 1.4, 0.035, 0.9*v, out);   // le claquement de la peau très tendue
 }
 function _scheduleTaikoBar(barStart, barBeats, beatSec, derniere){
   if(!_gridTaikoOn) return;
@@ -11371,6 +11411,16 @@ function _shamiBuffer(midi){
   let m=0; for(let i=0;i<n;i++) m=Math.max(m,Math.abs(y[i])); for(let i=0;i<n;i++) y[i]/=(m||1);
   for(let i=Math.max(0,n-Math.floor(0.2*sr));i<n;i++) y[i]*=(n-i)/(0.2*sr);
   return _shamiBufs[k]={b, rate:f/f0*Math.pow(2,-0.0148*f/1200)};   // mesuré : la butée du sawari raccourcit la boucle, la corde montait de 2,5 cents (Mi2) à 13 cents (La4)
+}
+// v1345 — les cordes du shamisen étaient calculées pendant la lecture, au moment de la première note de chaque hauteur (un tour de boucle
+// de 2,4 s par note) : sur un téléphone, une montée du Solo en demandait plusieurs d'un coup. Elles sont préparées au lancement, une à la fois,
+// quand le téléphone est libre.
+function _shamiPreparer(gr){
+  if(!gr || !Array.isArray(gr.chords) || !audioCtx) return;
+  const ms=new Set(); gr.chords.forEach(c=>{ if(!_soloShami(c,gr)) return; (c.soloEcrit||[]).forEach(e=>{ try{ const m=_soloNoteMidi(e[1]); if(isFinite(m)) ms.add(Math.round(m)); }catch(x){} }); });
+  const L=[...ms].filter(m=>!_shamiBufs[m+":"+audioCtx.sampleRate]); if(!L.length) return;
+  const suite=()=>{ const m=L.shift(); if(m===undefined) return; try{ _shamiBuffer(m); }catch(e){} (window.requestIdleCallback||((f)=>setTimeout(f,30)))(suite); };
+  suite();
 }
 function _shamiSortie(){
   if(_shamiBus && _shamiBus.context===audioCtx) return _shamiBus;
@@ -14761,6 +14811,7 @@ const cs=document.getElementById("chugToneSelect"); if(cs) cs.value=gr.chug;
 const isMetal=["gallop","metal","doom","djent16","breakdown","blast","punk"].includes(grv);
 _gridMetalTight=_grooveSerreLeChug(grv);   // serrage djent : pas tout le metal
 if(_taikoLock===null){ _gridTaikoOn=_taikoAuto(gr); }   // v1343 : d'office sur les grilles japonaises énergiques
+try{ if(_gridTaikoOn) _taikoRendre(); _shamiPreparer(gr); }catch(e){}   // v1345 : taiko et cordes du shamisen calculés d'avance, hors du temps réel
 if(_nappeLock===null){
 _gridNappeOn=!!_nappePour(gr,
 (typeof _currentFamily!=="undefined" && _currentFamily) ? _currentFamily.id : null);
