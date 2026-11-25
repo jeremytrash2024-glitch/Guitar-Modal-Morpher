@@ -3885,7 +3885,12 @@ steps:[1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0]},
 BASS_PATTERN_FAMILIES.pop={label:'Pop 60s', color:'#d07fb0'};
 BASS_PATTERNS.mccartney={family:'pop', label:'McCartney', desc:'Fondamentale, quinte, octave, puis la tierce qui chante',
 steps:[1,0,0,0,5,0,0,8,0,0,5,0,3,0,0,0], accord:true};   // v923 ; v924 : tierce et quinte prises dans l'accord
+Object.assign(BASS_PATTERNS, {   // v1386 — basses de shuffle (croches droites, le feel les fait swinguer)
+boogie_shuffle:{family:'rootfifth', label:'Boogie shuffle', desc:'1-3-5-6-8-6-5-3 en croches swing', steps:[1,0,3,0,5,0,6,0,8,0,6,0,5,0,3,0], accord:true},
+half_shuffle:{family:'rootfifth', label:'Half-time shuffle', desc:'Fondamentale, quinte, octave en levée', steps:[1,0,0,0,0,0,1,0,5,0,0,0,0,0,8,0], accord:true}
+});
 const BASS_PATTERN_PAR_GROOVE={
+shuffleBlues:"boogie_shuffle", boogieShuffle:"boogie_shuffle", shuffleHalf:"half_shuffle", swingLent:"r5_basic",   // v1386
 cinema:"pedale_relance", cinemaOst:"ostinato_15",
 bossa:"bossa", disco:"oct_disco", funk:"funk_jb", funkJB:"funk_jb",
 funkrock:"oct_funk",
@@ -4111,7 +4116,7 @@ const _driveCurve=(()=>{ const n=1024,c=new Float32Array(n); const k=4; for(let 
 // Une note enregistrée par demi-ton, jouée à sa hauteur (le synthé de corde pincée n'avait pas de sous-octave : rien à décaler).
 // Folk → acier, électrique claire → claire, crunch et « Max » → notes enregistrées déjà saturées, nylon → nylon.
 // Tant qu'une banque se décode (les toutes premières notes), l'ancien synthé joue à sa place. Interrupteur au panneau 🎚.
-const SAX_DB_MESURE=16.3;   // v1282 : mesuré dans la bande téléphone (300-3000 Hz) : à 0 dB le sax sortait 17 dB sous le Solo ; à +16,3 il est au niveau du Solo
+const SAX_DB_MESURE=20.3;   // v1399 — Jérémy : le sax pas assez fort par défaut dans toutes les grilles : +4 dB partout (le réglage par grille phraseDb s'ajoute) — avant : 16.3   // v1282 : mesuré dans la bande téléphone (300-3000 Hz) : à 0 dB le sax sortait 17 dB sous le Solo ; à +16,3 il est au niveau du Solo
 const GUIT_ECH={acier:()=>window.GUIT_ECH_ACIER, claire:()=>window.GUIT_ECH_CLAIRE, saturee:()=>window.GUIT_ECH_SATUREE, nylon:()=>window.GUIT_ECH_NYLON,
   piano:()=>window.CLAV_ECH_PIANO, rhodes:()=>window.CLAV_ECH_RHODES, clavecin:()=>window.CLAV_ECH_CLAVECIN,
   saxAlto:()=>window.SOUF_ECH_SAX};   // v1282 : le sax alto de la Phrase, même mécanique   // v1248 : claviers enregistrés, même mécanique
@@ -4143,7 +4148,7 @@ function _guitEchPrepare(id){
       let buf=b; if(b.numberOfChannels>1){ buf=ctx.createBuffer(1,b.length,b.sampleRate); const o=buf.getChannelData(0), L=b.getChannelData(0), R=b.getChannelData(1); for(let i=0;i<b.length;i++) o[i]=0.5*(L[i]+R[i]); }
       const d=buf.getChannelData(0); let pk=0; for(let i=0;i<d.length;i++){ const a=Math.abs(d[i]); if(a>pk) pk=a; }
       let i0=0; for(let i=0;i<d.length;i++){ if(Math.abs(d[i])>pk*0.02){ i0=i; break; } }
-      st.bufs[+k]=buf; st.debut[+k]=Math.max(0, i0/buf.sampleRate-0.002); }).catch(()=>{}); }catch(e){ return Promise.resolve(); } }));
+      st.bufs[+k]=buf; st.debut[+k]=Math.max(0, i0/buf.sampleRate-0.002); }).catch(()=>{}); }catch(e){ return Promise.resolve(); } })).then(()=>{ st.fini=true; });   // v1387
   return st.pret;
 }
 function _guitEchPour(elec){ return !elec ? "acier" : ((_gridDrive||_gridCrunch) ? "saturee" : "claire"); }
@@ -4668,6 +4673,23 @@ rockabilly: {label:"🕺 Rockabilly (train beat)", kit:"jazz",
 drum:{kick:[[0,.85],[2,.8]],snare:[[1,.7],[1.5,.35],[3,.7],[3.5,.35]],
 hihat:[[0,.4],[.5,.3],[1,.4],[1.5,.3],[2,.4],[2.5,.3],[3,.4],[3.5,.3]]},
 guitar:{mode:"boogie",hits:[[0],[.5],[1],[1.5],[2],[2.5],[3],[3.5]]}},
+// v1386 — LES SHUFFLES. Écrits en croches droites (x,5) : le feel Shuffle les pousse au dernier tiers du temps,
+// donc le menu Feel peut les redresser ; seules les notes fantômes du half-time sont écrites en triolet (x,333).
+shuffleBlues:{label:"🎷 Blues shuffle", kit:"rock", shuffle:true,
+drum:{kick:[[0,.8],[2,.72]],snare:[[1,.7],[3,.7]],
+hihat:[[0,.42],[.5,.24],[1,.4],[1.5,.24],[2,.42],[2.5,.24],[3,.4],[3.5,.26]]},
+guitar:{mode:"strum",hits:[[0,.75],[1,.5],[1.5,.3],[2,.7],[3,.5],[3.5,.3]]}},
+shuffleHalf:{label:"🐢 Half-time shuffle", kit:"rock", shuffle:true,
+drum:{kick:[[0,.85],[1.5,.3],[3.5,.36]],snare:[[.333,.1],[1.333,.12],[2,.8],[2.333,.1],[3.333,.13]],
+hihat:[[0,.4],[.5,.26],[1,.38],[1.5,.26],[2,.4],[2.5,.26],[3,.38],[3.5,.28]]},
+guitar:{mode:"arp",hits:[[0],[.5],[1],[1.5],[2],[2.5],[3],[3.5]]}},
+boogieShuffle:{label:"🚂 Boogie shuffle", kit:"rock", shuffle:true,
+drum:{kick:[[0,.85],[1,.45],[2,.8],[3,.45]],snare:[[1,.75],[3,.75]],
+hihat:[[0,.45],[.5,.3],[1,.42],[1.5,.3],[2,.45],[2.5,.3],[3,.42],[3.5,.3]]},
+guitar:{mode:"boogie",hits:[[0],[.5],[1],[1.5],[2],[2.5],[3],[3.5]]}},
+swingLent:{label:"🌙 Swing lent", kit:"jazz", shuffle:true,
+drum:{woodblock:[[0,.26],[1,.2],[1.5,.13],[2,.24],[3,.2],[3.5,.13]],hihat:[[1,.42],[3,.42]],kick:[[0,.16],[2,.14]]},
+guitar:{mode:"comp",hits:[[0,.3],[1.5,.24],[3,.22]]}},
 psychobilly:{label:"💀 Psychobilly (slap)", kit:"rock",
 drum:{kick:[[0,1],[1,.8],[2,1],[3,.8]],snare:[[1,1],[3,1],[3.75,.5]],
 hihat:[[0,.5],[.5,.4],[1,.5],[1.5,.4],[2,.5],[2.5,.4],[3,.5],[3.5,.4]]},
@@ -5593,19 +5615,19 @@ chords:[
                 {name:"Dm7",beats:4,voicing:"x-x-0-2-1-1",scale:"A:pentatonic:2",pays:"🌘 Man gong · case 10",basseLigne:[[0,12,2],[2,19,1],[3,15,1]],soloEcrit2:[[0,"A4",0.5],[0.5,"C5",0.5],[1,"D5",0.5],[1.5,"F5",1.5,"vib"],[3,"D5",1]],soloEcrit:[[0,"F5",1,"vib"],[1,"D5",0.5],[1.5,"C5",0.5],[2,"A4",2]]},
                 {name:"Fadd9",beats:4,voicing:"x-x-3-2-1-3",scale:"A:pentatonic:2",pays:"🌘 Man gong · case 10",basseLigne:[[0,0,2],[2,7,1],[3,2,1]],soloEcrit2:[[0,"C5",1],[1,"A4",1],[2,"G4",2,"vib"]],soloEcrit:[[0,"G5",1],[1,"F5",1],[2,"C5",1],[3,"A4",1]]},
                 {name:"E7sus4",beats:4,voicing:"x-x-2-2-3-0",scale:"A:pentatonic:1",pays:"🌅 Le retour · la dominante",basseLigne:[[0,0,2],[2,7,2]],soloEcrit2:[[0,"A4",1],[1,"B4",1],[2,"D5",1],[3,"E5",1]],soloEcrit:[[0,"D5",1],[1,"B4",1],[2,"A4",1],[3,"B4",1]]}]},
-{id:"rock-tierce-hesite-la", phrase:[["E4",0,2],["C#4",2,2],["F#4",4,2],["D4",6,2],["E4",8,2],["C#4",10,2],["C#4",12,3.5],["F#4",16,3.5],["F4",20,1.5],["A3",21.5,2],["D4",24,2],["G#3",26,2],["C#4",28,3.5]],   /* v1381 : Phrase écrite (Jérémy) — une voix tenue sous le Solo, sur la note qui change de couleur */ basseDb:-4, soloDb:5, basseSon:"fingerReel", basseHarmoniques:-16, lecons:{pentatoniques:3, couleurs:3, emprunts:2}, root:"A", scale:"A:0",   // v1376 — Jérémy : le Do qui monte au Do# (le geste des Allman Brothers et de la country) ; la tierce hésite entre mineure et majeure
-name:"La tierce qui hésite — le Do qui monte au Do#, en La", tempo:80, groove:"ballad",
+{id:"rock-tierce-hesite-la", phrase:[["E4",0,2],["C#4",2,2],["F#4",4,2],["D4",6,2],["E4",8,2],["C#4",10,2],["C#4",12,3.5],["F#4",16,3.5],["F4",20,1.5],["A3",21.5,2],["D4",24,2],["G#3",26,2],["C#4",28,3.5]],   /* v1381 : Phrase écrite (Jérémy) — une voix tenue sous le Solo, sur la note qui change de couleur */ basseDb:-7,   /* v1393 : la basse boogie en croches sonne plus que les blanches de la ballade (Jérémy : trop forte) */ soloDb:5, basseSon:"fingerReel", basseHarmoniques:-16, lecons:{pentatoniques:3, couleurs:3, emprunts:2}, root:"A", scale:"A:0",   // v1376 — Jérémy : le Do qui monte au Do# (le geste des Allman Brothers et de la country) ; la tierce hésite entre mineure et majeure
+name:"La tierce qui hésite — le Do qui monte au Do#, en La", tempo:84, groove:"shuffleBlues", guitare:"electric",   /* v1386 : passée en blues shuffle (Jérémy) */
 desc:"Le geste : sur chaque accord majeur, le Solo attaque la tierce mineure et la tire d'un demi-ton jusqu'à la majeure — Do → Do# sur La, Fa → Fa# sur Ré, Sol → Sol# sur Mi ; dans l'accord, c'est l'inverse : du Ré au Ré mineur 6, un doigt recule, Fa# → Fa. À écouter : l'ombre et le soleil dans une seule note. Pour improviser : la penta mineure de La pour attaquer, la penta majeure pour arriver ; tire la tierce mineure, ne la laisse pas tomber.",
 chords:[
-                {name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"A:0",basseLigne:[[0,12,2],[2,19,2]],soloEcrit2:[[0.5,"E5",0.5],[1,"F#5",0.5],[1.5,"E5",0.5],[2,"C#5",1,"tiré½"],[3,"B4",0.5],[3.5,"A4",0.5]],soloEcrit:[[0,"C#5",1,"tiré½"],[1,"A4",1],[2,"E5",1],[3,"C#5",1]]},
-                {name:"D/A",beats:4,voicing:"x-0-0-2-3-2",scale:"A:0",basseLigne:[[0,12,2],[2,17,2]],soloEcrit2:[[0,"A4",0.5],[0.5,"D5",0.5],[1,"E5",0.5],[1.5,"F#5",1.5,"tiré½ vib"],[3,"E5",1]],soloEcrit:[[0,"F#5",1,"tiré½"],[1,"D5",1],[2,"A4",2,"vib"]]},
-                {name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"A:0",basseLigne:[[0,12,2],[2,16,1],[3,19,1]],soloEcrit2:[[0,"C#5",0.5],[0.5,"E5",0.5],[1,"A5",1,"vib"],[2,"G#5",0.5],[2.5,"E5",0.5],[3,"C#5",1,"tiré½"]],soloEcrit:[[0,"E5",0.5],[0.5,"C#5",1.5,"tiré½"],[2,"B4",1],[3,"A4",1]]},
-                {name:"F#m7",beats:4,voicing:"2-x-2-2-2-0",scale:"A:0",basseLigne:[[0,12,2],[2,19,1],[3,15,1]],soloEcrit2:[[0,"B4",1],[1,"C#5",0.5],[1.5,"E5",0.5],[2,"F#5",2,"vib"]],soloEcrit:[[0,"C#5",1],[1,"E5",1],[2,"F#5",1],[3,"A5",1]]},
-                {name:"D",beats:4,voicing:"x-x-0-2-3-2",scale:"A:0",basseLigne:[[0,12,2],[2,19,1],[3,16,1]],soloEcrit2:[[0,"A5",0.5],[0.5,"F#5",0.5],[1,"E5",0.5],[1.5,"D5",0.5],[2,"F#5",1,"tiré½"],[3,"E5",1]],soloEcrit:[[0,"F#5",1,"vib"],[1,"E5",0.5],[1.5,"D5",0.5],[2,"A4",2]]},
-                {name:"Dm6",beats:4,voicing:"x-x-0-2-0-1",scale:"D:1",basseLigne:[[0,12,2],[2,19,1],[3,15,1]],soloEcrit2:[[0,"F5",1.5,"vib"],[1.5,"E5",0.5],[2,"D5",1],[3,"B4",1]],soloEcrit:[[0,"F5",1],[1,"D5",0.5],[1.5,"B4",0.5],[2,"A4",2,"vib"]]},
-                {name:"E7sus4",beats:2,voicing:"x-x-2-2-3-0",scale:"A:0",basseLigne:[[0,0,2]],soloEcrit2:[[0,"A4",1],[1,"D5",1]],soloEcrit:[[0,"A4",1],[1,"B4",1]]},
-                {name:"E7",beats:2,voicing:"x-x-2-1-3-0",scale:"A:0",basseLigne:[[0,0,1],[1,7,1]],soloEcrit2:[[0,"B4",0.5],[0.5,"G#4",1.5,"tiré½"]],soloEcrit:[[0,"G#4",1,"tiré½"],[1,"B4",1]]},
-                {name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"A:0",basseLigne:[[0,12,2],[2,19,2]],soloEcrit2:[[0,"A4",0.5],[0.5,"C#5",1.5,"tiré½ vib"],[2,"E5",2]],soloEcrit:[[0,"C#5",2,"tiré½ vib"],[2,"A4",2]]}]},
+                {name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"A:0",basseLigne:[[0,12,0.45],[0.5,12,0.45],[1,19,0.45],[1.5,19,0.45],[2,21,0.45],[2.5,21,0.45],[3,19,0.45],[3.5,19,0.45]],soloEcrit2:[[0.5,"E5",0.5],[1,"F#5",0.5],[1.5,"E5",0.5],[2,"C#5",1,"tiré½"],[3,"B4",0.5],[3.5,"A4",0.5]],soloEcrit:[[0,"C#5",1,"tiré½"],[1,"A4",1],[2,"E5",1],[3,"C#5",1]]},
+                {name:"D/A",beats:4,voicing:"x-0-0-2-3-2",scale:"A:0",basseLigne:[[0,17,0.45],[0.5,17,0.45],[1,24,0.45],[1.5,24,0.45],[2,26,0.45],[2.5,26,0.45],[3,24,0.45],[3.5,24,0.45]],soloEcrit2:[[0,"A4",0.5],[0.5,"D5",0.5],[1,"E5",0.5],[1.5,"F#5",1.5,"tiré½ vib"],[3,"E5",1]],soloEcrit:[[0,"F#5",1,"tiré½"],[1,"D5",1],[2,"A4",2,"vib"]]},
+                {name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"A:0",basseLigne:[[0,12,0.45],[0.5,12,0.45],[1,19,0.45],[1.5,19,0.45],[2,21,0.45],[2.5,21,0.45],[3,19,0.45],[3.5,19,0.45]],soloEcrit2:[[0,"C#5",0.5],[0.5,"E5",0.5],[1,"A5",1,"vib"],[2,"G#5",0.5],[2.5,"E5",0.5],[3,"C#5",1,"tiré½"]],soloEcrit:[[0,"E5",0.5],[0.5,"C#5",1.5,"tiré½"],[2,"B4",1],[3,"A4",1]]},
+                {name:"F#m7",beats:4,voicing:"2-x-2-2-2-0",scale:"A:0",basseLigne:[[0,12,0.45],[0.5,12,0.45],[1,19,0.45],[1.5,19,0.45],[2,22,0.45],[2.5,22,0.45],[3,19,0.45],[3.5,19,0.45]],soloEcrit2:[[0,"B4",1],[1,"C#5",0.5],[1.5,"E5",0.5],[2,"F#5",2,"vib"]],soloEcrit:[[0,"C#5",1],[1,"E5",1],[2,"F#5",1],[3,"A5",1]]},
+                {name:"D",beats:4,voicing:"x-x-0-2-3-2",scale:"A:0",basseLigne:[[0,12,0.45],[0.5,12,0.45],[1,19,0.45],[1.5,19,0.45],[2,21,0.45],[2.5,21,0.45],[3,19,0.45],[3.5,19,0.45]],soloEcrit2:[[0,"A5",0.5],[0.5,"F#5",0.5],[1,"E5",0.5],[1.5,"D5",0.5],[2,"F#5",1,"tiré½"],[3,"E5",1]],soloEcrit:[[0,"F#5",1,"vib"],[1,"E5",0.5],[1.5,"D5",0.5],[2,"A4",2]]},
+                {name:"Dm6",beats:4,voicing:"x-x-0-2-0-1",scale:"D:1",basseLigne:[[0,12,0.45],[0.5,12,0.45],[1,19,0.45],[1.5,19,0.45],[2,21,0.45],[2.5,21,0.45],[3,19,0.45],[3.5,19,0.45]],soloEcrit2:[[0,"F5",1.5,"vib"],[1.5,"E5",0.5],[2,"D5",1],[3,"B4",1]],soloEcrit:[[0,"F5",1],[1,"D5",0.5],[1.5,"B4",0.5],[2,"A4",2,"vib"]]},
+                {name:"E7sus4",beats:2,voicing:"x-x-2-2-3-0",scale:"A:0",basseLigne:[[0,0,0.45],[0.5,0,0.45],[1,7,0.45],[1.5,7,0.45]],soloEcrit2:[[0,"A4",1],[1,"D5",1]],soloEcrit:[[0,"A4",1],[1,"B4",1]]},
+                {name:"E7",beats:2,voicing:"x-x-2-1-3-0",scale:"A:0",basseLigne:[[0,0,0.45],[0.5,7,0.45],[1,9,0.45],[1.5,10,0.45]],soloEcrit2:[[0,"B4",0.5],[0.5,"G#4",1.5,"tiré½"]],soloEcrit:[[0,"G#4",1,"tiré½"],[1,"B4",1]]},
+                {name:"A",beats:4,voicing:"x-0-2-2-2-0",scale:"A:0",basseLigne:[[0,12,0.45],[0.5,12,0.45],[1,19,0.45],[1.5,19,0.45],[2,21,0.45],[2.5,21,0.45],[3,19,0.45],[3.5,19,0.45]],soloEcrit2:[[0,"A4",0.5],[0.5,"C#5",1.5,"tiré½ vib"],[2,"E5",2]],soloEcrit:[[0,"C#5",2,"tiré½ vib"],[2,"A4",2]]}]},
 {id:"rock-trois-boites-la", phrase:[["C4",0,3.5],["G3",4,3.5],["C4",8,3.5],["B3",12,3.5],["D4",16,3.5],["E4",20,2],["D4",22,2],["C#4",24,3.5],["A3",28,3.5]],   /* v1381 : Phrase écrite (Jérémy) — une voix tenue sous le Solo, sur la note qui change de couleur */ basseDb:-4,   /* v1372 : Jérémy — la basse trop forte sur cette grille (ballade légère, la basse et ses harmoniques passaient devant) */ soloDb:5, basseSon:"fingerReel", basseHarmoniques:-16, lecons:{pentatoniques:4, couleurs:3, cadences:2}, root:"A", scale:"A:1",   /* v1375 : les degrés fantômes se calculent sur le La dorien (ii, IV, V, vi justes) */   // v1371 — Jérémy : la même boîte de penta à trois endroits sur un La : case 5 l'ombre (mineure), case 7 le yo, case 2 le soleil (majeure)
 name:"Trois boîtes, un La — l'ombre, le yo, le soleil", tempo:92, groove:"ballad",
 desc:"Le geste : à chaque changement de couleur, un doigt recule d'une case — Do → Si et Sol → Fa# pour la lumière (D7sus4 → D6), Ré → Do# pour le soleil (E7sus4 → A6/9) ; le Do# retombe sur Do au retour. À écouter : la penta mineure, puis le yo, puis la penta majeure, sur le même La, en ballade d'un bout à l'autre. Pour improviser : ta boîte de La mineur case 5 sur l'ombre, la même boîte case 7 sur le yo, case 2 sur le soleil. Au deuxième tour, le Solo glisse d'une boîte à l'autre.",
@@ -6656,23 +6678,23 @@ chords:[{name:"Dm9",beats:8,voicing:"x-3-3-5-5-x",scale:"D:1"},
 {id:"jz-cycle-tierces", lecons:{cadences:4, dominantes:3}, preset:"ballade", root:"C", scale:"C:0", name:"Cycle par tierces majeures", tempo:65, groove:"jazz",
 desc:"Le geste : Do maj7, Mib 7, Lab maj7, Si 7, Mi maj7, Sol 7, et retour au Do maj7. À écouter : trois toniques, Do, Lab et Mi, à égale distance, une tierce majeure ; chacune préparée par sa dominante. Pour improviser : le lydien de chaque maj7, le mixolydien de chaque septième.",
 chords:[{name:"Cmaj7",beats:2,voicing:"x-3-5-4-5-3",scale:"C:3"},{name:"Eb7",beats:2,voicing:"x-6-5-6-4-x",scale:"D#:4"},{name:"Abmaj7",beats:2,voicing:"4-x-5-5-4-x",scale:"G#:3"},{name:"B7",beats:2,voicing:"x-2-1-2-0-2",scale:"B:4"},{name:"Emaj7",beats:2,voicing:"x-7-6-8-x-7",scale:"E:3"},{name:"G7",beats:2,voicing:"3-x-3-4-3-x",scale:"G:4"},{name:"Cmaj7",beats:4,voicing:"x-3-5-4-5-3",scale:"C:3"}]},
-{id:"jz-blues-fa", lecons:{dominantes:1, diminue:2}, root:"F", scale:"F:4", name:"Blues jazz en Fa", tempo:132, groove:"jazz",
-desc:"Le geste : le blues jazz en Fa, douze mesures, en formes serrées. À écouter : le Si diminué de la mesure 6 monte d'un demi-ton depuis le Sib 7 et ramène au Fa ; puis le turnaround Ré 7b9, Sol mineur 7, Do 7b9. Pour improviser : Fa mixolydien, Sib mixolydien, et la gamme diminuée sur les accords b9.",
-chords:[{name:"F9",beats:4,voicing:"x-8-7-8-8-x",scale:"F:4"},
-{name:"Bb7",beats:4,voicing:"x-1-3-1-3-x",scale:"A#:4"},
-{name:"F9",beats:4,voicing:"x-8-7-8-8-x",scale:"F:4"},
-{name:"Cm7",beats:2,voicing:"x-3-5-3-4-x",scale:"C:1"},
-{name:"F7",beats:2,voicing:"1-x-1-2-1-x",scale:"F:4"},
-{name:"Bb7",beats:4,voicing:"x-1-3-1-3-x",scale:"A#:4"},
-{name:"Bdim7",beats:4,voicing:"x-2-3-1-3-x",scale:"B:symmetric:0"},
-{name:"F9",beats:4,voicing:"x-8-7-8-8-x",scale:"F:4"},
-{name:"D7b9",beats:4,voicing:"x-5-4-5-4-x",scale:"D:symmetric:1"},
-{name:"Gm7",beats:4,voicing:"3-x-3-3-3-x",scale:"G:1"},
-{name:"C7b9",beats:4,voicing:"x-3-2-3-2-x",scale:"C:symmetric:1"},
-{name:"F9",beats:2,voicing:"x-8-7-8-8-x",scale:"F:4"},
-{name:"D7b9",beats:2,voicing:"x-5-4-5-4-x",scale:"D:symmetric:1"},
-{name:"Gm7",beats:2,voicing:"3-x-3-3-3-x",scale:"G:1"},
-{name:"C7b9",beats:2,voicing:"x-3-2-3-2-x",scale:"C:symmetric:1"}]},
+{id:"jz-blues-fa", phrase:[["A4",8.5,.5],["C5",9,.5],["A4",9.5,.5],["G4",10,.5],["F4",10.5,1.5],["D#4",12,.5],["F4",12.5,.5],["G4",13,.5],["A#4",13.5,.5],["A4",14,1],["D#4",15,1],["A4",24,1.5],["G4",25.5,.5],["F4",26,.5],["D#4",26.5,.5],["C4",27,1],["F#4",28,.5],["A4",28.5,.5],["C5",29,.5],["A4",29.5,1],["F#4",30.5,.5],["A4",31,1],["F4",40,.5],["A4",40.5,.5],["C5",41,1],["C5",42,.5],["A4",42.5,.5],["F#4",43,1],["F4",44,.5],["G4",44.5,.5],["A#4",45,1],["A#4",46,.5],["G4",46.5,.5],["E4",47,1]], phrase2:[["C4",0,.5],["D#4",.5,.5],["F4",1,.5],["G4",1.5,.5],["A4",2,1.5],["G4",3.5,.5],["F4",4,.5],["D4",4.5,.5],["F4",5,.5],["G#4",5.5,2.5],["D4",16,.5],["F4",16.5,.5],["G#4",17,1],["F4",18,.5],["D4",18.5,1.5],["G#4",20,.5],["F4",20.5,.5],["D4",21,.5],["B3",21.5,2.5],["A#3",32,.5],["D4",32.5,.5],["F4",33,.5],["G4",33.5,1.5],["F4",35,1],["E4",36,.5],["G4",36.5,.5],["A#4",37,.5],["G4",37.5,1.5],["E4",39,1]],   /* v1389 : sax écrit (Jérémy) — questions/réponses sur deux tours : au 1er tour la guitare demande et le sax répond, au 2e le sax ouvre et la guitare répond */ phraseAuto:true, phraseDb:5,   /* v1390 : Jérémy, le sax pas assez fort : au niveau du Solo */ soloDb:5, basseDb:-3, rythmeDb:5,   /* v1393 : Jérémy, basse trop forte, guitare rythmique trop faible */ lecons:{dominantes:1, diminue:2}, root:"F", scale:"F:4", name:"Blues jazz en Fa", tempo:132, groove:"jazz",
+desc:"Le geste : le blues jazz en Fa, douze mesures, en formes serrées. À écouter : le Si diminué de la mesure 6 monte d'un demi-ton depuis le Sib 7 et ramène au Fa ; puis le turnaround Ré 7b9, Sol mineur 7, Do 7b9. Pour improviser : Fa mixolydien, Sib mixolydien, et la gamme diminuée sur les accords b9. Tout est écrit : la basse marche, la guitare et le sax se passent la parole toutes les deux mesures, et au tour suivant c'est le sax qui ouvre.",
+chords:[{name:"F9",beats:4,voicing:"x-8-7-8-8-x",scale:"F:4",basseLigne:[[0,0,1],[1,4,1],[2,7,1],[3,9,1]],soloEcrit:[[0,"C5",.5],[.5,"D5",.5],[1,"F5",1],[2,"D#5",.5],[2.5,"D5",.5],[3,"C5",1]],soloEcrit2:[]},
+{name:"Bb7",beats:4,voicing:"x-1-3-1-3-x",scale:"A#:4",basseLigne:[[0,12,1],[1,16,1],[2,19,1],[3,16,1]],soloEcrit:[[0,"D5",1.5,"vib"],[1.5,"F5",.5],[2,"G#4",2,"vib"]],soloEcrit2:[]},
+{name:"F9",beats:4,voicing:"x-8-7-8-8-x",scale:"F:4",basseLigne:[[0,0,1],[1,2,1],[2,4,1],[3,7,1]],soloEcrit:[],soloEcrit2:[[0,"A5",.5],[.5,"G5",.5],[1,"F5",.5],[1.5,"D5",.5],[2,"C5",1],[3,"A4",1]]},
+{name:"Cm7",beats:2,voicing:"x-3-5-3-4-x",scale:"C:1",basseLigne:[[0,12,1],[1,7,1]],soloEcrit:[],soloEcrit2:[[0,"G4",.5],[.5,"A#4",.5],[1,"D5",1]]},
+{name:"F7",beats:2,voicing:"1-x-1-2-1-x",scale:"F:4",basseLigne:[[0,12,1],[1,16,1]],soloEcrit:[],soloEcrit2:[[0,"D#5",1,"vib"],[1,"C5",1]]},
+{name:"Bb7",beats:4,voicing:"x-1-3-1-3-x",scale:"A#:4",basseLigne:[[0,12,1],[1,14,1],[2,16,1],[3,12,1]],soloEcrit:[[.5,"F5",.5],[1,"G5",.5],[1.5,"F5",.5],[2,"D5",1],[3,"A#4",1]],soloEcrit2:[]},
+{name:"Bdim7",beats:4,voicing:"x-2-3-1-3-x",scale:"B:symmetric:0",basseLigne:[[0,12,1],[1,15,1],[2,18,1],[3,15,1]],soloEcrit:[[0,"B4",.5],[.5,"D5",.5],[1,"F5",.5],[1.5,"G#5",1.5,"vib"],[3,"F5",1]],soloEcrit2:[]},
+{name:"F9",beats:4,voicing:"x-8-7-8-8-x",scale:"F:4",basseLigne:[[0,0,1],[1,4,1],[2,7,1],[3,10,1]],soloEcrit:[],soloEcrit2:[[0,"C5",.5],[.5,"D5",.5],[1,"F5",1,"vib"],[2,"A5",.5],[2.5,"G5",.5],[3,"F5",1]]},
+{name:"D7b9",beats:4,voicing:"x-5-4-5-4-x",scale:"D:symmetric:1",basseLigne:[[0,12,1],[1,10,1],[2,7,1],[3,4,1]],soloEcrit:[],soloEcrit2:[[0,"F#5",.5],[.5,"D#5",.5],[1,"C5",.5],[1.5,"A4",.5],[2,"F#4",2,"vib"]]},
+{name:"Gm7",beats:4,voicing:"3-x-3-3-3-x",scale:"G:1",basseLigne:[[0,12,1],[1,14,1],[2,15,1],[3,19,1]],soloEcrit:[[0,"D5",.5],[.5,"F5",.5],[1,"A5",1],[2,"G5",.5],[2.5,"F5",.5],[3,"D5",1]],soloEcrit2:[]},
+{name:"C7b9",beats:4,voicing:"x-3-2-3-2-x",scale:"C:symmetric:1",basseLigne:[[0,12,1],[1,10,1],[2,7,1],[3,4,1]],soloEcrit:[[0,"E5",.5],[.5,"C#5",.5],[1,"A#4",.5],[1.5,"G4",.5],[2,"E4",2,"vib"]],soloEcrit2:[]},
+{name:"F9",beats:2,voicing:"x-8-7-8-8-x",scale:"F:4",basseLigne:[[0,0,1],[1,7,1]],soloEcrit:[],soloEcrit2:[[0,"A4",.5],[.5,"C5",.5],[1,"F5",1]]},
+{name:"D7b9",beats:2,voicing:"x-5-4-5-4-x",scale:"D:symmetric:1",basseLigne:[[0,7,1],[1,4,1]],soloEcrit:[],soloEcrit2:[[0,"F#5",.5],[.5,"D#5",.5],[1,"C5",1]]},
+{name:"Gm7",beats:2,voicing:"3-x-3-3-3-x",scale:"G:1",basseLigne:[[0,12,1],[1,19,1]],soloEcrit:[],soloEcrit2:[[0,"A#4",.5],[.5,"D5",.5],[1,"F5",1]]},
+{name:"C7b9",beats:2,voicing:"x-3-2-3-2-x",scale:"C:symmetric:1",basseLigne:[[0,12,1],[1,4,1]],soloEcrit:[],soloEcrit2:[[0,"E5",.5],[.5,"C#5",.5],[1,"A#4",1]]}]},
 {id:"jz-blues-mineur-do", lecons:{dominantes:2, melodique:2}, root:"C", scale:"C:1", name:"Blues mineur en Do mineur", tempo:104, groove:"jazz",
 desc:"Le geste : Do mineur 9 et Fa mineur 9 en formes serrées, puis Lab maj7 et Sol 7 altéré. À écouter : le Lab maj7, le bVI, arrive par-dessous et tire vers le Sol 7 altéré, qui ramène au Do mineur. Pour improviser : Do dorien, Fa dorien, Lab lydien, Sol altéré.",
 chords:[{name:"Cm9",beats:8,voicing:"x-3-1-3-3-x",scale:"C:1"},
@@ -6725,18 +6747,18 @@ chords:[{name:"Fmaj7",beats:4,voicing:"x-8-10-9-10-x",scale:"F:0"},
 {name:"D7b9",beats:2,voicing:"x-5-4-5-4-x",scale:"D:symmetric:1"},
 {name:"Gm7",beats:2,voicing:"3-x-3-3-3-x",scale:"G:1"},
 {name:"C9",beats:2,voicing:"x-3-2-3-3-x",scale:"C:4"}]},
-{id:"jz-ballade-mib", lecons:{cadences:2, diminue:3}, root:"D#", scale:"D#:0", name:"Ballade en Mib", tempo:60, groove:"jazz",
-desc:"Le geste : une ballade lente en Mib, dix accords en formes serrées. À écouter : à ce tempo, chaque accord dure assez pour entendre où va chaque voix ; le Do 7b9 relance vers le Fa mineur 9. Pour improviser : Mib ionien, Fa dorien, Sib mixolydien, et la gamme diminuée sur le Do 7b9.",
-chords:[{name:"Ebmaj9",beats:4,voicing:"x-6-5-7-6-x",scale:"D#:0"},
-{name:"Cm9",beats:4,voicing:"x-3-1-3-3-x",scale:"C:1"},
-{name:"Fm9",beats:4,voicing:"1-x-1-1-1-3",scale:"F:1"},
-{name:"Bb13",beats:4,voicing:"6-x-6-7-8-x",scale:"A#:4"},
-{name:"Ebmaj9",beats:4,voicing:"x-6-5-7-6-x",scale:"D#:0"},
-{name:"Abmaj7",beats:4,voicing:"4-x-5-5-4-x",scale:"G#:3"},
-{name:"Gm7",beats:2,voicing:"3-x-3-3-3-x",scale:"G:1"},
-{name:"C7b9",beats:2,voicing:"x-3-2-3-2-x",scale:"C:symmetric:1"},
-{name:"Fm9",beats:2,voicing:"1-x-1-1-1-3",scale:"F:1"},
-{name:"Bb13",beats:2,voicing:"6-x-6-7-8-x",scale:"A#:4"}]},
+{id:"jz-ballade-mib", phrase:[["C4",8,.5],["D#4",8.5,.5],["G4",9,2],["F4",11,1],["D4",12,.5],["F4",12.5,.5],["G4",13,2],["G#4",15,1],["G4",24,1],["F4",25,1],["E4",26,.5],["G4",26.5,.5],["A#4",27,1],["G#4",28,1],["G4",29,1],["F4",30,.5],["D4",30.5,.5],["G4",31,1]], phrase2:[["A#3",0,.5],["D4",.5,.5],["G4",1,2.5],["F4",3.5,.5],["D#4",4,1],["D4",5,.5],["C4",5.5,.5],["G4",6,2],["G4",16,2],["A#4",18,.5],["D5",18.5,.5],["C5",19,1],["C5",20,.5],["A#4",20.5,.5],["G4",21,2.5],["D#4",23.5,.5]],   /* v1397 : sax écrit (Jérémy) — questions/réponses sur deux tours, autour du Sol qui ne bouge pas */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5, lecons:{cadences:2, diminue:3, immobile:2}, root:"D#", scale:"D#:0", name:"Ballade en Mib", tempo:60, groove:"jazz",
+desc:"Le geste : une ballade lente en Mib, dix accords en formes serrées. À écouter : à ce tempo, chaque accord dure assez pour entendre où va chaque voix ; le Do 7b9 relance vers le Fa mineur 9. Pour improviser : Mib ionien, Fa dorien, Sib mixolydien, et la gamme diminuée sur le Do 7b9. Tout est écrit : un Sol traverse toute la grille sans bouger, et la guitare comme le sax reviennent se poser dessus à chaque accord ; il change de rôle à chaque fois : tierce du Mib maj9, quinte du Do m9, neuvième du Fa m9, treizième du Sib 13, septième du Lab maj7, fondamentale du Sol m7, quinte du Do 7b9. La guitare et le sax se répondent toutes les deux mesures, et au tour suivant c'est le sax qui ouvre. La basse joue en blanches, comme dans une ballade, et passe d'un accord à l'autre par un pas.",
+chords:[{name:"Ebmaj9",beats:4,voicing:"x-6-5-7-6-x",scale:"D#:0",basseLigne:[[0,0,2],[2,7,2]],soloEcrit:[[0,"G4",2,"vib"],[2,"A#4",.5],[2.5,"D5",.5],[3,"F5",1]],soloEcrit2:[]},
+{name:"Cm9",beats:4,voicing:"x-3-1-3-3-x",scale:"C:1",basseLigne:[[0,12,2],[2,7,2]],soloEcrit:[[0,"G5",2,"vib"],[2,"F5",.5],[2.5,"D#5",.5],[3,"D5",1]],soloEcrit2:[]},
+{name:"Fm9",beats:4,voicing:"1-x-1-1-1-3",scale:"F:1",basseLigne:[[0,12,2],[2,19,2]],soloEcrit:[],soloEcrit2:[[0,"G#4",.5],[.5,"C5",.5],[1,"G5",2,"vib"],[3,"F5",1]]},
+{name:"Bb13",beats:4,voicing:"6-x-6-7-8-x",scale:"A#:4",basseLigne:[[0,0,2],[2,7,2]],soloEcrit:[],soloEcrit2:[[0,"D5",.5],[.5,"F5",.5],[1,"G5",1.5,"vib"],[2.5,"F5",.5],[3,"G#5",1]]},
+{name:"Ebmaj9",beats:4,voicing:"x-6-5-7-6-x",scale:"D#:0",basseLigne:[[0,0,2],[2,4,2]],soloEcrit:[[0,"G5",1.5,"vib"],[1.5,"F5",.5],[2,"D5",1],[3,"A#4",1]],soloEcrit2:[]},
+{name:"Abmaj7",beats:4,voicing:"4-x-5-5-4-x",scale:"G#:3",basseLigne:[[0,12,2],[2,9,2]],soloEcrit:[[0,"C5",.5],[.5,"D#5",.5],[1,"G5",2,"vib"],[3,"F5",1]],soloEcrit2:[]},
+{name:"Gm7",beats:2,voicing:"3-x-3-3-3-x",scale:"G:1",basseLigne:[[0,12,1],[1,15,1]],soloEcrit:[],soloEcrit2:[[0,"D5",.5],[.5,"F5",.5],[1,"G5",1,"vib"]]},
+{name:"C7b9",beats:2,voicing:"x-3-2-3-2-x",scale:"C:symmetric:1",basseLigne:[[0,12,1],[1,4,1]],soloEcrit:[],soloEcrit2:[[0,"E5",.5],[.5,"C#5",.5],[1,"A#4",1]]},
+{name:"Fm9",beats:2,voicing:"1-x-1-1-1-3",scale:"F:1",basseLigne:[[0,12,1],[1,19,1]],soloEcrit:[],soloEcrit2:[[0,"G#4",.5],[.5,"C5",.5],[1,"G5",1]]},
+{name:"Bb13",beats:2,voicing:"6-x-6-7-8-x",scale:"A#:4",basseLigne:[[0,0,1],[1,4,1]],soloEcrit:[],soloEcrit2:[[0,"F5",.5],[.5,"D5",.5],[1,"G#4",1]]}]},
 {id:"jz-quartal-dorien", lecons:{voicings:2}, fondamentale:"nom", root:"A", scale:"A:1", name:"Quartal dorien flottant", tempo:96, groove:"jazz",
 desc:"Le geste : La mineur 11, Ré sus2, Mi mineur 11, Sol 6/9, des empilements de quartes. À écouter : l'harmonie devient ambiguë et ouverte ; aucun accord ne pousse vers un autre. Pour improviser : La dorien du début à la fin.",
 chords:[{name:"Am11",beats:4,voicing:"5-x-5-5-3-x",scale:"A:1"},{name:"Dsus2",beats:4,voicing:"x-x-0-2-3-0",scale:"A:1"},{name:"Em11",beats:4,voicing:"7-x-7-7-8-x",scale:"A:1"},{name:"G6/9",beats:4,voicing:"3-x-2-2-3-3",scale:"A:1"}]},
@@ -6777,16 +6799,16 @@ chords:[
 {name:"G7",beats:8,voicing:"3-x-3-4-3-x",scale:"G:4"},
 {name:"Cmaj7",beats:8,voicing:"x-3-5-4-5-3",scale:"C:0"}
 ]},
-{id:"jz-autumn", lecons:{cadences:2, harmonique:2}, root:"G", scale:"A#:5", name:"Feuilles mortes (majeur & mineur)", tempo:120, groove:"jazz",
-desc:"Le geste : Do mineur 7, Fa 7, Sib maj7, Mib maj7, puis La m7b5, Ré 7b9, Sol mineur 7. À écouter : le même geste en deux couleurs, un ii-V-I majeur puis un ii-V-i mineur. Pour improviser : Sib majeur sur la partie majeure, Sol mineur harmonique sur la partie mineure.",
+{id:"jz-autumn", phrase:[["D4",8,1.5],["C4",9.5,.5],["D4",10,.5],["F4",10.5,.5],["A4",11,1],["G4",12,1.5],["F4",13.5,.5],["G4",14,.5],["A#4",14.5,.5],["D5",15,1],["A#4",24,1.5],["A4",25.5,.5],["G4",26,.5],["F4",26.5,.5],["D4",27,1],["F4",28,.5],["G4",28.5,.5],["A#4",29,1],["G4",30,2]], phrase2:[["G4",0,.5],["A#4",.5,.5],["D#5",1,1.5],["C5",2.5,.5],["A#4",3,1],["A4",4,1],["C5",5,.5],["A4",5.5,.5],["F4",6,.5],["G4",6.5,.5],["D#4",7,1],["C5",16,1],["G4",17,.5],["A4",17.5,.5],["D#4",18,.5],["F4",18.5,.5],["G4",19,1],["F#4",20,1],["A4",21,.5],["C5",21.5,.5],["D#5",22,1],["C5",23,1]],   /* v1396 : sax écrit (Jérémy) — questions/réponses sur deux tours, toutes les deux mesures */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5, lecons:{cadences:2, harmonique:2}, root:"G", scale:"A#:5", name:"Feuilles mortes (majeur & mineur)", tempo:120, groove:"jazz",
+desc:"Le geste : Do mineur 7, Fa 7, Sib maj7, Mib maj7, puis La m7b5, Ré 7b9, Sol mineur 7. À écouter : le même geste en deux couleurs, un ii-V-I majeur puis un ii-V-i mineur. Pour improviser : Sib majeur sur la partie majeure, Sol mineur harmonique sur la partie mineure. Tout est écrit : à chaque changement, la septième de l'accord descend d'un demi-ton sur la tierce du suivant (Sib → La, Mib → Ré, La → Sol, Ré → Do, Sol → Fa#, Do → Sib) ; la guitare et le sax se passent cette ligne toutes les deux mesures, et au tour suivant c'est le sax qui ouvre.",
 chords:[
-{name:"Cm7",beats:4,voicing:"x-3-5-3-4-3",scale:"A#:1"},
-{name:"F7",beats:4,voicing:"1-x-1-2-1-x",scale:"F:4"},
-{name:"Bbmaj7",beats:4,voicing:"x-1-3-2-3-1",scale:"A#:0"},
-{name:"Ebmaj7",beats:4,voicing:"x-6-8-7-8-6",scale:"D#:3"},
-{name:"Am7b5",beats:4,voicing:"5-x-5-5-4-x",scale:"A:6"},
-{name:"D7b9",beats:4,voicing:"x-5-4-5-4-x",scale:"D:harmonicMinor:4"},
-{name:"Gm7",beats:8,voicing:"3-x-3-3-3-x",scale:"G:5"}
+{name:"Cm7",beats:4,voicing:"x-3-5-3-4-3",scale:"C:1",basseLigne:[[0,12,1],[1,10,1],[2,9,1],[3,7,1]],soloEcrit:[[0,"A#4",1.5,"vib"],[1.5,"C5",.5],[2,"D5",.5],[2.5,"C5",.5],[3,"A#4",1]],soloEcrit2:[]},
+{name:"F7",beats:4,voicing:"1-x-1-2-1-x",scale:"F:4",basseLigne:[[0,12,1],[1,14,1],[2,16,1],[3,19,1]],soloEcrit:[[0,"A4",1.5,"vib"],[1.5,"C5",.5],[2,"D#5",2,"vib"]],soloEcrit2:[]},
+{name:"Bbmaj7",beats:4,voicing:"x-1-3-2-3-1",scale:"A#:0",basseLigne:[[0,12,1],[1,16,1],[2,19,1],[3,16,1]],soloEcrit:[],soloEcrit2:[[0,"D5",1.5,"vib"],[1.5,"C5",.5],[2,"D5",.5],[2.5,"F5",.5],[3,"A5",1]]},
+{name:"Ebmaj7",beats:4,voicing:"x-6-8-7-8-6",scale:"D#:3",basseLigne:[[0,0,1],[1,2,1],[2,4,1],[3,7,1]],soloEcrit:[],soloEcrit2:[[0,"G5",1.5,"vib"],[1.5,"F5",.5],[2,"D5",.5],[2.5,"A#4",.5],[3,"D5",1]]},
+{name:"Am7b5",beats:4,voicing:"5-x-5-5-4-x",scale:"A:6",basseLigne:[[0,12,1],[1,10,1],[2,8,1],[3,6,1]],soloEcrit:[[0,"C5",1.5,"vib"],[1.5,"A#4",.5],[2,"A4",.5],[2.5,"C5",.5],[3,"G4",1]],soloEcrit2:[]},
+{name:"D7b9",beats:4,voicing:"x-5-4-5-4-x",scale:"D:harmonicMinor:4",basseLigne:[[0,0,1],[1,4,1],[2,7,1],[3,4,1]],soloEcrit:[[0,"F#4",1.5,"vib"],[1.5,"A4",.5],[2,"C5",.5],[2.5,"D#5",.5],[3,"C5",1]],soloEcrit2:[]},
+{name:"Gm7",beats:8,voicing:"3-x-3-3-3-x",scale:"G:5",basseLigne:[[0,12,1],[1,10,1],[2,7,1],[3,10,1],[4,12,1],[5,10,1],[6,15,1],[7,19,1]],soloEcrit:[],soloEcrit2:[[0,"A#4",1.5,"vib"],[1.5,"D5",.5],[2,"F5",1],[3,"D5",.5],[3.5,"A#4",.5],[4,"A4",.5],[4.5,"G4",.5],[5,"F4",1],[6,"G4",2,"vib"]]}
 ]},
 {id:"jz-drop2-voiceleading", lecons:{voicings:2}, root:"C", scale:"C:0", name:"Drop 2 — voice leading ii-V-I", tempo:100, groove:"jazz",
 desc:"Le geste : Ré mineur 7, Sol 7, Do maj7 en voicings drop 2, choisis pour que les voix bougent le moins possible. À écouter : les notes communes restent sous les mêmes doigts ; seules les voix qui doivent bouger bougent. Pour improviser : Do majeur du début à la fin.",
@@ -6805,12 +6827,12 @@ chords:[
 {name:"G7b13",beats:8,voicing:"3-x-3-4-4-x",scale:"G:harmonicMinor:4"},
 {name:"Cmb6",beats:8,voicing:"x-3-6-0-4-x",scale:"C:harmonicMinor:0"}
 ]},
-{id:"jz-so-what-deplace", lecons:{basses:2, voicings:3}, basse:"alternee", preset:"ballade", root:"A", scale:"A:1", name:"Le déplacement d'une case", tempo:76, groove:"jazz",
-desc:"Le geste : une forme sans fondamentale ni quinte, cases 7 à 10, qui monte d'une case puis redescend ; au dernier accord, la main monte aux cases 10 à 12. À écouter : le geste de So What, en La : le demi-ton déplace toute la couleur, rien d'autre ne bouge. Pour improviser : La dorien, Sib dorien sur l'accord déplacé.",
-chords:[{name:"Am7(9,11,13)",beats:8,voicing:"x-10-10-7-7-7",scale:"A:1"},
-{name:"Bbm7(9,11,13)",beats:8,voicing:"x-11-11-8-8-8",scale:"A#:1"},
-{name:"Am7(9,11,13)",beats:8,voicing:"x-10-10-7-7-7",scale:"A:1"},
-{name:"Am7(9,13)",beats:8,voicing:"x-10-10-11-12-12",scale:"A:1"}]},
+{id:"jz-so-what-deplace", phrase:[["C5",4,.5],["B4",4.5,.5],["A4",5,1],["G4",6,1],["E4",7,1],["C#5",12,.5],["C5",12.5,.5],["A#4",13,1],["G#4",14,1],["F4",15,1],["C5",20,.5],["B4",20.5,.5],["A4",21,1],["G4",22,1],["E4",23,1],["F#4",28,2],["E4",30,2]], phrase2:[["D4",0,1.5],["E4",1.5,.5],["F#4",2,1],["E4",3,1],["D#4",8,1.5],["F4",9.5,.5],["G4",10,1],["F4",11,1],["D4",16,1.5],["E4",17.5,.5],["F#4",18,1],["E4",19,1],["E4",24,.5],["F#4",24.5,.5],["B4",25,2],["A4",27,1]],   /* v1402 : sax écrit (Jérémy) — la question et sa réponse montent d'une case avec la main */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5, lecons:{basses:2, voicings:3}, basse:"alternee", preset:"ballade", root:"A", scale:"A:1", name:"Le déplacement d'une case", tempo:76, groove:"jazz",
+desc:"Le geste : une forme sans fondamentale ni quinte, cases 7 à 10, qui monte d'une case puis redescend ; au dernier accord, la main monte aux cases 10 à 12. À écouter : le geste de So What, en La : le demi-ton déplace toute la couleur, rien d'autre ne bouge. Pour improviser : La dorien, Sib dorien sur l'accord déplacé. Tout est écrit, et le geste s'entend aussi dans les voix : la guitare pose une question, le sax répond ; sur l'accord déplacé, la même question et la même réponse montent d'une case, note pour note, puis redescendent avec la main. Au dernier accord, tout le monde monte. Au tour suivant, c'est le sax qui pose la question. La basse tient la fondamentale et sa quinte, et glisse d'un demi-ton avec l'accord.",
+chords:[{name:"Am7(9,11,13)",beats:8,voicing:"x-10-10-7-7-7",scale:"A:1",basseLigne:[[0,2,2],[2,9,2],[4,7,2],[6,2,2]],soloEcrit:[[0,"D5",1.5,"vib"],[1.5,"E5",.5],[2,"F#5",1],[3,"E5",1]],soloEcrit2:[[4,"G5",.5],[4.5,"F#5",.5],[5,"E5",1],[6,"D5",1],[7,"B4",1]]},
+{name:"Bbm7(9,11,13)",beats:8,voicing:"x-11-11-8-8-8",scale:"A#:1",basseLigne:[[0,2,2],[2,9,2],[4,2,2],[6,0,2]],soloEcrit:[[0,"D#5",1.5,"vib"],[1.5,"F5",.5],[2,"G5",1],[3,"F5",1]],soloEcrit2:[[4,"G#5",.5],[4.5,"G5",.5],[5,"F5",1],[6,"D#5",1],[7,"C5",1]]},
+{name:"Am7(9,11,13)",beats:8,voicing:"x-10-10-7-7-7",scale:"A:1",basseLigne:[[0,2,2],[2,9,2],[4,7,2],[6,2,2]],soloEcrit:[[0,"D5",1.5,"vib"],[1.5,"E5",.5],[2,"F#5",1],[3,"E5",1]],soloEcrit2:[[4,"G5",.5],[4.5,"F#5",.5],[5,"E5",1],[6,"D5",1],[7,"B4",1]]},
+{name:"Am7(9,13)",beats:8,voicing:"x-10-10-11-12-12",scale:"A:1",basseLigne:[[0,2,2],[2,9,2],[4,4,2],[6,0,2]],soloEcrit:[[0,"E5",.5],[.5,"F#5",.5],[1,"B5",2,"vib"],[3,"A5",1]],soloEcrit2:[[4,"F#5",2,"vib"],[6,"E5",2]]}]},
 {id:"jz-fa-diese-tenace", lecons:{voicings:3}, basse:"chantante", preset:"walk", root:"A", scale:"A:1", name:"Le Fa# qui refuse de partir", tempo:120, groove:"jazz",
 desc:"Le geste : quatre accords de La dorien en formes serrées, entre les cases 3 et 11. À écouter : le Fa#, sixte de La dorien, est dans les trois premiers accords, sur trois cordes différentes ; le Ré 9 le porte à découvert, comme tierce. C'est lui qui empêche d'entendre un La éolien. Pour improviser : La dorien du début à la fin, en visant le Fa#.",
 chords:[{name:"Am7(13)",beats:8,voicing:"x-x-7-5-7-3",scale:"A:1"},
@@ -6823,27 +6845,27 @@ chords:[{name:"Am7(9,13)",beats:8,voicing:"x-10-10-11-12-12",scale:"A:1"},
 {name:"Am7(11,13)",beats:8,voicing:"x-x-10-11-8-10",scale:"A:1"},
 {name:"Am7(9,11)",beats:8,voicing:"x-7-10-7-8-7",scale:"A:1"},
 {name:"Am7(13)",beats:8,voicing:"x-x-5-5-7-x",scale:"A:1"}]},
-{id:"jz-ballade-double-time", lecons:{cadences:2}, fondamentale:"nom", basse:"chantante", preset:"walk", root:"G", scale:"G:0", name:"Ballade en Sol — passage en double time", tempo:60, groove:"jazz",
-desc:"Le geste : une ballade en Sol, avec beaucoup d'accords qui gardent la corde de Si à vide au milieu du manche. À écouter : une section passe en double time ; le tempo ne change pas, mais tout circule deux fois plus vite, puis la ballade respire de nouveau. Pour improviser : Sol ionien, La mixolydien sur le La 7, Mi mixolydien sur le Mi 7, Do# locrien sur le Do# m7b5.",
-chords:[{name:"Gmaj7",beats:4,sig:4,voicing:"x-x-4-7-0-7",scale:"G:0"},
-{name:"Bm7",beats:4,sig:4,voicing:"x-x-7-7-0-7",scale:"G:0"},
-{name:"Em7",beats:4,sig:4,voicing:"x-x-5-7-0-7",scale:"G:0"},
-{name:"A7",beats:4,sig:4,voicing:"x-0-5-6-5-3",scale:"A:4"},
-{name:"Am7",beats:4,sig:4,voicing:"x-x-5-5-5-3",scale:"G:0"},
-{name:"D7",beats:4,sig:4,voicing:"x-x-4-5-3-5",scale:"G:0"},
-{name:"Gmaj7",beats:4,sig:4,voicing:"x-x-4-7-0-7",scale:"G:0"},
-{name:"E7",beats:4,sig:4,voicing:"x-x-6-7-0-7",scale:"E:4"},
-{name:"Am7",beats:8,sig:4,tempoX:2,voicing:"x-x-5-5-5-5",scale:"G:0"},
-{name:"D7",beats:8,sig:4,tempoX:2,voicing:"x-x-4-5-3-5",scale:"G:0"},
-{name:"Bm7",beats:8,sig:4,tempoX:2,voicing:"x-x-7-7-0-7",scale:"G:0"},
-{name:"E7",beats:8,sig:4,tempoX:2,voicing:"x-x-6-7-0-7",scale:"E:4"},
-{name:"Am7",beats:8,sig:4,tempoX:2,voicing:"x-x-5-5-5-5",scale:"G:0"},
-{name:"D7",beats:8,sig:4,tempoX:2,voicing:"x-x-4-5-3-5",scale:"G:0"},
-{name:"Gmaj7",beats:4,sig:4,voicing:"x-x-4-4-3-3",scale:"G:0"},
-{name:"C#m7b5",beats:4,sig:4,voicing:"x-x-2-4-2-3",scale:"C#:6"},
-{name:"F#7",beats:4,sig:4,voicing:"x-x-2-3-2-2",scale:"F#:4"},
-{name:"Bm7",beats:4,sig:4,voicing:"x-x-0-2-3-2",scale:"G:0"},
-{name:"Gmaj7",beats:8,sig:4,voicing:"x-x-4-4-3-2",scale:"G:0"}]},
+{id:"jz-ballade-double-time", phrase:[["E4",16,2],["D4",18,.5],["C4",18.5,.5],["A3",19,1],["F#4",20,1.5],["A4",21.5,.5],["C5",22,2],["B4",24,2],["A4",26,.5],["F#4",26.5,.5],["D4",27,1],["G#4",28,1.5],["B4",29.5,.5],["D5",30,1],["B4",31,1],["B3",48,.5],["D4",48.5,.5],["F#4",49,.5],["A4",49.5,.5],["B4",50,1],["A4",51,.5],["F#4",51.5,.5],["E4",52,.5],["D4",52.5,.5],["B3",53,1],["D4",54,.5],["E4",54.5,.5],["F#4",55,1],["G#4",56,.5],["B4",56.5,.5],["D5",57,.5],["E5",57.5,.5],["D5",58,1],["B4",59,.5],["G#4",59.5,.5],["E4",60,.5],["F#4",60.5,.5],["G#4",61,.5],["B4",61.5,.5],["B4",62,2],["G4",80,2],["F#4",82,1],["D4",83,1],["E4",84,1.5],["G4",85.5,.5],["B4",86,1],["A4",87,1],["B4",96,4]], phrase2:[["D4",0,2],["F#4",2,1],["A4",3,1],["B4",4,2],["A4",6,.5],["F#4",6.5,.5],["D4",7,1],["E4",8,1],["G4",9,1],["B4",10,2],["A4",12,1.5],["G4",13.5,.5],["E4",14,1],["C#4",15,1],["A3",32,.5],["C4",32.5,.5],["E4",33,.5],["G4",33.5,.5],["A4",34,1],["G4",35,.5],["E4",35.5,.5],["D4",36,.5],["C4",36.5,.5],["B3",37,.5],["C4",37.5,.5],["E4",38,2],["D4",40,.5],["F#4",40.5,.5],["A4",41,.5],["C5",41.5,.5],["A4",42,1],["F#4",43,.5],["E4",43.5,.5],["D4",44,.5],["E4",44.5,.5],["F#4",45,.5],["A4",45.5,.5],["F#4",46,2],["E4",64,.5],["G4",64.5,.5],["A4",65,.5],["C5",65.5,.5],["E5",66,1],["A4",67,.5],["G4",67.5,.5],["E4",68,.5],["D4",68.5,.5],["C4",69,.5],["D4",69.5,.5],["E4",70,2],["F#4",72,.5],["A4",72.5,.5],["C5",73,.5],["A4",73.5,.5],["F#4",74,1],["E4",75,.5],["D4",75.5,.5],["C4",76,1],["A3",77,1],["F#4",78,2],["A#4",88,2],["C#5",90,1],["E4",91,1],["D4",92,2],["B3",94,1],["A3",95,1],["F#4",100,.5],["A4",100.5,.5],["B4",101,1],["D4",102,2]],   /* v1401 : sax écrit (Jérémy) — questions/réponses par sections : ballade, double time, ballade */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5, lecons:{cadences:2}, fondamentale:"nom", basse:"chantante", preset:"walk", root:"G", scale:"G:0", name:"Ballade en Sol — passage en double time", tempo:60, groove:"jazz",
+desc:"Le geste : une ballade en Sol, avec beaucoup d'accords qui gardent la corde de Si à vide au milieu du manche. À écouter : une section passe en double time ; le tempo ne change pas, mais tout circule deux fois plus vite, puis la ballade respire de nouveau. Pour improviser : Sol ionien, La mixolydien sur le La 7, Mi mixolydien sur le Mi 7, Do# locrien sur le Do# m7b5. Tout est écrit : dans la ballade, la guitare et le sax tiennent des notes longues et se répondent par quatre accords ; dans le double time, les mêmes valeurs écrites passent deux fois plus vite, en lignes de croches qui courent, et la basse se met à marcher ; puis la ballade revient et chacun retrouve ses notes longues. Au tour suivant, c'est le sax qui ouvre.",
+chords:[{name:"Gmaj7",beats:4,sig:4,voicing:"x-x-4-7-0-7",scale:"G:0",basseLigne:[[0,12,2],[2,14,2]],soloEcrit:[[0,"B4",2,"vib"],[2,"A4",.5],[2.5,"B4",.5],[3,"D5",1]],soloEcrit2:[]},
+{name:"Bm7",beats:4,sig:4,voicing:"x-x-7-7-0-7",scale:"G:0",basseLigne:[[0,12,2],[2,10,2]],soloEcrit:[[0,"F#5",2,"vib"],[2,"E5",.5],[2.5,"D5",.5],[3,"B4",1]],soloEcrit2:[]},
+{name:"Em7",beats:4,sig:4,voicing:"x-x-5-7-0-7",scale:"G:0",basseLigne:[[0,12,2],[2,10,2]],soloEcrit:[[0,"G4",1],[1,"B4",1],[2,"D5",2,"vib"]],soloEcrit2:[]},
+{name:"A7",beats:4,sig:4,voicing:"x-0-5-6-5-3",scale:"A:4",basseLigne:[[0,12,2],[2,7,2]],soloEcrit:[[0,"C#5",1.5,"vib"],[1.5,"B4",.5],[2,"A4",1],[3,"G4",1]],soloEcrit2:[]},
+{name:"Am7",beats:4,sig:4,voicing:"x-x-5-5-5-3",scale:"G:0",basseLigne:[[0,12,2],[2,10,2]],soloEcrit:[],soloEcrit2:[[0,"C5",2,"vib"],[2,"B4",.5],[2.5,"A4",.5],[3,"G4",1]]},
+{name:"D7",beats:4,sig:4,voicing:"x-x-4-5-3-5",scale:"G:0",basseLigne:[[0,0,2],[2,4,2]],soloEcrit:[],soloEcrit2:[[0,"A4",1.5,"vib"],[1.5,"C5",.5],[2,"F#5",2,"vib"]]},
+{name:"Gmaj7",beats:4,sig:4,voicing:"x-x-4-7-0-7",scale:"G:0",basseLigne:[[0,12,2],[2,11,2]],soloEcrit:[],soloEcrit2:[[0,"D5",2,"vib"],[2,"B4",.5],[2.5,"A4",.5],[3,"F#4",1]]},
+{name:"E7",beats:4,sig:4,voicing:"x-x-6-7-0-7",scale:"E:4",basseLigne:[[0,12,2],[2,16,2]],soloEcrit:[],soloEcrit2:[[0,"B4",1.5,"vib"],[1.5,"G#4",.5],[2,"D5",1],[3,"E5",1]]},
+{name:"Am7",beats:8,sig:4,tempoX:2,voicing:"x-x-5-5-5-5",scale:"G:0",basseLigne:[[0,12,1],[1,10,1],[2,15,1],[3,19,1],[4,22,1],[5,19,1],[6,17,1],[7,15,1]],soloEcrit:[[0,"A4",.5],[.5,"B4",.5],[1,"C5",.5],[1.5,"E5",.5],[2,"G5",1],[3,"E5",.5],[3.5,"D5",.5],[4,"C5",.5],[4.5,"B4",.5],[5,"A4",.5],[5.5,"G4",.5],[6,"E4",1],[7,"G4",1]],soloEcrit2:[]},
+{name:"D7",beats:8,sig:4,tempoX:2,voicing:"x-x-4-5-3-5",scale:"G:0",basseLigne:[[0,12,1],[1,10,1],[2,7,1],[3,4,1],[4,0,1],[5,2,1],[6,4,1],[7,7,1]],soloEcrit:[[0,"F#4",.5],[.5,"A4",.5],[1,"C5",.5],[1.5,"D5",.5],[2,"F#5",1],[3,"E5",.5],[3.5,"D5",.5],[4,"C5",.5],[4.5,"A4",.5],[5,"F#4",.5],[5.5,"G4",.5],[6,"A4",2]],soloEcrit2:[]},
+{name:"Bm7",beats:8,sig:4,tempoX:2,voicing:"x-x-7-7-0-7",scale:"G:0",basseLigne:[[0,12,1],[1,15,1],[2,19,1],[3,22,1],[4,24,1],[5,22,1],[6,19,1],[7,15,1]],soloEcrit:[],soloEcrit2:[[0,"D5",.5],[.5,"F#5",.5],[1,"A5",.5],[1.5,"B5",.5],[2,"A5",1],[3,"F#5",.5],[3.5,"D5",.5],[4,"E5",.5],[4.5,"F#5",.5],[5,"D5",.5],[5.5,"B4",.5],[6,"A4",2]]},
+{name:"E7",beats:8,sig:4,tempoX:2,voicing:"x-x-6-7-0-7",scale:"E:4",basseLigne:[[0,24,1],[1,22,1],[2,19,1],[3,16,1],[4,12,1],[5,14,1],[6,16,1],[7,19,1]],soloEcrit:[],soloEcrit2:[[0,"B4",.5],[.5,"D5",.5],[1,"E5",.5],[1.5,"G#5",.5],[2,"B5",1],[3,"G#5",.5],[3.5,"E5",.5],[4,"D5",.5],[4.5,"B4",.5],[5,"G#4",.5],[5.5,"A4",.5],[6,"B4",2]]},
+{name:"Am7",beats:8,sig:4,tempoX:2,voicing:"x-x-5-5-5-5",scale:"G:0",basseLigne:[[0,12,1],[1,15,1],[2,19,1],[3,22,1],[4,24,1],[5,22,1],[6,19,1],[7,15,1]],soloEcrit:[[0,"C5",.5],[.5,"E5",.5],[1,"G5",.5],[1.5,"A5",.5],[2,"G5",1],[3,"E5",.5],[3.5,"C5",.5],[4,"D5",.5],[4.5,"E5",.5],[5,"G5",.5],[5.5,"E5",.5],[6,"D5",1],[7,"C5",1]],soloEcrit2:[]},
+{name:"D7",beats:8,sig:4,tempoX:2,voicing:"x-x-4-5-3-5",scale:"G:0",basseLigne:[[0,12,1],[1,7,1],[2,4,1],[3,7,1],[4,10,1],[5,9,1],[6,7,1],[7,4,1]],soloEcrit:[[0,"A4",.5],[.5,"C5",.5],[1,"D5",.5],[1.5,"F#5",.5],[2,"A5",1],[3,"F#5",.5],[3.5,"D5",.5],[4,"C5",1],[5,"A4",1],[6,"F#4",2,"vib"]],soloEcrit2:[]},
+{name:"Gmaj7",beats:4,sig:4,voicing:"x-x-4-4-3-3",scale:"G:0",basseLigne:[[0,12,2],[2,16,2]],soloEcrit:[],soloEcrit2:[[0,"B4",2,"vib"],[2,"A4",1],[3,"F#4",1]]},
+{name:"C#m7b5",beats:4,sig:4,voicing:"x-x-2-4-2-3",scale:"C#:6",basseLigne:[[0,12,2],[2,6,2]],soloEcrit:[],soloEcrit2:[[0,"G4",1.5,"vib"],[1.5,"B4",.5],[2,"E5",1],[3,"A4",1]]},
+{name:"F#7",beats:4,sig:4,voicing:"x-x-2-3-2-2",scale:"F#:4",basseLigne:[[0,12,2],[2,16,2]],soloEcrit:[[0,"A#4",2,"vib"],[2,"C#5",1],[3,"E5",1]],soloEcrit2:[]},
+{name:"Bm7",beats:4,sig:4,voicing:"x-x-0-2-3-2",scale:"G:0",basseLigne:[[0,12,2],[2,10,2]],soloEcrit:[[0,"D5",2,"vib"],[2,"B4",1],[3,"A4",1]],soloEcrit2:[]},
+{name:"Gmaj7",beats:8,sig:4,voicing:"x-x-4-4-3-2",scale:"G:0",basseLigne:[[0,12,4],[4,19,2],[6,11,2]],soloEcrit:[[4,"F#5",.5],[4.5,"D5",.5],[5,"B4",1],[6,"A4",2,"vib"]],soloEcrit2:[[0,"B4",4,"vib"]]}]},
 {id:"jz-mesure-impaire", lecons:{cadences:3, metrique:3}, fondamentale:"nom", preset:"walk", root:"D", scale:"D:1", name:"Swing en 5/4 et 7/8", tempo:132, groove:"pompeSwing",
 desc:"Le geste : Ré mineur 7 en forme serrée, cases 1 à 3, avec des dominantes qui gardent des cordes à vide. À écouter : le swing tient en cinq temps comme en sept croches ; on cesse de compter par deux et on sent la phrase entière. Pour improviser : Ré dorien, Sol dorien, La altéré sur les La 7 alt, et la gamme affichée sous les autres accords.",
 chords:[{name:"Dm7",beats:5,sig:5,voicing:"x-x-3-2-1-1",scale:"D:1"},
@@ -7010,25 +7032,25 @@ chords:[{name:"A7",beats:8,voicing:"5-x-5-6-5-x",scale:"A:4"},
 {name:"A7alt",beats:8,voicing:"5-x-5-6-6-x",scale:"A:melodicMinor:6"},
 {name:"Eb7",beats:8,voicing:"x-6-5-6-4-x",scale:"D#:melodicMinor:3"},
 {name:"Dm9",beats:8,voicing:"x-5-3-5-5-x",scale:"D:1"}]},
-{id:"jz-notes-qui-frottent", root:"C", scale:"C:0", lecons:{frottements:1, couleurs:2, modal:3},
+{id:"jz-notes-qui-frottent", phrase:[["A4",8,2],["G4",10,1],["B4",11,1],["C5",12,2],["E4",14,2],["D4",24,2],["F4",26,1],["A4",27,.5],["C5",27.5,.5],["B4",28,2],["G4",30,2],["B3",40,2],["D4",42,1],["E4",43,.5],["F4",43.5,.5],["G4",44,1.5],["A4",45.5,.5],["B4",46,2]], phrase2:[["D4",0,2],["F4",2,1],["A4",3,1],["C5",4,2],["A4",6,2],["E4",16,2],["G4",18,1],["F4",19,.5],["E4",19.5,.5],["D4",20,1],["B3",21,1],["C4",22,2],["C5",32,2],["B4",34,1],["A4",35,1],["G4",36,.5],["F4",36.5,.5],["E4",37,1],["A4",38,2],["E4",48,2],["F#4",50,1],["G4",51,1],["B4",52,2],["G4",54,2]],   /* v1400 : sax écrit (Jérémy) — questions/réponses accord par accord ; les notes qui frottent ne sont que traversées */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5, root:"C", scale:"C:0", lecons:{frottements:1, couleurs:2, modal:3},
 name:"La note qui frotte — sept accords, de zéro à deux", tempo:60, groove:"jazz",
-desc:"Le geste : sept accords ouverts, deux mesures chacun ; pose-toi dessus et monte la gamme lentement. À écouter : sur chaque accord, zéro, une ou deux notes de la gamme frottent, celles à un demi-ton au-dessus d'une note de l'accord ; sur le Ré mineur 7 aucune, sur le Do maj7 le Fa. Pour improviser : notes longues partout, sauf sur les notes qui frottent, qu'on traverse.",
-chords:[{name:"Dm7",beats:8,voicing:"x-x-0-2-1-1",scale:"D:1"},
-{name:"Fmaj7",beats:8,voicing:"x-x-3-2-1-0",scale:"F:3"},
-{name:"Cmaj7",beats:8,voicing:"x-3-2-0-0-0",scale:"C:0"},
-{name:"G7",beats:8,voicing:"3-5-3-4-3-3",scale:"G:4"},
-{name:"Am7",beats:8,voicing:"x-0-2-0-1-0",scale:"A:5"},
-{name:"Em7",beats:8,voicing:"0-2-0-0-0-0",scale:"E:2"},
-{name:"Cmaj7#11",beats:8,voicing:"x-3-2-0-0-2",scale:"C:3"}]},
-{id:"jz-blues-gamme-mineure", root:"C", scale:"C:blues:0", lecons:{modal:2, couleurs:3},
+desc:"Le geste : sept accords ouverts, deux mesures chacun ; pose-toi dessus et monte la gamme lentement. À écouter : sur chaque accord, zéro, une ou deux notes de la gamme frottent, celles à un demi-ton au-dessus d'une note de l'accord ; sur le Ré mineur 7 aucune, sur le Do maj7 le Fa. Pour improviser : notes longues partout, sauf sur les notes qui frottent, qu'on traverse. Tout est écrit, et la règle s'entend : la guitare et le sax se passent la parole à chaque accord ; ils tiennent les notes sûres et ne font que traverser les notes qui frottent, en croche, le Fa sur Do maj7, le Do sur Sol 7, le Fa sur La mineur 7, le Fa et le Do sur Mi mineur 7. Au tour suivant, c'est le sax qui ouvre. La basse tient la fondamentale deux temps, puis va chercher l'accord suivant.",
+chords:[{name:"Dm7",beats:8,voicing:"x-x-0-2-1-1",scale:"D:1",basseLigne:[[0,0,4],[4,7,2],[6,5,2]],soloEcrit:[[0,"A4",2,"vib"],[2,"C5",1],[3,"D5",.5],[3.5,"E5",.5],[4,"F5",2,"vib"],[6,"E5",.5],[6.5,"D5",.5],[7,"C5",1]],soloEcrit2:[]},
+{name:"Fmaj7",beats:8,voicing:"x-x-3-2-1-0",scale:"F:3",basseLigne:[[0,0,4],[4,7,2],[6,9,2]],soloEcrit:[],soloEcrit2:[[0,"A5",2,"vib"],[2,"G5",.5],[2.5,"F5",.5],[3,"A5",1],[4,"G5",2,"vib"],[6,"E5",2]]},
+{name:"Cmaj7",beats:8,voicing:"x-3-2-0-0-0",scale:"C:0",basseLigne:[[0,12,4],[4,7,2],[6,9,2]],soloEcrit:[[0,"G4",2,"vib"],[2,"E5",1],[3,"F5",.5],[3.5,"E5",.5],[4,"D5",1],[5,"B4",1],[6,"C5",2,"vib"]],soloEcrit2:[]},
+{name:"G7",beats:8,voicing:"3-5-3-4-3-3",scale:"G:4",basseLigne:[[0,12,4],[4,19,2],[6,16,2]],soloEcrit:[],soloEcrit2:[[0,"B4",2,"vib"],[2,"D5",.5],[2.5,"C5",.5],[3,"B4",1],[4,"F5",2,"vib"],[6,"D5",2]]},
+{name:"Am7",beats:8,voicing:"x-0-2-0-1-0",scale:"A:5",basseLigne:[[0,12,4],[4,10,2],[6,5,2]],soloEcrit:[[0,"E5",2,"vib"],[2,"D5",.5],[2.5,"C5",.5],[3,"B4",1],[4,"A4",.5],[4.5,"F4",.5],[5,"E4",1],[6,"G4",2,"vib"]],soloEcrit2:[]},
+{name:"Em7",beats:8,voicing:"0-2-0-0-0-0",scale:"E:2",basseLigne:[[0,12,4],[4,15,2],[6,10,2]],soloEcrit:[],soloEcrit2:[[0,"G4",2,"vib"],[2,"A4",.5],[2.5,"C5",.5],[3,"B4",1],[4,"E5",.5],[4.5,"F5",.5],[5,"E5",1],[6,"D5",2,"vib"]]},
+{name:"Cmaj7#11",beats:8,voicing:"x-3-2-0-0-2",scale:"C:3",basseLigne:[[0,0,4],[4,7,2],[6,9,2]],soloEcrit:[[0,"F#5",2,"vib"],[2,"E5",1],[3,"D5",.5],[3.5,"C5",.5],[4,"B4",2,"vib"],[6,"G4",2]],soloEcrit2:[]}]},
+{id:"jz-blues-gamme-mineure", phrase:[["G4",8,.5],["F4",8.5,.5],["F#4",9,.5],["G4",9.5,1.5],["D#4",11,.5],["C4",11.5,.5],["A#3",12,1],["C4",13,.5],["D#4",13.5,.5],["F4",14,.5],["F#4",14.5,.5],["G4",15,1],["C5",24,1],["A#4",25,.5],["G4",25.5,.5],["F#4",26,.5],["F4",26.5,.5],["D#4",27,1],["C4",28,1.5],["D#4",29.5,.5],["F4",30,.5],["G4",30.5,1.5],["C4",40,.5],["D#4",40.5,.5],["F4",41,.5],["F#4",41.5,.5],["G4",42,2],["A#4",44,.5],["G4",44.5,.5],["F4",45,.5],["D#4",45.5,.5],["C4",46,2]], phrase2:[["G4",0,1.5],["F#4",1.5,.5],["F4",2,.5],["D#4",2.5,.5],["C4",3,1],["D#4",4,.5],["F4",4.5,.5],["F#4",5,.5],["G4",5.5,.5],["A#4",6,2],["F4",16,.5],["G#4",16.5,.5],["A#4",17,.5],["B4",17.5,.5],["C5",18,1.5],["G#4",19.5,.5],["F4",20,1],["D#4",21,.5],["F4",21.5,.5],["G#4",22,2],["D4",32,.5],["F4",32.5,.5],["G4",33,.5],["A#4",33.5,.5],["C5",34,.5],["C#5",34.5,.5],["D5",35,1],["C5",36,1],["B4",37,.5],["A#4",37.5,.5],["G#4",38,1],["F4",39,1]],   /* v1398 : sax écrit (Jérémy) — questions/réponses sur deux tours, la blue note qui change de place */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5, root:"C", scale:"C:blues:0", lecons:{modal:2, couleurs:3},
 name:"Blues mineur intégral — douze mesures, une seule gamme", tempo:84, groove:"jazz",
-desc:"Le geste : Do mineur 7, Fa mineur 7, Sol mineur 7, en formes barrées. À écouter : chaque accord porte sa propre gamme blues, Do, Fa ou Sol ; la blue note change de place avec l'accord. Pour improviser : la gamme blues de chaque accord, en visant sa quinte diminuée au changement.",
-chords:[{name:"Cm7",beats:16,voicing:"x-3-5-3-4-x",scale:"C:blues:0"},
-{name:"Fm7",beats:8,voicing:"1-x-1-1-1-x",scale:"F:blues:0"},
-{name:"Cm7",beats:8,voicing:"x-3-5-3-4-x",scale:"C:blues:0"},
-{name:"Gm7",beats:4,voicing:"3-x-3-3-3-x",scale:"G:blues:0"},
-{name:"Fm7",beats:4,voicing:"1-x-1-1-1-x",scale:"F:blues:0"},
-{name:"Cm7",beats:8,voicing:"x-3-5-3-4-x",scale:"C:blues:0"}]},
+desc:"Le geste : Do mineur 7, Fa mineur 7, Sol mineur 7, en formes barrées. À écouter : chaque accord porte sa propre gamme blues, Do, Fa ou Sol ; la blue note change de place avec l'accord. Pour improviser : la gamme blues de chaque accord, en visant sa quinte diminuée au changement. Tout est écrit : la guitare tire sa blue note d'un demi-ton à chaque accord, Fa → Fa# sur Do mineur, Sib → Si sur Fa mineur, Do → Do# sur Sol mineur ; le sax, qui ne peut pas tirer, y glisse par demi-tons. Ils se répondent toutes les deux mesures, et au tour suivant c'est le sax qui ouvre. La basse marche dans la gamme blues de chaque accord.",
+chords:[{name:"Cm7",beats:16,voicing:"x-3-5-3-4-x",scale:"C:blues:0",basseLigne:[[0,12,1],[1,12,1],[2,15,1],[3,10,1],[4,12,1],[5,15,1],[6,17,1],[7,18,1],[8,15,1],[9,10,1],[10,12,1],[11,7,1],[12,10,1],[13,12,1],[14,15,1],[15,12,1]],soloEcrit:[[0,"C5",.5],[.5,"D#5",.5],[1,"F#5",1.5,"tir\u00e9\u00bd vib"],[2.5,"D#5",.5],[3,"C5",1],[4,"G4",.5],[4.5,"A#4",.5],[5,"C5",.5],[5.5,"D#5",.5],[6,"C5",2,"vib"]],soloEcrit2:[[8,"G5",.5],[8.5,"F#5",.5],[9,"F5",.5],[9.5,"D#5",.5],[10,"C5",1],[11,"A#4",1],[12,"C5",.5],[12.5,"D#5",.5],[13,"F#5",1.5,"tir\u00e9\u00bd vib"],[14.5,"D#5",.5],[15,"C5",1]]},
+{name:"Fm7",beats:8,voicing:"1-x-1-1-1-x",scale:"F:blues:0",basseLigne:[[0,12,1],[1,12,1],[2,15,1],[3,19,1],[4,19,1],[5,22,1],[6,19,1],[7,18,1]],soloEcrit:[[0,"C5",.5],[.5,"D#5",.5],[1,"B4",1.5,"tir\u00e9\u00bd vib"],[2.5,"G#4",.5],[3,"F4",1],[4,"G#4",.5],[4.5,"A#4",.5],[5,"B4",.5],[5.5,"C5",.5],[6,"D#5",2,"vib"]],soloEcrit2:[]},
+{name:"Cm7",beats:8,voicing:"x-3-5-3-4-x",scale:"C:blues:0",basseLigne:[[0,12,1],[1,15,1],[2,12,1],[3,10,1],[4,19,1],[5,17,1],[6,15,1],[7,10,1]],soloEcrit:[],soloEcrit2:[[0,"C5",.5],[.5,"D#5",.5],[1,"F5",.5],[1.5,"F#5",.5],[2,"G5",1.5,"vib"],[3.5,"F5",.5],[4,"D#5",1],[5,"C5",.5],[5.5,"A#4",.5],[6,"C5",2,"vib"]]},
+{name:"Gm7",beats:4,voicing:"3-x-3-3-3-x",scale:"G:blues:0",basseLigne:[[0,12,1],[1,10,1],[2,15,1],[3,12,1]],soloEcrit:[[0,"D5",.5],[.5,"F5",.5],[1,"C#5",1.5,"tir\u00e9\u00bd vib"],[2.5,"A#4",.5],[3,"G4",1]],soloEcrit2:[]},
+{name:"Fm7",beats:4,voicing:"1-x-1-1-1-x",scale:"F:blues:0",basseLigne:[[0,12,1],[1,15,1],[2,17,1],[3,18,1]],soloEcrit:[[0,"G#4",.5],[.5,"C5",.5],[1,"B4",1,"tir\u00e9\u00bd"],[2,"G#4",.5],[2.5,"F4",.5],[3,"D#4",1]],soloEcrit2:[]},
+{name:"Cm7",beats:8,voicing:"x-3-5-3-4-x",scale:"C:blues:0",basseLigne:[[0,12,1],[1,15,1],[2,12,1],[3,10,1],[4,12,1],[5,15,1],[6,17,1],[7,7,1]],soloEcrit:[],soloEcrit2:[[0,"G4",.5],[.5,"A#4",.5],[1,"C5",.5],[1.5,"D#5",.5],[2,"F#5",1,"tir\u00e9\u00bd"],[3,"D#5",1],[4,"C5",2,"vib"],[6,"G4",2]]}]},
 {id:"jz-m7b5-tiroirs-la", root:"A", scale:"A:6", lecons:{melodique:2, cadences:2, couleurs:3},
 name:"Le m7b5 à tiroirs — locrien, puis locrien #2", tempo:92, groove:"jazz",
 desc:"Le geste : La m7b5 deux fois avec le même doigté, puis Ré 7 altéré et Sol mineur 9. À écouter : le premier La m7b5 en locrien, le second en locrien #2 : une seule note change, le Sib devient Si ; la seconde mineure qui écrasait l'accord devient une neuvième. Pour improviser : La locrien, La locrien #2, Ré altéré, Sol dorien.",
@@ -7090,17 +7112,17 @@ chords:[{name:"Dm9",beats:4,voicing:"10-x-10-10-10-12",ton:"C",scale:"D:1"},
 {name:"Am7",beats:4,voicing:"x-x-10-9-8-8",ton:"G",scale:"A:1"},
 {name:"D7alt",beats:4,voicing:"10-x-10-11-11-11",ton:"G",scale:"D:melodicMinor:6"},
 {name:"Gmaj13",beats:8,voicing:"x-x-12-11-12-12",ton:"G",scale:"G:0"}]},
-{id:"jz-bobby-timmons-soul-fam", lecons:{dominantes:1}, root:"F", scale:"F:1",
+{id:"jz-bobby-timmons-soul-fam", phrase:[["F4",4.5,.5],["G#4",5,.5],["A#4",5.5,.5],["C5",6,1.5],["A#4",7.5,.5],["G4",12,.5],["A#4",12.5,.5],["C#5",13,1],["A#4",14,1],["G4",15,1],["C4",20.5,.5],["D#4",21,.5],["F4",21.5,.5],["G4",22,1.5],["F4",23.5,.5],["D#4",28,.5],["F4",28.5,.5],["G#4",29,1],["G4",30,.5],["F4",30.5,1.5],["E4",36,.5],["G#4",36.5,.5],["A#4",37,.5],["C#5",37.5,1],["A#4",38.5,.5],["E4",39,1],["C4",44.5,.5],["D#4",45,.5],["F4",45.5,2.5]], phrase2:[["C4",0,.5],["D#4",.5,.5],["F4",1,.5],["G#4",1.5,1],["G4",2.5,.5],["F4",3,1],["D4",8,.5],["F4",8.5,.5],["G#4",9,1],["G4",10,.5],["F4",10.5,.5],["D4",11,1],["D#4",16,.5],["G#4",16.5,.5],["C5",17,1.5],["A#4",18.5,.5],["G#4",19,1],["F4",24,.5],["G#4",24.5,.5],["C5",25,.5],["D#5",25.5,1.5],["C5",27,1],["C#4",32,.5],["F4",32.5,.5],["G#4",33,1],["F4",34,.5],["C#4",34.5,.5],["A#3",35,1],["F4",40,1],["G#4",41,.5],["G4",41.5,.5],["F4",42,2]],   /* v1391 : sax écrit (Jérémy) — le soul jazz se parle mesure par mesure : au 1er tour la guitare demande et le sax répond, au 2e l'inverse */ phraseAuto:true, phraseDb:5, soloDb:5, basseDb:-3, rythmeDb:5,   /* v1393 : Jérémy, basse trop forte, guitare rythmique trop faible */ lecons:{dominantes:1}, root:"F", scale:"F:1",
 name:"Soul jazz en Fa mineur — dans la langue de Bobby Timmons", tempo:108, groove:"jazz",
-desc:"Le geste : Fa mineur 9, Sib 13, Mib 9, Lab maj7, puis Fa mineur 9 plus bas, Sib mineur 7 et Do 7 altéré. À écouter : une mélodie qu'on peut chanter sous les doigts ; le Do 7 altéré ramène au Fa mineur par son Mi, la sensible. Pour improviser : Fa dorien, Sib mixolydien, Mib mixolydien, Lab ionien, puis Do altéré.",
-chords:[{name:"Fm9",beats:8,voicing:"x-8-6-8-8-x",scale:"F:1"},
-{name:"Bb13",beats:4,voicing:"6-x-6-7-8-x",scale:"A#:4"},
-{name:"Eb9",beats:4,voicing:"x-6-5-6-6-x",scale:"D#:4"},
-{name:"Abmaj7",beats:8,voicing:"4-x-5-5-4-x",scale:"G#:0"},
-{name:"Fm9",beats:8,voicing:"1-x-1-1-1-3",scale:"F:1"},
-{name:"Bbm7",beats:4,voicing:"x-1-3-1-2-x",scale:"A#:1"},
-{name:"C7alt",beats:4,voicing:"x-x-2-3-2-4",scale:"C:melodicMinor:6"},
-{name:"Fm9",beats:8,voicing:"1-x-1-1-1-3",scale:"F:1"}]},
+desc:"Le geste : Fa mineur 9, Sib 13, Mib 9, Lab maj7, puis Fa mineur 9 plus bas, Sib mineur 7 et Do 7 altéré. À écouter : une mélodie qu'on peut chanter sous les doigts ; le Do 7 altéré ramène au Fa mineur par son Mi, la sensible. Pour improviser : Fa dorien, Sib mixolydien, Mib mixolydien, Lab ionien, puis Do altéré. Tout est écrit : la basse tient le groove (fondamentale, croche de relance, quinte, et une note qui amène l'accord suivant), la guitare et le sax se répondent mesure par mesure, comme un prêcheur et son église.",
+chords:[{name:"Fm9",beats:8,voicing:"x-8-6-8-8-x",scale:"F:1",basseLigne:[[0,0,1.5],[1.5,0,.5],[2,7,1],[3,10,1],[4,0,1.5],[5.5,7,.5],[6,10,1],[7,3,1]],soloEcrit:[[0,"C5",.5],[.5,"D#5",.5],[1,"F5",1,"vib"],[2,"D#5",.5],[2.5,"C5",.5],[3,"G#4",1]],soloEcrit2:[[4.5,"G#4",.5],[5,"C5",.5],[5.5,"D#5",.5],[6,"F5",1,"vib"],[7,"D#5",1]]},
+{name:"Bb13",beats:4,voicing:"6-x-6-7-8-x",scale:"A#:4",basseLigne:[[0,0,1.5],[1.5,0,.5],[2,7,1],[3,4,1]],soloEcrit:[[0,"D5",.5],[.5,"F5",.5],[1,"G5",1,"vib"],[2,"F5",.5],[2.5,"D5",.5],[3,"G#4",1]],soloEcrit2:[]},
+{name:"Eb9",beats:4,voicing:"x-6-5-6-6-x",scale:"D#:4",basseLigne:[[0,0,1.5],[1.5,0,.5],[2,7,1],[3,4,1]],soloEcrit:[],soloEcrit2:[[0,"G5",.5],[.5,"F5",.5],[1,"D#5",.5],[1.5,"C#5",.5],[2,"C5",1],[3,"A#4",1]]},
+{name:"Abmaj7",beats:8,voicing:"4-x-5-5-4-x",scale:"G#:0",basseLigne:[[0,0,1.5],[1.5,0,.5],[2,7,1],[3,4,1],[4,0,1.5],[5.5,0,.5],[6,7,1],[7,11,1]],soloEcrit:[[0,"C5",.5],[.5,"D#5",.5],[1,"G5",1.5,"vib"],[2.5,"F5",.5],[3,"D#5",1]],soloEcrit2:[[4,"C5",.5],[4.5,"D#5",.5],[5,"F5",.5],[5.5,"G5",1.5,"vib"],[7,"D#5",1]]},
+{name:"Fm9",beats:8,voicing:"1-x-1-1-1-3",scale:"F:1",basseLigne:[[0,12,1.5],[1.5,12,.5],[2,19,1],[3,22,1],[4,12,1.5],[5.5,19,.5],[6,22,1],[7,15,1]],soloEcrit:[[0,"F4",.5],[.5,"G#4",.5],[1,"C5",.5],[1.5,"D#5",.5],[2,"F5",2,"vib"]],soloEcrit2:[[4,"G#4",.5],[4.5,"G4",.5],[5,"F4",1],[6,"C5",2,"vib"]]},
+{name:"Bbm7",beats:4,voicing:"x-1-3-1-2-x",scale:"A#:1",basseLigne:[[0,0,1.5],[1.5,0,.5],[2,7,1],[3,3,1]],soloEcrit:[[0,"C#5",.5],[.5,"F5",.5],[1,"G#5",1],[2,"F5",.5],[2.5,"C#5",.5],[3,"A#4",1]],soloEcrit2:[]},
+{name:"C7alt",beats:4,voicing:"x-x-2-3-2-4",scale:"C:melodicMinor:6",basseLigne:[[0,8,1.5],[1.5,8,.5],[2,4,1],[3,0,1]],soloEcrit:[],soloEcrit2:[[0,"E5",.5],[.5,"D#5",.5],[1,"A#4",.5],[1.5,"G#4",.5],[2,"E4",2,"vib"]]},
+{name:"Fm9",beats:8,voicing:"1-x-1-1-1-3",scale:"F:1",basseLigne:[[0,12,1.5],[1.5,12,.5],[2,19,1],[3,22,1],[4,12,1.5],[5.5,19,.5],[6,22,1],[7,19,1]],soloEcrit:[[0,"F5",1.5,"vib"],[1.5,"D#5",.5],[2,"C5",1],[3,"G#4",1]],soloEcrit2:[[4,"C5",.5],[4.5,"D#5",.5],[5,"F5",3,"vib"]]}]},
 {id:"jz-lespaul-seconde-voix", lecons:{melodique:2, voicings:1}, root:"G", scale:"G:0", voix:"guitar", phraseAuto:true,
 phrase:[["B4",0,0.9],["G4",0,0.9],["D5",1,0.9],["B4",1,0.9],["E5",2,0.9],["C5",2,0.9],["D5",3,0.9],["B4",3,0.9],["G#4",4,0.9],["E4",4,0.9],["B4",5,0.9],["G#4",5,0.9],["D5",6,1.8],["B4",6,1.8],["C5",8,1.8],["A4",8,1.8],["E5",10,1.8],["C5",10,1.8],["D5",12,0.9],["B4",12,0.9],["C5",13,0.9],["A4",13,0.9],["A4",14,0.9],["F#4",14,0.9],["F#4",15,0.9],["D4",15,0.9],["B4",16,0.9],["D4",16,0.9],["D5",17,0.9],["F#4",17,0.9],["E5",18,0.9],["G4",18,0.9],["D5",19,0.9],["F#4",19,0.9],["G#4",20,0.9],["B3",20,0.9],["B4",21,0.9],["D4",21,0.9],["D5",22,1.8],["F4",22,1.8],["C5",24,1.8],["E4",24,1.8],["E5",26,1.8],["G4",26,1.8],["D5",28,0.9],["F#4",28,0.9],["C5",29,0.9],["E4",29,0.9],["A4",30,0.9],["C4",30,0.9],["F#4",31,0.9],["A3",31,0.9]],
 name:"La seconde voix — dans la langue de Les Paul", tempo:120, groove:"jazz",
@@ -11772,7 +11794,7 @@ else {
   }
 }
 const relBase=barStart-audioCtx.currentTime;
-evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec);const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; if(!_tour2 && _soloShami(ch,gr)) _shamiNote(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); else playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()*((ch&&ch.wah)?1.41:1)); }catch(err){}   /* v1359 : +3 dB sur les accords à wah écrite, la wah creuse le son */ finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
+evs.forEach(e=>{const rel=Math.max(0.09,relBase+e.beat*beatSec+_swingLag(e.beat,beatSec,ch));const _tonR=_gridGuitarTone, _tonS=_soloTon(); try{ _gridGuitarTone=_tonS; _pedSource="solo"; _geste=e.geste||null; if(!_tour2 && _soloShami(ch,gr)) _shamiNote(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()); else playGuitarMidi(e.midi,e.dur*beatSec,rel,e.vel*_soloGain()*((ch&&ch.wah)?1.41:1)); }catch(err){}   /* v1359 : +3 dB sur les accords à wah écrite, la wah creuse le son */ finally{ _gridGuitarTone=_tonR; _pedSource="rythme"; _geste=null; } /* v1299 : le Solo joue sa guitare */if(e.echo)return;const visualDelay=Math.max(0,rel*1000);const tm=setTimeout(()=>{if(_gridPlayOn&&_gridSoloOn)_soloShowFret(e.midi);},visualDelay);_gridPlayTimers.push(tm);});
 }
 function _soloReset(){_soloLastMidi=72;_soloPhraseSeed=(Math.random()*0xffffffff)>>>0;_soloMotif=null;_soloMotifBar=0;}
 // v893 — renderGridChords découpée en sections nommées. Comportement identique (photographie jsdom des 234 grilles).
@@ -13010,6 +13032,19 @@ const q=beat*4;                               // position en doubles croches
 if(Math.abs(q-Math.round(q))>1e-6) return 0;
 return (Math.round(q)%2===1) ? beatSec*0.05 : 0;   // ≈ 20 % d'une double croche
 } },
+{ id:"shuffle", label:"Shuffle", tip:"Les croches en triolet, longue-courte : le contretemps arrive au dernier tiers du temps. Tout le groupe swingue, Solo et Phrase compris.",
+lag:(track, beat, beatSec)=>{   // v1386
+// v1388 : le temps est étiré, pas seulement la croche du contretemps. La première moitié du temps devient les deux
+// premiers tiers, la seconde le dernier tiers : x,5 → x,667 ; les doubles croches suivent (x,25 → x,333, x,75 → x,833),
+// sinon une double croche du Solo tombait entre le contretemps swingué et le temps suivant. Les notes déjà écrites en
+// triolet (x,333…) ne bougent pas. Triolet plein jusqu'à 120, plus léger au-dessus (1,5:1 vers 200), comme en jazz.
+const q=beat*4;
+if(Math.abs(q-Math.round(q))>1e-6) return 0;
+const f=((beat%1)+1)%1; if(f<1e-6) return 0;
+const bpm=60/beatSec, r=bpm<=120 ? 2 : Math.max(1.5, 2-(bpm-120)/160), s=r/(1+r);
+const w = f<=0.5 ? f*2*s : s+(f-0.5)*2*(1-s);
+return (w-f)*beatSec;
+} },
 { id:"soul70", label:"Basse devant", tip:"Basse et kick sur la grille, batterie et guitare derrière.",
 lag:(track)=> (track==="bass"||track==="kick") ? 0 : 0.035 },
 { id:"humain", label:"Humain", tip:"Flottement aléatoire : enlève le côté machine, sans couleur de style.",
@@ -13033,7 +13068,17 @@ function _feelDeGrille(gr){ return (gr && _feelValide(gr.feel)) ? gr.feel : "dro
 function _feelEffectif(chord){
     if(_feelManuel) return _feelStyle;
     if(chord && _feelValide(chord.feel)) return chord.feel;
+    if(_feelStyle==="droit" && _grooveShuffle(chord)) return "shuffle";   // v1386 : un groove shuffle swingue de lui-même
     return _feelStyle;
+}
+function _grooveShuffle(chord){
+const g=(chord && chord.groove) || ((typeof currentGroove!=="undefined") ? currentGroove : "");
+return !!(g && typeof DRUM_GROOVES!=="undefined" && DRUM_GROOVES[g] && DRUM_GROOVES[g].shuffle);
+}
+// v1386 — le Solo et la Phrase ne suivent que le shuffle (les autres feels restent comme avant pour eux)
+function _swingLag(beat, beatSec, chord){
+if(_feelEffectif(chord)!=="shuffle") return 0;
+try{ return _feelLagFor("solo", beat, beatSec, chord); }catch(e){ return 0; }
 }
 function _feelLagFor(track, beat, beatSec, chord){
     const f=FEEL_STYLES.find(x=>x.id===_feelEffectif(chord));
@@ -13380,6 +13425,7 @@ djent16:"guitar", breakdown:"guitar",
 funk:"guitar", funkJB:"guitar", funkrock:"guitar", disco:"guitar",
 pompe:"guitar", pompeSeche:"guitar", pompeSwing:"guitar", pompeModerne:"guitar",
 valse:"guitar", rockabilly:"guitar", psychobilly:"guitar",
+shuffleBlues:"guitar", shuffleHalf:"guitar", boogieShuffle:"guitar", swingLent:"guitar",   // v1386
 ringo7:"piano",             // v925
 ringo:"piano",              // v923 — le piano droit des Beatles sous la rythmique
 bossa:"nylon",
@@ -14018,7 +14064,7 @@ function _bassEchPrepare(id){
       // v1242 : silence de tête mesuré NOTE PAR NOTE (de 0 à 37 ms selon la banque et la note) ; on démarre 2 ms avant le son
       const d=b.getChannelData(0); let pk=0; for(let i=0;i<d.length;i++){ const a=Math.abs(d[i]); if(a>pk) pk=a; }
       let i0=0; for(let i=0;i<d.length;i++){ if(Math.abs(d[i])>pk*0.02){ i0=i; break; } }
-      st.debut[+k]=Math.max(0, i0/b.sampleRate-0.002); }).catch(()=>{}); }catch(e){ return Promise.resolve(); } }));
+      st.debut[+k]=Math.max(0, i0/b.sampleRate-0.002); }).catch(()=>{}); }catch(e){ return Promise.resolve(); } })).then(()=>{ st.fini=true; });   // v1387 : fini = toute la banque est décodée
   return st.pret;
 }
 function _playBassEch(id, midi, durSec, relStart, vel){
@@ -14491,7 +14537,7 @@ if(_acc && _acc.flute===false && _phraseSonGrille==="shakuhachi") _phraseSonGril
 try{
 _phraseDe(gr, Math.floor(chordIdx/Math.max(1,gr.chords.length))).forEach(([m,t,d])=>{
 if(t<s-1e-6 || t>=s+chordBeats-1e-6) return;
-try{ _phraseNote(m, startTime+(t-s)*beatSec, d*beatSec, 0.2); }catch(e){}
+try{ _phraseNote(m, startTime+(t-s)*beatSec+_swingLag(t-s,beatSec,_acc), d*beatSec, 0.2); }catch(e){}
 });
 } finally { _phraseSonGrille=_sonAv; }
 }
@@ -14567,7 +14613,7 @@ function _phraseSansSolo(gr, notes){
 function _phraseDe(gr, v){ return _phraseSansSolo(gr, _phraseDeBrut(gr, v)); }
 function _phraseDeBrut(gr, v){
 v=((v|0)%4+4)%4;
-if(gr.phrase) return gr.phrase.map(([n,t,d])=>[_phraseMidi(n),t,d]).filter(x=>x[0]!==null);
+if(gr.phrase) return ((gr.phrase2 && v%2===1) ? gr.phrase2 : gr.phrase).map(([n,t,d])=>[_phraseMidi(n),t,d]).filter(x=>x[0]!==null);   // v1389 : phrase2 = la Phrase des tours impairs (questions/réponses sur deux tours, comme soloEcrit2)
 if(!_phraseCache.has(gr)) _phraseCache.set(gr,[]);
 const c=_phraseCache.get(gr);
 if(!c[v]){ let r=[]; try{ r=_phraseCalcul(gr, v); }catch(e){ r=[]; } c[v]=r; }
@@ -14983,9 +15029,22 @@ btn.innerHTML="&#9208; Pause";
 if(typeof _syncGlobalStop==="function") _syncGlobalStop();
 if(typeof _syncLayerBtns==="function") _syncLayerBtns();
 if(typeof _traceGroove==="function") _traceGroove("lancement grille");
-_gridScheduler(gr);
-_gridSchedTimer=setInterval(()=>{ _diagTick(); if(_gridPlayOn) _gridScheduler(gr); }, _GRID_LOOK_MS);   // v990 : _diagTick mesure le retard
+// v1387 — JÉRÉMY : « je l'entends au début », la basse décalée au premier accord. Mesuré : tant que la banque de basse
+// enregistrée se décode, tout le premier accord part sur le synthé de secours (autre son, autre octave). On attend donc
+// que les sons enregistrés soient prêts (2 s au plus) avant de lancer la première mesure.
+const _jeton=++_gridLanceJeton;
+const _lancer=()=>{ if(!_gridPlayOn || _jeton!==_gridLanceJeton) return;
+  _gridNextTime=audioCtx.currentTime+0.10;
+  _gridScheduler(gr);
+  _gridSchedTimer=setInterval(()=>{ _diagTick(); if(_gridPlayOn) _gridScheduler(gr); }, _GRID_LOOK_MS);   // v990 : _diagTick mesure le retard
+};
+const _attente=[];
+try{ if(BASS_ECH[_bassTimbre]){ const p=_bassEchPrepare(_bassTimbre), s=_bassEch[_bassTimbre]; if(p && !(s && s.fini)) _attente.push(p); } }catch(e){}
+try{ Object.keys(_guitEch).forEach(id=>{ const s=_guitEch[id]; if(s && s.ctx===audioCtx && !s.fini && s.pret) _attente.push(s.pret); }); }catch(e){}
+if(!_attente.length) _lancer();
+else Promise.race([Promise.all(_attente), new Promise(r=>setTimeout(r,2000))]).then(_lancer);
 }
+let _gridLanceJeton=0;
 let _magicProg=[]; // liste d'accords {ch, voicing} ajoutés
 let _magicPickerBuilt=false;
 function _magicInitPicker(){
@@ -19896,8 +19955,86 @@ let _axe="style";
 try{ const a=localStorage.getItem("guitarModalMorpher.axe"); if(a==="lecon"||a==="style") _axe=a; }catch(e){}
 // v894 — TEMPORAIRE : grilles à écouter en tête des Nouveautés (doom et galop par accord : batterie / filtre).
 // Retirer cette liste (la vider) une fois le correctif moteur validé. Les versions affichées restent celles de NOUVEAUTES.
-const A_ECOUTER=[];   // v949 : vidée à la demande de Jérémy, les Nouveautés repartent de la plus récente
+const A_ECOUTER=[];
+// v1388 — LISTE ÉPHÉMÈRE : les grilles passées en shuffle d'un coup (Jérémy : « je te fais confiance »). Le réglage est posé
+// sur la grille au chargement ; pour annuler une grille, il suffit de retirer sa ligne. Le groupe disparaît quand la liste est vide.
+const SHUFFLE_ESSAI=[
+["jz-so-what-deplace",{feel:"shuffle"}],
+["jz-ballade-double-time",{feel:"shuffle"}],
+["jz-notes-qui-frottent",{feel:"shuffle"}],
+["jz-blues-gamme-mineure",{feel:"shuffle"}],
+["jz-ballade-mib",{feel:"shuffle"}],
+["jz-autumn",{feel:"shuffle"}],
+["jz-bobby-timmons-soul-fam",{feel:"shuffle"}],   // v1392 — Jérémy : les grilles retouchées côte à côte, en tête, la plus récente d'abord
+["jz-blues-fa",{feel:"shuffle"}],
+["rock-tierce-hesite-la",{}],
+["jz-cycle-tierces",{feel:"shuffle"}],
+["jz-blues-mineur-do",{feel:"shuffle"}],
+["jz-so-what",{feel:"shuffle"}],
+["jz-wes-solmineur",{feel:"shuffle"}],
+["jz-bird-blues",{feel:"shuffle"}],
+["jz-ii-v-altere",{feel:"shuffle"}],
+["jz-tritone-chain",{feel:"shuffle"}],
+["jz-hongrois",{feel:"shuffle"}],
+["jz-drop2",{feel:"shuffle"}],
+["jz-anatole",{feel:"shuffle"}],
+["jz-ii-v-i-maj",{feel:"shuffle"}],
+["jz-drop2-voiceleading",{feel:"shuffle"}],
+["jz-cm-tour-riche",{feel:"shuffle"}],
+["jz-fa-diese-tenace",{feel:"shuffle"}],
+["jz-descente-eclats",{feel:"shuffle"}],
+["jz-wes-quintes-fam",{feel:"shuffle"}],
+["jz-harris-sixte-dim",{feel:"shuffle"}],
+["jz-harris-sixte-min",{feel:"shuffle"}],
+["jz-trois-paliers",{feel:"shuffle"}],
+["jz-tonalites-manquantes",{feel:"shuffle"}],
+["jz-basse-descend",{feel:"shuffle"}],
+["jz-diminue-quatre-sorties",{feel:"shuffle"}],
+["jz-modulations-tierces-min",{feel:"shuffle"}],
+["jz-modulations-tierces",{feel:"shuffle"}],
+["jz-pivot-do-sol",{feel:"shuffle"}],
+["jz-deux-noms-un-accord",{feel:"shuffle"}],
+["jz-triades-superieures",{feel:"shuffle"}],
+["jz-substitution-triton",{feel:"shuffle"}],
+["jz-m7b5-tiroirs-la",{feel:"shuffle"}],
+["jz-rhythm-changes-pont",{feel:"shuffle"}],
+["jz-douze-visages",{feel:"shuffle"}],
+["jz-lespaul-seconde-voix",{feel:"shuffle"}],
+["man-minor-swing",{feel:"shuffle"}],
+["man-yeux-noirs",{feel:"shuffle"}],
+["man-blues-mineur",{feel:"shuffle"}],
+["man-standard-c",{feel:"shuffle"}],
+["man-cycle-quintes",{feel:"shuffle"}],
+["man-slow-sombre",{feel:"shuffle"}],
+["man-anatole",{feel:"shuffle"}],
+["man-anatole-dim",{feel:"shuffle"}],
+["man-dim-monte",{feel:"shuffle"}],
+["man-blues-majeur",{feel:"shuffle"}],
+["man-djangologie",{feel:"shuffle"}],
+["fus-henderson-blues-tordu-sol",{groove:"shuffleBlues", guitare:"electric"}],
+["fus-carlton-blues",{feel:"shuffle"}],
+["rab-slow",{feel:"shuffle"}],
+["rock-deux-re",{groove:"shuffleHalf"}],
+["rock-sixte-fondamentale-autre",{groove:"shuffleHalf"}],
+["cin-cartoon-do",{feel:"shuffle"}]
+];
+try{ SHUFFLE_ESSAI.forEach(([id,p])=>{ STYLE_FAMILIES.forEach(f=>(f.grids||[]).forEach(g=>{ if(g.id===id) Object.assign(g,p); })); }); }catch(e){}
+function _groupeShuffle(){
+const famDe={}, versions={}, grids=[];
+SHUFFLE_ESSAI.forEach(([id])=>{ const f=STYLE_FAMILIES.find(x=>(x.grids||[]).some(g=>g.id===id)); if(!f||versions[id]) return;
+  grids.push(f.grids.find(g=>g.id===id)); famDe[id]=f; versions[id]=({"jz-so-what-deplace":"remix v1402 (sax écrit)","jz-ballade-double-time":"remix v1401 (sax écrit)","jz-notes-qui-frottent":"remix v1400 (sax écrit)","jz-blues-gamme-mineure":"remix v1398 (sax écrit)","jz-ballade-mib":"remix v1397 (sax écrit)","jz-autumn":"remix v1396 (sax écrit)","jz-bobby-timmons-soul-fam":"remix v1391 (sax écrit)","jz-blues-fa":"remix v1389 (sax écrit)","rock-tierce-hesite-la":"remix v1386 (shuffle)"})[id]||"remix v1388 (shuffle)"; });
+return grids.length ? {label:"🎷 Passées en shuffle", nouveautes:true, id:null, groove:null, grids, famDe, versions} : null;
+}   // v949 : vidée à la demande de Jérémy, les Nouveautés repartent de la plus récente
 const NOUVEAUTES=[
+["jz-so-what-deplace","remix v1402"],   // v1402 — sax, basse et Solo écrits, la phrase qui monte d'une case
+["jz-ballade-double-time","remix v1401"],   // v1401 — sax, basse et Solo écrits
+["jz-notes-qui-frottent","remix v1400"],   // v1400 — sax, basse et Solo écrits, les notes qui frottent traversées
+["jz-blues-gamme-mineure","remix v1398"],   // v1398 — sax, basse et Solo écrits, la blue note tirée
+["jz-ballade-mib","remix v1397"],   // v1397 — sax, basse et Solo écrits, autour du Sol immobile
+["jz-autumn","remix v1396"],   // v1396 — sax, basse et Solo écrits
+["jz-bobby-timmons-soul-fam","remix v1391"],   // v1391 — sax, basse et Solo écrits, questions/réponses sur deux tours
+["jz-blues-fa","remix v1389"],   // v1389 — idem
+["rock-tierce-hesite-la","remix v1386"],   // v1386 — passée en blues shuffle
 ["cin-matsuri-re","v1384"],   // v1384 — Matsuri (Ré yo) : la corde de Ré bourdonne, la main monte le manche, taiko d'office
 ["rock-sans-quinte-la","v1382"],   // v1382 — Sans quinte : essai d'une grille entière en man gong
 ["rock-cinq-boites-la","v1380"],   // v1380 — Cinq boîtes, un La : les cinq pentatoniques, du soleil au crépuscule
@@ -20167,8 +20304,8 @@ grids:toutes.filter(g=>g.lecons && g.lecons[l.id])
 .sort((a,b)=>(a.lecons[l.id]-b.lecons[l.id]))
 })).filter(g=>g.grids.length>0);
 }
-const nv=_groupeNouveautes();
-return nv ? [nv].concat(base) : base;
+const nv=_groupeNouveautes(), sh=_groupeShuffle();   // v1388 : la liste éphémère juste après les Nouveautés
+return [nv, sh].filter(Boolean).concat(base);
 }
 function _nonClassees(){
 const toutes=STYLE_FAMILIES.flatMap(f=>f.grids);
