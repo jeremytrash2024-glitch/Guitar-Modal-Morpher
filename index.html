@@ -11620,18 +11620,22 @@ function _scheduleTaikoBar(barStart, barBeats, beatSec, derniere, chord, pos){
     let coups=(id==="ternaire" && bb===3) ? (reponse ? [[0,"don",1.0],[1.5,"ka",0.28],[2,"ten",0.32]] : [[0,"don",1.0],[1,"ten",0.3],[2,"ten",0.3]])
              : ((finPhrase && M.fin) ? M.fin : (reponse ? TAIKO_REPONSES[id] : M.coups)).filter(c=>c[0]<bb);
     if(!coups.length || coups[0][0]!==0) coups=[[0,"don",1.0]].concat(coups);
-    const roule=finPhrase && id!=="lent";   // la ballade respire : pas de roulement, deux petits coups qui relancent
-    if(roule && bb>=2){   // v1457 : un ka annonce le roulement
+    // v1458 : le roulement devient rare (toutes les 8 mesures et à la fin de la grille) ; les autres fins de phrase : un ka, puis un don qui relance
+    const grandeFin=(n===null) ? derniere : ((n%8===7) || !!(pos && pos.finGrille));
+    const fin=finPhrase && id!=="lent" && bb>=2;   // la ballade respire : pas de roulement, deux petits coups qui relancent
+    const roule=fin && grandeFin;
+    if(fin){   // v1457 : un ka annonce la fin de phrase
       const tk=(id==="ternaire") ? bb-1-1/3 : bb-1.5;
       if(!coups.some(c=>Math.abs(c[0]-tk)<0.01 && c[1]==="don")) coups=coups.filter(c=>Math.abs(c[0]-tk)>0.01).concat([[tk,"ka",0.4]]);
     }
-    coups.forEach(c=>{ if(roule && c[0]>=bb-1) return; _taikoCoup(c[1], T(c[0]), c[2]); });
-    if(roule && id==="ternaire"){   // v1448 : en ternaire, le roulement balance aussi (triolets)
-      [0,1/3,2/3].forEach((d,k)=>_taikoTen(T(bb-1+d), 0.32+0.16*k));
-      _taikoDon(T(bb-1/3), 0.7);
-    } else if(roule){   // la fin de phrase : le shime roule en doubles croches, l'ōdaiko relance
-      [0,0.25,0.5,0.75].forEach((d,k)=>_taikoTen(T(bb-1+d), 0.3+0.14*k));
-      _taikoDon(T(bb-0.5), 0.7);
+    coups.forEach(c=>{ if(fin && c[0]>=bb-1) return; _taikoCoup(c[1], T(c[0]), c[2]); });
+    const tDon=(id==="ternaire") ? bb-1/3 : bb-0.5;
+    if(roule && id==="ternaire"){   // v1458 : roulement court, deux coups en triolet puis le don
+      _taikoTen(T(bb-1), 0.32); _taikoTen(T(bb-2/3), 0.42); _taikoDon(T(tDon), 0.7);
+    } else if(roule){   // v1458 : « tere-don », deux ten serrés puis l'ōdaiko
+      _taikoTen(T(bb-1), 0.32); _taikoTen(T(bb-0.75), 0.42); _taikoDon(T(tDon), 0.7);
+    } else if(fin){
+      _taikoDon(T(tDon), 0.65);
     }
   }catch(e){}
 }
