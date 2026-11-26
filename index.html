@@ -11574,6 +11574,13 @@ const TAIKO_MOTIFS={   // [temps, "don" (ōdaiko) ou "ten" (shime), force], pour
   moteur:  {coups:[[0,"don",1.0],[0.5,"ten",0.24],[1,"ten",0.24],[1.5,"don",0.75],[2,"ten",0.24],[2.5,"ten",0.24],[3,"don",0.75],[3.5,"ten",0.26]]},
   ternaire:{coups:[[0,"don",1.0],[0.667,"ten",0.26],[1,"ten",0.3],[1.667,"ten",0.24],[2,"don",0.75],[2.667,"ten",0.26],[3,"ten",0.3],[3.667,"ten",0.28]]}
 };
+// v1448 — étape 2 : une mesure appelle, la suivante répond (les mesures impaires jouent la réponse)
+const TAIKO_REPONSES={
+  lent:    [[0,"don",0.9],[2.5,"don",0.42],[3.5,"ten",0.3]],
+  fete:    [[0,"don",1.0],[1,"ten",0.3],[1.5,"ten",0.26],[2,"don",0.7],[3,"don",0.75],[3.5,"ten",0.3]],
+  moteur:  [[0,"don",1.0],[0.5,"ten",0.24],[1,"don",0.7],[1.5,"ten",0.24],[2,"ten",0.24],[2.5,"don",0.75],[3,"ten",0.24],[3.5,"ten",0.28]],
+  ternaire:[[0,"don",1.0],[0.667,"ten",0.24],[1,"ten",0.3],[1.667,"don",0.6],[2,"don",0.75],[3,"ten",0.3],[3.667,"ten",0.3]]
+};
 function _taikoMotifPour(chord, barBeats){
   const gr=(typeof _activeGrid!=="undefined") ? _activeGrid : null;
   const tempo=(gr && gr.tempo) || ((typeof backingBpm!=="undefined") ? backingBpm : 100);
@@ -11585,17 +11592,24 @@ function _taikoMotifPour(chord, barBeats){
   if((gr && gr.preset==="ballade") || tempo<90) return "lent";
   return "fete";
 }
-function _scheduleTaikoBar(barStart, barBeats, beatSec, derniere, chord){
+function _scheduleTaikoBar(barStart, barBeats, beatSec, derniere, chord, pos){
   if(!_gridTaikoOn) return;
   try{
     const T=b=>barStart+b*beatSec+(Math.random()-0.5)*0.006, bb=barBeats;
     const id=_taikoMotifPour(chord, bb), M=TAIKO_MOTIFS[id];
-    let coups=(id==="ternaire" && bb===3) ? [[0,"don",1.0],[1,"ten",0.3],[2,"ten",0.3]]
-             : ((derniere && M.fin) ? M.fin : M.coups).filter(c=>c[0]<bb);
+    // v1448 : la fin de phrase (toutes les 4 mesures, et la fin de la grille) remplace la fin de chaque accord
+    const n=(pos && typeof pos.barIdx==="number") ? pos.barIdx : null;
+    const finPhrase=(n===null) ? derniere : ((n%4===3) || !!(pos && pos.finGrille));
+    const reponse=(n!==null) && (n%2===1);
+    let coups=(id==="ternaire" && bb===3) ? (reponse ? [[0,"don",1.0],[1.5,"ten",0.26],[2,"ten",0.32]] : [[0,"don",1.0],[1,"ten",0.3],[2,"ten",0.3]])
+             : ((finPhrase && M.fin) ? M.fin : (reponse ? TAIKO_REPONSES[id] : M.coups)).filter(c=>c[0]<bb);
     if(!coups.length || coups[0][0]!==0) coups=[[0,"don",1.0]].concat(coups);
-    const roule=derniere && id!=="lent";   // la ballade respire : pas de roulement, deux petits coups qui relancent
+    const roule=finPhrase && id!=="lent";   // la ballade respire : pas de roulement, deux petits coups qui relancent
     coups.forEach(c=>{ if(roule && c[0]>=bb-1) return; (c[1]==="don" ? _taikoDon : _taikoTen)(T(c[0]), c[2]); });
-    if(roule){   // la fin de l'accord : le shime roule en doubles croches, l'ōdaiko relance
+    if(roule && id==="ternaire"){   // v1448 : en ternaire, le roulement balance aussi (triolets)
+      [0,1/3,2/3].forEach((d,k)=>_taikoTen(T(bb-1+d), 0.32+0.16*k));
+      _taikoDon(T(bb-1/3), 0.7);
+    } else if(roule){   // la fin de phrase : le shime roule en doubles croches, l'ōdaiko relance
       [0,0.25,0.5,0.75].forEach((d,k)=>_taikoTen(T(bb-1+d), 0.3+0.14*k));
       _taikoDon(T(bb-0.5), 0.7);
     }
@@ -14469,7 +14483,7 @@ const barStart=startTime+plan[bar].start*beatSec, barBeats=plan[bar].beats, barI
 idx.push(barIdx);
 _scheduleSoloBar(barStart, chord, gr, chordIdx, bar, barBeats, beatSec, plan[bar].start);   // v1039 : début de la mesure dans l'accord (mesures inégales)
 if(_gridDrumsOn) _scheduleDrumBar(barStart+_humT(), chord, _gridGrooveName(chord, sig), barIdx, barBeats, beatSec, {toms:gr && gr.toms, finDeGrille:(chordIdx % gr.chords.length)===gr.chords.length-1 && bar===nBars-1});
-if(typeof _scheduleTaikoBar==="function") _scheduleTaikoBar(barStart, barBeats, beatSec, bar===nBars-1, chord);   // v1343 : taiko (grooves décalés aussi) ; v1447 : l'accord choisit le motif
+if(typeof _scheduleTaikoBar==="function") _scheduleTaikoBar(barStart, barBeats, beatSec, bar===nBars-1, chord, {barIdx:barIdx, finGrille:(chordIdx % gr.chords.length)===gr.chords.length-1 && bar===nBars-1});   // v1343 : taiko (grooves décalés aussi) ; v1447 : l'accord choisit le motif ; v1448 : appel, réponse, fin de phrase
 if(typeof _scheduleMetroBar==="function"){
 _scheduleMetroBar(barStart, gr, _gridGrooveName(chord, sig), beatSec, chord);
 if(_fillNow(chordIdx) && bar===nBars-1 && typeof playDrum==="function"){
@@ -14946,7 +14960,7 @@ _scheduleSeqBassBar(barStart, chord, beatSec);
 if(_gridDrumsOn){
 _scheduleDrumBar(barStart+_humT(), chord, _gridGrooveName(chord, sig), barIdx, barBeats, beatSec, {toms:gr && gr.toms, finDeGrille:(chordIdx % gr.chords.length)===gr.chords.length-1 && bar===nBars-1});   // l'accord voyage → la basse suit
 }
-if(typeof _scheduleTaikoBar==="function") _scheduleTaikoBar(barStart, barBeats, beatSec, bar===nBars-1, chord);   // v1343 : taiko ; v1447 : l'accord choisit le motif
+if(typeof _scheduleTaikoBar==="function") _scheduleTaikoBar(barStart, barBeats, beatSec, bar===nBars-1, chord, {barIdx:barIdx, finGrille:(chordIdx % gr.chords.length)===gr.chords.length-1 && bar===nBars-1});   // v1343 : taiko ; v1447 : l'accord choisit le motif ; v1448 : appel, réponse, fin de phrase
 if(typeof _scheduleChoeurBar==="function") _scheduleChoeurBar(barStart, chord, voicingMidi, barBeats, beatSec, gr);   // v988
 if(typeof _scheduleNappeBar==="function"){
 _scheduleNappeBar(barStart, chord, voicingMidi, barBeats, beatSec,
