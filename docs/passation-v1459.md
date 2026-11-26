@@ -14,7 +14,7 @@ Session du 26 novembre 2026 : de la v1433 à la v1459.
 | Partage de l'artifact | **public**. Toute republication demande `shared_live:"public"` et `artifact_title:"Guitar Modal Morpher"` |
 | Version en ligne | v1459, version d'artifact `1795707942-e15f` |
 | GitHub | `jeremytrash2024-glitch/Guitar-Modal-Morpher`, branche **`Guitar`** |
-| Poussé sur GitHub | jusqu'à la v1456 (`2ebe836`). **Les v1457 à v1459 et ce document sont commités en local, pas encore poussés.** |
+| Poussé sur GitHub | tout, jusqu'à la v1459 et ce document |
 
 **Pousser sur GitHub**, seulement quand Jérémy le demande. Cette commande marche après un `add_repo` (accès push) :
 ```
@@ -162,7 +162,7 @@ Ce sont celles de la v1432, section 7.2 :
 ---
 
 ## 7. Mémo pour démarrer la prochaine conversation
-1. `add_repo` (accès push), puis cloner la branche `Guitar`. Si les v1457–1459 n'ont pas été poussées, le `index.html` de GitHub est la v1456 : repartir de l'artifact (`read_artifact`) ou demander à Jérémy de pousser d'abord.
+1. `add_repo` (accès push), puis cloner la branche `Guitar` : son `index.html` est la v1459 exacte.
 2. Recopier `outils/*` dans `/tmp/t/`. Installer Playwright si besoin.
 3. `get_artifact` pour obtenir la `base_version` (la v1459 est `1795707942-e15f`, ou une version plus récente).
 4. Lire la section 3 de ce document et la section 3 de la passation v1432.
