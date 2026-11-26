@@ -2305,7 +2305,10 @@ japanese: { name: "Japonaises", modes: [
 { name: "Kumoijoshi", formula: [0,1,5,7,8], intervals: ["R","b2","4","5","b6"] }   // v1316 : l'accord de koto kumoi-jōshi (le « Kumoi » des guitaristes, au-dessus, est une autre gamme)
 ]},
 bebop: { name: "Bebop", modes: [   // v1449 — gammes à huit notes : une note de passage en plus, et les notes de l'accord tombent sur les temps
-{ name: "Bebop dominante", formula: [0,2,4,5,7,9,10,11], intervals: ["R","2","3","4","5","6","b7","7"] }   // mixolydien + 7e majeure de passage
+{ name: "Bebop dominante", formula: [0,2,4,5,7,9,10,11], intervals: ["R","2","3","4","5","6","b7","7"] },   // mixolydien + 7e majeure de passage
+{ name: "Bebop majeure", formula: [0,2,4,5,7,8,9,11], intervals: ["R","2","3","4","5","b6","6","7"] },   // v1450 — ionien + b6 de passage : pour les maj7 et les 6
+{ name: "Bebop dorienne", formula: [0,2,3,4,5,7,9,10], intervals: ["R","2","b3","3","4","5","6","b7"] },   // v1450 — dorien + tierce majeure de passage : pour les m7
+{ name: "Bebop mineure mélodique", formula: [0,2,3,5,7,8,9,11], intervals: ["R","2","b3","4","5","b6","6","7"] }   // v1450 — mineur mélodique + b6 de passage : pour les m6 et m(maj7)
 ]}
 };
 const HARRIS_GAMMES = {
