@@ -2444,6 +2444,10 @@ const PENTA_TABLE={
     "0,2,3,6,7,9,10":[0,3,6,7,9],   // Dorien #4 (ukrainien) → garde le #4
     "0,1,4,5,7,8,10":[0,1,4,7,8]    // Phrygien dominant → b2 ET 3M (flamenco)
 };
+// v1466 — GAMMES BEBOP : la note de passage n'est pas une note de l'accord. Pour simplifier, pour l'arpège du repère et pour la note
+// caractéristique, on travaille sur la gamme mère (dominante → mixolydien, majeure → ionien, dorienne → dorien, mineure mélodique).
+const BEBOP_PASSAGE={"0,2,4,5,7,9,10,11":11,"0,2,4,5,7,8,9,11":8,"0,2,3,4,5,7,9,10":4,"0,2,3,5,7,8,9,11":8};
+function _gammeMere(formula){ if(!Array.isArray(formula)) return formula; const p=BEBOP_PASSAGE[formula.join(",")]; return p===undefined ? formula : formula.filter(x=>x!==p); }
 function _autoPenta(formula){
 const chord=new Set([0]);
 chord.add(formula.includes(4)?4:3);
@@ -2463,8 +2467,8 @@ return formula.filter(n=>!rm.includes(n));
 }
 function effFormula(modeObj){
 if(!pentaSimplifyOn) return modeObj.formula;
-const key=modeObj.formula.join(",");
-return PENTA_TABLE[key] || _autoPenta(modeObj.formula);
+const f=_gammeMere(modeObj.formula), key=f.join(",");   // v1466 : bebop → la penta de la gamme mère
+return PENTA_TABLE[key] || _autoPenta(f);
 }
 const INSTRUMENTS = {
 guitar6: { tunings: [64,59,55,50,45,40] },
@@ -10793,13 +10797,14 @@ let _fbArp=null;              // {pcs:Set, rootPc, nom} — l'accord courant de 
 // 0 éteint · 1 pentatonique du mode · 2 arpège du mode (1-3-5 + sa note caractéristique, v1303) · 3 les deux (arpège plein, penta cerclée, le reste très pâle)
 let _repereMode=0;
 const _REPERE_NOMS=["Repère","Repère : penta","Repère : arpège","Repère : penta + arpège"];
-function _repPenta(f){ if(pentaSimplifyOn || !Array.isArray(f) || f.length!==7) return null; return PENTA_TABLE[f.join(",")] || _autoPenta(f); }
+function _repPenta(f){ f=_gammeMere(f); if(pentaSimplifyOn || !Array.isArray(f) || f.length!==7) return null; return PENTA_TABLE[f.join(",")] || _autoPenta(f); }
 function _repereActif(){ return _repereMode>0 && _fbArpMode===0 && document.body.classList.contains("land-neck") && document.body.classList.contains("grid-mode"); }
 // v1303 — L'ARPÈGE DU MODE (Jérémy) : fondamentale, tierce, quinte, et la note qui fait le mode (la 6 en dorien, la #4 en lydien,
 // la b7 en mixolydien…) ; ionien et éolien n'ont pas de note à part : on prend leur septième. Il ne suit plus l'accord joué : il reste
 // tant que le mode ne change pas. Gammes qui ne sont pas à 7 notes : 1-3-5-7 quand ils existent.
 function _repArp(formula){
   if(!Array.isArray(formula) || !formula.length) return null;
+  formula=_gammeMere(formula);   // v1466 : bebop dorienne → La m (Do), pas La 7 (Do# de passage)
   const F=new Set(formula), A=new Set([0]);
   if(formula.length===7){ A.add(formula[2]); A.add(formula[4]); }
   else { const t=[4,3].find(x=>F.has(x)); if(t!==undefined) A.add(t); const q=[7,6,8].find(x=>F.has(x)); if(q!==undefined) A.add(q); }
@@ -11167,6 +11172,7 @@ document.addEventListener("click",e=>{ const t=e.target; if(!t || !t.closest) re
 // Égalité : d'abord le mode d'église de même tierce, puis l'ionien ou l'éolien ; sinon on marque toutes les notes d'écart.
 // L'ionien et l'éolien eux-mêmes, les gammes à 5 notes ou symétriques : rien (pas de choix arbitraire).
 function _caracSemis(formula){
+  formula=_gammeMere(formula);   // v1466
   if(!formula || formula.length!==7) return [];
   const F=new Set(formula), egl=SCALES.major.modes.map((m,i)=>({i, f:new Set(m.formula)}));
   if([0,5].some(i=>egl[i].f.size===F.size && [...F].every(x=>egl[i].f.has(x)))) return [];
