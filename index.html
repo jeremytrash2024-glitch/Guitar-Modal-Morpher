@@ -11597,8 +11597,8 @@ const TAIKO_REPONSES={
   moteur:  [[0,"don",1.0],[0.5,"ten",0.24],[1,"don",0.7],[1.5,"ka",0.28],[2,"ten",0.24],[2.5,"don",0.75],[3,"ka",0.28],[3.5,"ten",0.28]],
   ternaire:[[0,"don",1.0],[0.667,"ka",0.28],[1,"ten",0.3],[1.667,"don",0.6],[2,"don",0.75],[2.667,"ka",0.28],[3,"ten",0.3],[3.667,"ten",0.3]]
 };
-function _taikoMotifPour(chord, barBeats){
-  const gr=(typeof _activeGrid!=="undefined") ? _activeGrid : null;
+function _taikoMotifPour(chord, barBeats, grImpose){
+  const gr=grImpose || ((typeof _activeGrid!=="undefined") ? _activeGrid : null);
   const tempo=(gr && gr.tempo) || ((typeof backingBpm!=="undefined") ? backingBpm : 100);
   const METAL=["gallop","metal","doom","djent16","breakdown","blast","punk"];
   const g=(chord && chord.groove) || (gr && gr.groove) || "";
@@ -11607,6 +11607,24 @@ function _taikoMotifPour(chord, barBeats){
   if(METAL.includes(g) || tempo>=140) return "moteur";
   if((gr && gr.preset==="ballade") || tempo<90) return "lent";
   return "fete";
+}
+// v1459 — OROSHI : l'ōdaiko seul ouvre la grille ; les coups se resserrent et montent jusqu'au premier temps, où tout le monde entre.
+// Deux mesures (une seule, douce et sans rafale, en ballade). Les coups partent par minuterie : l'arrêt pendant l'oroshi les annule.
+function _taikoOroshi(gr, t0){
+  const c0=(gr.chords||[])[0]||{}, bb=(c0.beats && c0.beats%3===0 && c0.beats%4!==0) ? 3 : 4;
+  const id=_taikoMotifPour(c0, bb, gr), beatSec=60/((gr.tempo)||backingBpm||100);
+  const lent=(id==="lent"), total=(lent?1:2)*bb, coups=[];
+  if(lent){
+    [0,0.3,0.55,0.75,0.88].forEach((x,k)=>coups.push([total*x,"don",0.3+0.08*k]));
+  } else {
+    const N=Math.round(total*2.2); let der=-1;
+    for(let k=0;k<N;k++){ const x=k/N, p=total*(1-Math.pow(1-x,2.2));
+      if(p-der<0.12 || p>total-0.25) continue; der=p;
+      coups.push([p, (x>0.7 && coups.length%2===1) ? "ten" : "don", (0.35+0.55*Math.pow(x,1.5))*((x>0.7 && coups.length%2===1)?0.7:1)]); }
+  }
+  coups.forEach(c=>{ const t=t0+c[0]*beatSec, att=Math.max(0,(t-audioCtx.currentTime-0.15)*1000);
+    _gridPlayTimers.push(setTimeout(()=>{ if(_gridPlayOn) _taikoCoup(c[1], t, c[2]); }, att)); });
+  return total*beatSec;
 }
 function _scheduleTaikoBar(barStart, barBeats, beatSec, derniere, chord, pos){
   if(!_gridTaikoOn) return;
@@ -15132,6 +15150,7 @@ document.querySelectorAll("#chordGrid .chord-card").forEach(c=>{
 if(c.dataset && c.dataset.cle) _gridCardByName[c.dataset.cle]=c;
 });
 _gridPlayOn=true; _gammeDiff=null;   /* v1004 : la lecture efface les notes en or du feuilletage */
+const _depuisDebut=(_gridReprise===null);   // v1459 : l'oroshi ne joue qu'au lancement depuis le début
 _gridCursor = (_gridReprise!==null) ? _gridReprise : 0;
 _gridReprise=null; _gridResetBarIndex(); _gridNextTime=audioCtx.currentTime+0.10;   // coussin 0.10 : compromis (0.06 était trop court → pompe manouche sortait en arpège au 1er temps ; le kit est déjà réchauffé au chargement)
 btn.innerHTML="&#9208; Pause";
@@ -15145,6 +15164,7 @@ if(typeof _traceGroove==="function") _traceGroove("lancement grille");
 const _jeton=++_gridLanceJeton;
 const _lancer=()=>{ if(!_gridPlayOn || _jeton!==_gridLanceJeton) return;
   _gridNextTime=audioCtx.currentTime+0.10;
+  if(_gridTaikoOn && _depuisDebut && _gridCursor===0){ try{ _gridNextTime+=_taikoOroshi(gr, _gridNextTime); }catch(e){} }   // v1459 : l'oroshi, puis la grille
   _gridScheduler(gr);
   _gridSchedTimer=setInterval(()=>{ _diagTick(); if(_gridPlayOn) _gridScheduler(gr); }, _GRID_LOOK_MS);   // v990 : _diagTick mesure le retard
 };
